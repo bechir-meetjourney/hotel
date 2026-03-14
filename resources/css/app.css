@@ -1,0 +1,328 @@
+/* Import Fonts - must be at the top */
+@import url('https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700&family=Noto+Sans:wght@300;400;500;600;700&display=swap');
+
+@import 'tailwindcss';
+
+/* Template styles */
+@import './templates/madina.css';
+
+/* Template RTL/LTR Direction Support */
+[dir="rtl"] .space-x-reverse > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-x-reverse: 1;
+}
+
+/* 400 */
+@font-face {
+    font-family: "Lama Sans";
+    src: url('/fonts/LamaSans-Regular.woff2') format('woff2');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+  }
+  
+  /* 500/600 */
+  @font-face {
+    font-family: "Lama Sans";
+    src: url('/fonts/LamaSans-Medium.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  
+  /* 700 */
+  @font-face {
+    font-family: "Lama Sans";
+    src: url('/fonts/LamaSans-Bold.woff2') format('woff2');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  /* ArabicPoetry custom font */
+  @font-face {
+    font-family: 'ArabicPoetry';
+    src: url('/fonts/ArabicPoetry/alfont_com_ArabicPoetry-Medium.otf') format('opentype');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  .font-arabic-poetry {
+    font-family: 'ArabicPoetry', "Lama Sans", ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+  }
+
+  
+@plugin 'tailwindcss-animate';
+
+@source '../js/**/*.{js,jsx,ts,tsx}';
+@source '../views';
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+    --font-sans: "Lama Sans", ui-sans-serif, system-ui, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+        
+    --color-public-primary: var(--public-primary);
+    --color-public-secondary: var(--public-secondary);
+    --color-public-active: var(--public-active);
+    --color-public-bg: var(--public-bg);
+    --color-public-title: var(--public-title);
+    --color-public-sub-title: var(--public-sub-title);
+    --color-public-button: var(--public-button);
+
+    --radius-lg: var(--radius);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-sm: calc(var(--radius) - 4px);
+
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+
+    --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
+
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+
+    --color-chart-1: var(--chart-1);
+    --color-chart-2: var(--chart-2);
+    --color-chart-3: var(--chart-3);
+    --color-chart-4: var(--chart-4);
+    --color-chart-5: var(--chart-5);
+
+    --color-sidebar: var(--sidebar);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+       /* color-scheme: light dark; */
+    --public-primary: #01004C;   
+    --public-secondary: #8689E3;
+    --public-active: #5A5ECD; 
+    --public-bg: #DCDCDC; 
+    --public-title: #00004D;    
+    --public-sub-title: #454891;  
+    --public-button: #027F84;
+
+    --background: oklch(1 0 0);
+    --foreground: oklch(0.145 0 0);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.145 0 0);
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.145 0 0);
+    --primary: oklch(0.205 0 0);
+    --primary-foreground: oklch(0.985 0 0);
+    --secondary: oklch(0.97 0 0);
+    --secondary-foreground: oklch(0.205 0 0);
+    --muted: oklch(0.97 0 0);
+    --muted-foreground: oklch(0.556 0 0);
+    --accent: oklch(0.97 0 0);
+    --accent-foreground: oklch(0.205 0 0);
+    --destructive: oklch(0.577 0.245 27.325);
+    --destructive-foreground: oklch(0.577 0.245 27.325);
+    --border: oklch(0.922 0 0);
+    --input: oklch(0.922 0 0);
+    --ring: oklch(0.87 0 0);
+    --chart-1: oklch(0.646 0.222 41.116);
+    --chart-2: oklch(0.6 0.118 184.704);
+    --chart-3: oklch(0.398 0.07 227.392);
+    --chart-4: oklch(0.828 0.189 84.429);
+    --chart-5: oklch(0.769 0.188 70.08);
+    --radius: 0.625rem;
+    --sidebar: oklch(0.985 0 0);
+    --sidebar-foreground: oklch(0.145 0 0);
+    --sidebar-primary: oklch(0.205 0 0);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.97 0 0);
+    --sidebar-accent-foreground: oklch(0.205 0 0);
+    --sidebar-border: oklch(0.922 0 0);
+    --sidebar-ring: oklch(0.87 0 0);
+}
+
+.dark {
+    --background: #060D1E;
+    --foreground: oklch(0.985 0 0);
+    --card: oklch(0.145 0 0);
+    --card-foreground: oklch(0.985 0 0);
+    --popover: oklch(0.145 0 0);
+    --popover-foreground: oklch(0.985 0 0);
+    --primary: oklch(0.985 0 0);
+    --primary-foreground: oklch(0.205 0 0);
+    --secondary: oklch(0.269 0 0);
+    --secondary-foreground: oklch(0.985 0 0);
+    --muted: oklch(0.269 0 0);
+    --muted-foreground: oklch(0.708 0 0);
+    --accent: oklch(0.269 0 0);
+    --accent-foreground: oklch(0.985 0 0);
+    --destructive: oklch(0.396 0.141 25.723);
+    --destructive-foreground: oklch(0.637 0.237 25.331);
+    --border: oklch(0.269 0 0);
+    --input: oklch(0.269 0 0);
+    --ring: oklch(0.439 0 0);
+    --chart-1: oklch(0.488 0.243 264.376);
+    --chart-2: oklch(0.696 0.17 162.48);
+    --chart-3: oklch(0.769 0.188 70.08);
+    --chart-4: oklch(0.627 0.265 303.9);
+    --chart-5: oklch(0.645 0.246 16.439);
+    --sidebar: oklch(0.205 0 0);
+    --sidebar-foreground: oklch(0.985 0 0);
+    --sidebar-primary: oklch(0.985 0 0);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.269 0 0);
+    --sidebar-accent-foreground: oklch(0.985 0 0);
+    --sidebar-border: oklch(0.269 0 0);
+    --sidebar-ring: oklch(0.439 0 0);
+}
+
+
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+
+    body {
+        @apply bg-background text-foreground;
+    }
+}
+
+/* Riyadh template color variables and helpers */
+.template--riyadh {
+  /* Core palette */
+  --riyadh-primary: #020151; /* main deep indigo */
+  --riyadh-primary-strong: #030175; /* hover shade */
+  --riyadh-accent: #027F84; /* buttons/accent */
+  --riyadh-text: #020151; /* gray-800 */
+  --riyadh-text-muted: #4b5563; /* gray-600 */
+  --riyadh-border: #d1d5db; /* gray-300 */
+  --riyadh-input-bg: #f3f4f6; /* gray-100 */
+  --riyadh-white: #ffffff;
+
+  /* Derived tokens */
+  --riyadh-heading: var(--riyadh-text);
+  --riyadh-paragraph: var(--riyadh-text-muted);
+  --riyadh-button-bg: var(--riyadh-primary);
+  --riyadh-button-bg-hover: var(--riyadh-primary-strong);
+  --riyadh-button-fg: var(--riyadh-white);
+  --riyadh-link: var(--riyadh-primary);
+  --riyadh-link-hover: var(--riyadh-primary-strong);
+  --riyadh-ring: color-mix(in oklab, var(--riyadh-primary) 30%, transparent);
+}
+
+
+
+/* Utility helpers for Riyadh template */
+.riyadh-text { color: var(--riyadh-text); }
+.riyadh-text-muted { color: var(--riyadh-text-muted); }
+.riyadh-heading { color: var(--riyadh-heading); }
+.riyadh-link { color: var(--riyadh-link); }
+.riyadh-link:hover { color: var(--riyadh-link-hover); }
+.riyadh-hover-primary:hover { color: var(--riyadh-primary, #020151); }
+.riyadh-border { border-color: var(--riyadh-border); }
+.riyadh-input { background-color: var(--riyadh-input-bg, #f3f4f6); color: var(--riyadh-text, #1f2937); }
+.riyadh-input::placeholder { color: #6b7280; }
+.riyadh-input:focus { background-color: var(--riyadh-white, #ffffff); box-shadow: 0 0 0 2px color-mix(in oklab, var(--riyadh-primary, #020151) 30%, transparent); }
+.riyadh-btn { background-color: var(--riyadh-button-bg, #020151); color: var(--riyadh-button-fg, #ffffff); }
+.riyadh-btn:hover { background-color: var(--riyadh-button-bg-hover, #030175); }
+.riyadh-primary { color: var(--riyadh-primary, #020151); }
+.riyadh-primary-bg { background-color: var(--riyadh-primary, #020151); }
+.riyadh-primary-hover-bg:hover { background-color: var(--riyadh-primary-strong, #030175); }
+.riyadh-ring { box-shadow: 0 0 0 2px var(--riyadh-ring, rgba(2,1,81,0.3)); }
+.riyadh-surface { background-color: var(--riyadh-white, #ffffff); }
+.on-dark-white { opacity: 1; }
+.dark .template--riyadh .on-dark-white { filter: brightness(0) invert(1); }
+
+/* Dark mode overrides for Riyadh template - Main headings color */
+.dark .template--riyadh .riyadh-heading { color: #4490FF; }
+/* Dark mode - Make description text clearer */
+.dark .template--riyadh .riyadh-text-muted { color: #E5E7EB; }
+
+/* Dark mode - Change slider decorative line color */
+.dark .template--riyadh img[alt="decorative line"] { 
+  filter: brightness(0) saturate(100%) invert(7%) sepia(22%) saturate(3915%) hue-rotate(208deg) brightness(64%) contrast(163%)
+}
+
+/* Dark mode - RoomsSection customizations */
+.dark .template--riyadh #rooms .bg-white {
+  background: linear-gradient(135deg, #101321 0%, rgba(68, 144, 255, 0.1) 100%);
+  border-color: rgba(68, 144, 255, 0.2);
+}
+
+.dark .template--riyadh #rooms .riyadh-primary {
+  color: #4490FF;
+}
+
+.dark .template--riyadh #rooms .riyadh-primary-bg {
+  background-color: #4490FF;
+  color: white;
+}
+
+.dark .template--riyadh #rooms .riyadh-primary-bg:hover {
+  background-color: rgba(68, 144, 255, 0.8);
+}
+
+/* Dark mode - Change room feature icons color */
+.dark .template--riyadh #rooms .on-dark-white {
+  filter: brightness(-10) ;
+}
+
+/* Dark mode - ServicesSection customizations (same as RoomsSection) */
+.dark .template--riyadh #services .bg-white {
+  background: linear-gradient(135deg, #101321 0%, rgba(68, 144, 255, 0.1) 100%);
+  border-color: rgba(68, 144, 255, 0.2);
+}
+
+.dark .template--riyadh #services .riyadh-primary {
+  color: #4490FF;
+}
+
+.dark .template--riyadh #services .riyadh-primary-bg {
+  background-color: #4490FF;
+  color: white;
+}
+
+.dark .template--riyadh #services .riyadh-primary-bg:hover {
+  background-color: rgba(68, 144, 255, 0.8);
+}
+
+/* Dark mode - Change service feature icons color */
+.dark .template--riyadh #services .on-dark-white {
+  filter: brightness(-10);
+}
+
+.line-icon {
+  transition: filter 0.2s;
+}
+.dark .line-icon {
+  filter: brightness(0) invert(1);
+}

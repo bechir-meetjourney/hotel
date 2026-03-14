@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php:*)",
+      "Bash(node:*)",
+      "Bash(/c/xampp/php/php.exe:*)",
+      "Bash(mkdir:*)",
+      "Bash(tasklist:*)",
+      "Bash(where php)",
+      "Read(//c/xampp/php/**)",
+      "Read(//c/laragon/bin/**)",
+      "Read(//c/Program Files/PHP/**)",
+      "Bash(cmd.exe /c \"where php\")",
+      "Bash(npx vite:*)",
+      "Bash(NODE_OPTIONS=\"--max-old-space-size=4096\" npm run:*)",
+      "Bash(NODE_OPTIONS=\"--max-old-space-size=8192\" npm run:*)",
+      "Bash(gh auth:*)",
+      "Bash(where gh:*)"
+    ]
+  }
+}

@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /login
+Disallow: /register
+Disallow: /setup/account
+Disallow: /setup/org
+Disallow: /setup/payment*
+Disallow: /setup/pay
+Disallow: /setup/review
+
+Sitemap: https://diyafah.com/sitemap.xml

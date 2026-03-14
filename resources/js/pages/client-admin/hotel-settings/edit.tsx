@@ -1,0 +1,202 @@
+import AppLayout from '@/layouts/app-layout';
+import { type BreadcrumbItem } from '@/types';
+import { Head, useForm } from '@inertiajs/react';
+import { Save, Upload } from 'lucide-react';
+import { useState } from 'react';
+
+interface HotelSettings {
+    hotel_name_ar: string;
+    hotel_name_en: string;
+    description_ar: string | null;
+    description_en: string | null;
+    logo: string | null;
+    favicon: string | null;
+    star_rating: number;
+    currency: string;
+    timezone: string;
+    check_in_time: string;
+    check_out_time: string;
+    primary_color: { light?: string; dark?: string } | null;
+    secondary_color: { light?: string; dark?: string } | null;
+}
+
+const breadcrumbs: BreadcrumbItem[] = [
+    { title: 'Client Admin', href: '/client-admin' },
+    { title: 'Hotel Settings', href: '/client-admin/hotel-settings' },
+];
+
+export default function HotelSettingsEdit({ settings }: { settings: HotelSettings }) {
+    const { data, setData, post, processing, errors } = useForm<{
+        _method: string;
+        hotel_name_ar: string;
+        hotel_name_en: string;
+        description_ar: string;
+        description_en: string;
+        star_rating: string;
+        currency: string;
+        timezone: string;
+        check_in_time: string;
+        check_out_time: string;
+        primary_color: { light: string; dark: string };
+        secondary_color: { light: string; dark: string };
+        logo: File | null;
+        favicon: File | null;
+    }>({
+        _method: 'PUT',
+        hotel_name_ar: settings.hotel_name_ar || '',
+        hotel_name_en: settings.hotel_name_en || '',
+        description_ar: settings.description_ar || '',
+        description_en: settings.description_en || '',
+        star_rating: String(settings.star_rating || 5),
+        currency: settings.currency || 'SAR',
+        timezone: settings.timezone || 'Asia/Riyadh',
+        check_in_time: settings.check_in_time || '14:00',
+        check_out_time: settings.check_out_time || '12:00',
+        primary_color: settings.primary_color || { light: '#A67D5F', dark: '#C9A882' },
+        secondary_color: settings.secondary_color || { light: '#C9A882', dark: '#A67D5F' },
+        logo: null,
+        favicon: null,
+    });
+
+    const [logoPreview, setLogoPreview] = useState<string | null>(settings.logo ? `/storage/${settings.logo}` : null);
+
+    function handleSubmit(e: React.FormEvent) {
+        e.preventDefault();
+        post('/client-admin/hotel-settings', { forceFormData: true });
+    }
+
+    return (
+        <AppLayout breadcrumbs={breadcrumbs}>
+            <Head title="Hotel Settings" />
+            <div className="mx-auto max-w-3xl p-6">
+                <h1 className="mb-6 text-2xl font-bold">Hotel Settings</h1>
+
+                <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+                    <Section title="Hotel Identity">
+                        <div className="grid gap-4 sm:grid-cols-2">
+                            <Field label="Hotel Name (Arabic)" error={errors.hotel_name_ar}>
+                                <input type="text" value={data.hotel_name_ar} onChange={(e) => setData('hotel_name_ar', e.target.value)} className="input" required dir="rtl" />
+                            </Field>
+                            <Field label="Hotel Name (English)" error={errors.hotel_name_en}>
+                                <input type="text" value={data.hotel_name_en} onChange={(e) => setData('hotel_name_en', e.target.value)} className="input" required />
+                            </Field>
+                            <Field label="Description (Arabic)" error={errors.description_ar}>
+                                <textarea value={data.description_ar} onChange={(e) => setData('description_ar', e.target.value)} className="input" rows={3} dir="rtl" />
+                            </Field>
+                            <Field label="Description (English)" error={errors.description_en}>
+                                <textarea value={data.description_en} onChange={(e) => setData('description_en', e.target.value)} className="input" rows={3} />
+                            </Field>
+                            <Field label="Star Rating" error={errors.star_rating}>
+                                <select value={data.star_rating} onChange={(e) => setData('star_rating', e.target.value)} className="input">
+                                    {[1, 2, 3, 4, 5].map((r) => <option key={r} value={r}>{r} Stars</option>)}
+                                </select>
+                            </Field>
+                            <Field label="Currency" error={errors.currency}>
+                                <select value={data.currency} onChange={(e) => setData('currency', e.target.value)} className="input">
+                                    <option value="SAR">SAR - Saudi Riyal</option>
+                                    <option value="USD">USD - US Dollar</option>
+                                    <option value="EUR">EUR - Euro</option>
+                                    <option value="AED">AED - UAE Dirham</option>
+                                </select>
+                            </Field>
+                        </div>
+                    </Section>
+
+                    <Section title="Operations">
+                        <div className="grid gap-4 sm:grid-cols-3">
+                            <Field label="Timezone" error={errors.timezone}>
+                                <select value={data.timezone} onChange={(e) => setData('timezone', e.target.value)} className="input">
+                                    <option value="Asia/Riyadh">Asia/Riyadh (GMT+3)</option>
+                                    <option value="Asia/Dubai">Asia/Dubai (GMT+4)</option>
+                                    <option value="Asia/Kuwait">Asia/Kuwait (GMT+3)</option>
+                                    <option value="UTC">UTC</option>
+                                </select>
+                            </Field>
+                            <Field label="Check-in Time" error={errors.check_in_time}>
+                                <input type="time" value={data.check_in_time} onChange={(e) => setData('check_in_time', e.target.value)} className="input" />
+                            </Field>
+                            <Field label="Check-out Time" error={errors.check_out_time}>
+                                <input type="time" value={data.check_out_time} onChange={(e) => setData('check_out_time', e.target.value)} className="input" />
+                            </Field>
+                        </div>
+                    </Section>
+
+                    <Section title="Branding">
+                        <div className="grid gap-4 sm:grid-cols-2">
+                            <div>
+                                <label className="mb-2 block text-sm font-medium">Logo</label>
+                                <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 transition hover:bg-muted">
+                                    <Upload className="h-5 w-5 text-muted-foreground" />
+                                    <span className="text-sm text-muted-foreground">Upload logo</span>
+                                    <input type="file" accept="image/*" onChange={(e) => {
+                                        const f = e.target.files?.[0];
+                                        if (f) { setData('logo', f); setLogoPreview(URL.createObjectURL(f)); }
+                                    }} className="hidden" />
+                                </label>
+                                {logoPreview && <img src={logoPreview} alt="Logo" className="mt-2 h-16 object-contain" />}
+                            </div>
+                            <div>
+                                <label className="mb-2 block text-sm font-medium">Favicon</label>
+                                <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 transition hover:bg-muted">
+                                    <Upload className="h-5 w-5 text-muted-foreground" />
+                                    <span className="text-sm text-muted-foreground">Upload favicon</span>
+                                    <input type="file" accept="image/*" onChange={(e) => {
+                                        const f = e.target.files?.[0];
+                                        if (f) setData('favicon', f);
+                                    }} className="hidden" />
+                                </label>
+                            </div>
+                        </div>
+
+                        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                            <Field label="Primary Color (Light)" error={undefined}>
+                                <div className="flex items-center gap-2">
+                                    <input type="color" value={data.primary_color.light} onChange={(e) => setData('primary_color', { ...data.primary_color, light: e.target.value })} className="h-10 w-10 cursor-pointer rounded border" />
+                                    <input type="text" value={data.primary_color.light} onChange={(e) => setData('primary_color', { ...data.primary_color, light: e.target.value })} className="input flex-1" />
+                                </div>
+                            </Field>
+                            <Field label="Secondary Color (Light)" error={undefined}>
+                                <div className="flex items-center gap-2">
+                                    <input type="color" value={data.secondary_color.light} onChange={(e) => setData('secondary_color', { ...data.secondary_color, light: e.target.value })} className="h-10 w-10 cursor-pointer rounded border" />
+                                    <input type="text" value={data.secondary_color.light} onChange={(e) => setData('secondary_color', { ...data.secondary_color, light: e.target.value })} className="input flex-1" />
+                                </div>
+                            </Field>
+                        </div>
+                    </Section>
+
+                    <div className="flex justify-end">
+                        <button type="submit" disabled={processing} className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50">
+                            <Save className="h-4 w-4" />
+                            {processing ? 'Saving...' : 'Save Settings'}
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <style>{`
+                .input { width:100%; border-radius:0.5rem; border:1px solid hsl(var(--border)); background:hsl(var(--background)); padding:0.625rem 1rem; font-size:0.875rem; outline:none; }
+                .input:focus { box-shadow:0 0 0 2px hsl(var(--primary)/0.2); }
+                textarea.input { resize:vertical; }
+            `}</style>
+        </AppLayout>
+    );
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+    return (
+        <div className="rounded-xl border bg-card p-6">
+            <h2 className="mb-4 text-lg font-semibold">{title}</h2>
+            {children}
+        </div>
+    );
+}
+
+function Field({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
+    return (
+        <div>
+            <label className="mb-1.5 block text-sm font-medium">{label}</label>
+            {children}
+            {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
+        </div>
+    );
+}

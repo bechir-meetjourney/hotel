@@ -1,0 +1,814 @@
+/**
+ * Madina Template Styles
+ * All styles for Madina template.
+ * Fully independent from other templates.
+ */
+
+/* ==========================================
+   CSS Variables
+   ========================================== */
+
+:root {
+  /* Colors */
+  --madina-primary: #A67D5F;
+  --madina-primary-light: #C9A882;
+  --madina-primary-dark: #8B6F47;
+  
+  --madina-secondary: #C9A882;
+  --madina-secondary-light: #E5D4B8;
+  --madina-secondary-dark: #8B6F47;
+  
+  --madina-accent: #8B6F47;
+  
+  --madina-primary3: #FFFFFF; /* Third primary color - for header bg after scroll (light mode) */
+  
+  /* Contact form submit button - light bg + dark text by default */
+  --madina-contact-button-bg: #f5f5f5;
+  --madina-contact-button-text: #A67D5F;
+  
+  --madina-success: #38A169;
+  --madina-warning: #DD6B20;
+  --madina-error: #E53E3E;
+  --madina-info: #3182CE;
+  
+  /* Text Colors - Centralized text color variables */
+  --madina-text-primary: #1A202C;
+  --madina-text-secondary: #4A5568;
+  --madina-text-muted: #718096;
+  --madina-text-white: #FFFFFF;
+  --madina-text-body: #4B5563; /* Unified text color for descriptions, subtitles, and body text */
+  
+  /* Background Title Color - Close to primary color */
+  --madina-bg-title-color: rgba(166, 125, 95, 0.1);
+  --madina-bg-title-color-dark: rgba(237, 237, 237, 0.2);
+  
+  /* Background Colors */
+  --madina-bg-primary: #FFFFFF;
+  --madina-bg-secondary: #F7FAFC;
+  --madina-bg-tertiary: #EDF2F7;
+  --madina-bg-dark: #1A202C;
+  --madina-background-color: #f5f5f5; /* Default background color for patterns */
+  
+  /* Spacing */
+  --madina-spacing-xs: 0.25rem;
+  --madina-spacing-sm: 0.5rem;
+  --madina-spacing-md: 1rem;
+  --madina-spacing-lg: 1.5rem;
+  --madina-spacing-xl: 2rem;
+  --madina-spacing-2xl: 3rem;
+  --madina-spacing-3xl: 4rem;
+  
+  /* Border Radius */
+  --madina-radius-sm: 0.375rem;
+  --madina-radius-md: 0.5rem;
+  --madina-radius-lg: 0.75rem;
+  --madina-radius-xl: 1rem;
+  --madina-radius-full: 9999px;
+  --madina-header-radius: 16px; /* Default header border radius */
+  
+  /* Shadows */
+  --madina-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --madina-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --madina-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --madina-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  
+  /* Transitions */
+  --madina-transition-fast: 150ms;
+  --madina-transition-normal: 300ms;
+  --madina-transition-slow: 500ms;
+  
+  /* Z-Index */
+  --madina-z-dropdown: 1000;
+  --madina-z-sticky: 1020;
+  --madina-z-fixed: 1030;
+  --madina-z-modal-backdrop: 1040;
+  --madina-z-modal: 1050;
+  --madina-z-popover: 1060;
+  --madina-z-tooltip: 1070;
+  
+  /* Typography */
+  --madina-font-family: 'Almarai', 'Tajawal', 'Inter', sans-serif;
+  --madina-font-family-arabic: 'Almarai', sans-serif;
+  --madina-font-family-english: 'Inter', sans-serif;
+  --madina-font-family-heading: 'Almarai', sans-serif;
+}
+
+/* Dark Mode Variables */
+.dark {
+  --madina-text-primary: #F9FAFB;
+  --madina-text-secondary: #E5E7EB;
+  --madina-text-muted: #D1D5DB;
+  --madina-text-body: #E5E7EB; /* Unified text color for dark mode - brighter for better readability */
+  
+  --madina-bg-primary: #0F172A; /* Slate 900 - darker, more modern */
+  --madina-bg-secondary: #1E293B; /* Slate 800 */
+  --madina-bg-tertiary: #334155; /* Slate 700 */
+  
+  --madina-bg-title-color: rgba(255, 255, 255, 0.15); /* Brighter for better visibility */
+  
+  /* Pattern color - always matches dark background */
+  --madina-background-color: #0F172A;
+  
+  --madina-primary3: #1e293bf2; /* Third primary color for header bg after scroll (dark mode) - with 95% opacity */
+  
+  /* Default identity colors for dark mode (white text/icons before JS loads) */
+  --madina-identity-text-color: #FFFFFF;
+  --madina-identity-icon-color: #FFFFFF;
+  --madina-partners-logo-filter: brightness(0) invert(1);
+  --madina-room-button-primary: #0F172A;
+  --madina-room-button-light: #0F172A;
+  --madina-booking-modal-bg: #0F172A;
+  --madina-footer-wave-color: #0F172A;
+
+  /* Contact form submit button in dark mode - light bg + dark text */
+  --madina-contact-button-bg: #f5f5f5;
+  --madina-contact-button-text: #A67D5F;
+}
+
+/* ==========================================
+   Template Wrapper
+   ========================================== */
+
+.template--madina {
+  font-family: var(--madina-font-family);
+  color: var(--madina-text-primary);
+  background-color: var(--madina-bg-primary);
+}
+
+/* ==========================================
+   Typography
+   ========================================== */
+
+/* Font Family Classes */
+.madina-font {
+  font-family: var(--madina-font-family);
+}
+
+.madina-font-arabic {
+  font-family: var(--madina-font-family-arabic);
+} 
+
+.madina-font-heading {
+  font-family: var(--madina-font-family-heading);
+}
+
+/* Color Classes */
+.madina-text-primary {
+  color: var(--madina-primary);
+}
+
+.madina-text-secondary {
+  color: var(--madina-text-secondary);
+}
+
+.madina-text-muted {
+  color: var(--madina-text-muted);
+}
+
+.madina-text-body {
+  color: var(--madina-text-body);
+}
+
+.madina-bg-primary {
+  background-color: var(--madina-primary);
+}
+
+.madina-heading {
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--madina-text-primary);
+  font-family: var(--madina-font-family-heading);
+}
+
+.madina-heading-1 {
+  font-size: 3rem;
+  margin-bottom: 1.5rem;
+}
+
+.madina-heading-2 {
+  font-size: 2.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.madina-heading-3 {
+  font-size: 1.875rem;
+  margin-bottom: 1rem;
+}
+
+.madina-heading-4 {
+  font-size: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.madina-text {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--madina-text-secondary);
+}
+
+.madina-text-muted {
+  color: var(--madina-text-muted);
+}
+
+/* ==========================================
+   Buttons
+   ========================================== */
+
+.madina-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  border-radius: var(--madina-radius-lg);
+  transition: all var(--madina-transition-normal);
+  cursor: pointer;
+  border: none;
+  text-decoration: none;
+}
+
+.madina-btn-primary {
+  background-color: var(--madina-primary);
+  color: var(--madina-text-white);
+}
+
+.madina-btn-primary:hover {
+  background-color: var(--madina-primary-dark);
+  transform: translateY(-2px);
+  box-shadow: var(--madina-shadow-lg);
+}
+
+.madina-btn-secondary {
+  background-color: var(--madina-secondary);
+  color: var(--madina-text-primary);
+}
+
+.madina-btn-secondary:hover {
+  background-color: var(--madina-secondary-dark);
+  transform: translateY(-2px);
+  box-shadow: var(--madina-shadow-lg);
+}
+
+.madina-btn-outline {
+  background-color: transparent;
+  border: 2px solid var(--madina-primary);
+  color: var(--madina-primary);
+}
+
+.madina-btn-outline:hover {
+  background-color: var(--madina-primary);
+  color: var(--madina-text-white);
+}
+
+/* ==========================================
+   Cards
+   ========================================== */
+
+.madina-card {
+  background-color: var(--madina-bg-primary);
+  border-radius: var(--madina-radius-xl);
+  padding: var(--madina-spacing-lg);
+  box-shadow: var(--madina-shadow-md);
+  transition: all var(--madina-transition-normal);
+}
+
+.madina-card:hover {
+  box-shadow: var(--madina-shadow-xl);
+  transform: translateY(-4px);
+}
+
+.madina-card-header {
+  margin-bottom: var(--madina-spacing-md);
+  padding-bottom: var(--madina-spacing-md);
+  border-bottom: 1px solid var(--madina-bg-tertiary);
+}
+
+.madina-card-body {
+  padding: var(--madina-spacing-md) 0;
+}
+
+.madina-card-footer {
+  margin-top: var(--madina-spacing-md);
+  padding-top: var(--madina-spacing-md);
+  border-top: 1px solid var(--madina-bg-tertiary);
+}
+
+/* ==========================================
+   Sections
+   ========================================== */
+
+.madina-section {
+  padding: var(--madina-spacing-3xl) 0;
+}
+
+.madina-section-header {
+  text-align: center;
+  margin-bottom: var(--madina-spacing-2xl);
+}
+
+.madina-section-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--madina-primary);
+  margin-bottom: var(--madina-spacing-md);
+}
+
+.madina-section-subtitle {
+  font-size: 1.125rem;
+  color: var(--madina-text-muted);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* ==========================================
+   Hero Section
+   ========================================== */
+
+.madina-hero-section {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--madina-primary) 0%, var(--madina-primary-dark) 100%);
+  overflow: hidden;
+}
+
+.madina-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    rgba(166, 125, 95, 0.8),
+    rgba(139, 111, 71, 0.6)
+  );
+  z-index: 1;
+}
+
+.madina-hero-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  color: var(--madina-text-white);
+  padding: var(--madina-spacing-2xl);
+}
+
+/* Hero full-screen slider (video/images) */
+.template--madina #home {
+  height: 100vh;
+  min-height: 100vh;
+}
+.template--madina #home .swiper,
+.template--madina #home .swiper-wrapper {
+  height: 100% !important;
+  min-height: 100vh !important;
+}
+.template--madina #home .swiper-slide {
+  height: 100% !important;
+  min-height: 100vh !important;
+}
+.template--madina #home .swiper-slide video,
+.template--madina #home .swiper-slide img {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+  min-width: 100%;
+  min-height: 100%;
+}
+
+/* Mobile: reduced height, full-width media, no margins */
+@media (max-width: 767px) {
+  .template--madina #home {
+    height: 60vh;
+    min-height: 60vh;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
+  }
+  .template--madina #home .swiper,
+  .template--madina #home .swiper-wrapper {
+    height: 100% !important;
+    min-height: 60vh !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .template--madina #home .swiper-slide {
+    height: 100% !important;
+    min-height: 60vh !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .template--madina #home .swiper-slide > div {
+    min-height: 60vh !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+  .template--madina #home .swiper-slide video,
+  .template--madina #home .swiper-slide img {
+    object-fit: cover;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 100% !important;
+    height: 100%;
+    min-height: 100%;
+    left: 0 !important;
+    right: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+}
+
+/* ==========================================
+   Decorative Elements
+   ========================================== */
+
+.madina-divider {
+  width: 80px;
+  height: 4px;
+  background: linear-gradient(
+    90deg,
+    var(--madina-secondary) 0%,
+    var(--madina-primary) 100%
+  );
+  margin: var(--madina-spacing-lg) auto;
+  border-radius: var(--madina-radius-full);
+}
+
+.madina-pattern {
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23A67D5F' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* ==========================================
+   Animations
+   ========================================== */
+
+@keyframes madina-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes madina-slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes madina-slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes madina-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.madina-animate-fade-in {
+  animation: madina-fade-in var(--madina-transition-slow) ease-out;
+}
+
+.madina-animate-slide-right {
+  animation: madina-slide-in-right var(--madina-transition-slow) ease-out;
+}
+
+.madina-animate-slide-left {
+  animation: madina-slide-in-left var(--madina-transition-slow) ease-out;
+}
+
+/* ==========================================
+   Responsive
+   ========================================== */
+
+@media (max-width: 768px) {
+  .madina-heading-1 {
+    font-size: 2rem;
+  }
+  
+  .madina-heading-2 {
+    font-size: 1.75rem;
+  }
+  
+  .madina-section {
+    padding: var(--madina-spacing-2xl) 0;
+  }
+  
+  .madina-section-title {
+    font-size: 1.875rem;
+  }
+}
+
+/* ==========================================
+   Utility Classes
+   ========================================== */
+
+.madina-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 var(--madina-spacing-md);
+}
+
+.madina-flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.madina-text-gradient {
+  background: linear-gradient(
+    135deg,
+    var(--madina-primary) 0%,
+    var(--madina-secondary) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ==========================================
+   Swiper Navigation Buttons
+   ========================================== */
+
+.template--madina .swiper-button-next,
+.template--madina .swiper-button-prev {
+  color: var(--madina-nav-color, var(--madina-primary)) !important;
+}
+
+.template--madina .swiper-button-next:after,
+.template--madina .swiper-button-prev:after {
+  color: var(--madina-nav-color, var(--madina-primary)) !important;
+}
+
+.template--madina .swiper-button-next:hover,
+.template--madina .swiper-button-prev:hover {
+  color: var(--madina-nav-hover-color, var(--madina-primary-dark)) !important;
+}
+
+.madina-backdrop-blur {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Focus styles using CSS variables */
+.madina-focus-border:focus {
+  border-color: var(--madina-primary) !important;
+}
+
+.madina-focus-ring:focus-visible {
+  --tw-ring-color: var(--madina-primary) !important;
+}
+
+/* Booking modal: force white text in dark mode for better contrast */
+.dark .madina-booking-modal,
+.dark .madina-booking-modal *,
+.dark .madina-booking-modal h1,
+.dark .madina-booking-modal h2,
+.dark .madina-booking-modal h3,
+.dark .madina-booking-modal h4,
+.dark .madina-booking-modal h5,
+.dark .madina-booking-modal h6,
+.dark .madina-booking-modal p,
+.dark .madina-booking-modal span,
+.dark .madina-booking-modal label,
+.dark .madina-booking-modal div,
+.dark .madina-booking-modal strong,
+.dark .madina-booking-modal li {
+  color: #FFFFFF !important;
+}
+
+/* Ensure form controls and placeholders inside booking modal are white in dark mode */
+.dark .madina-booking-modal input,
+.dark .madina-booking-modal textarea,
+.dark .madina-booking-modal select {
+  color: #FFFFFF !important;
+  background-color: rgba(255,255,255,0.1) !important;
+  border-color: rgba(255,255,255,0.3) !important;
+}
+.dark .madina-booking-modal input::placeholder,
+.dark .madina-booking-modal textarea::placeholder {
+  color: rgba(255,255,255,0.6) !important;
+}
+
+/* Booking modal buttons in dark mode */
+.dark .madina-booking-modal button {
+  color: #FFFFFF !important;
+}
+
+/* Calendar day buttons - ensure visibility */
+.dark .madina-booking-modal button[disabled] {
+  color: rgba(255,255,255,0.3) !important;
+}
+
+/* Swiper navigation in booking modal */
+.dark .madina-booking-modal .swiper-button-next,
+.dark .madina-booking-modal .swiper-button-prev {
+  color: #FFFFFF !important;
+}
+.dark .madina-booking-modal .swiper-button-next::after,
+.dark .madina-booking-modal .swiper-button-prev::after {
+  color: #FFFFFF !important;
+}
+
+/* Hero Slider Pagination Dots */
+.template--madina .swiper-pagination {
+  bottom: 2rem !important;
+  z-index: 10;
+}
+
+.template--madina .swiper-pagination-bullet {
+  width: 12px !important;
+  height: 12px !important;
+  background: rgba(255, 255, 255, 0.5) !important;
+  opacity: 0.5 !important;
+  transition: all 0.3s ease !important;
+  margin: 0 6px !important;
+}
+
+.template--madina .swiper-pagination-bullet-active {
+  background: white !important;
+  opacity: 1 !important;
+  width: 32px !important;
+  border-radius: 6px !important;
+}
+
+/* Services Swiper - equal height cards */
+.template--madina .services-swiper .swiper-wrapper {
+  align-items: stretch;
+}
+.template--madina .services-swiper .swiper-slide {
+  height: auto;
+  display: flex;
+}
+.template--madina .services-swiper .swiper-slide > * {
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Services section: card text stays same as light mode in dark */
+.dark .template--madina #services .text-gray-800 {
+  color: #1f2937 !important;
+}
+.dark .template--madina #services .madina-text-primary {
+  color: var(--madina-primary) !important;
+}
+
+/* Identity 2 & 3 dark: dark footer/services/contact bg for text and icons */
+.dark .template--madina footer {
+  background: var(--madina-primary-section-bg, linear-gradient(to right, var(--madina-primary-light) 0%, var(--madina-primary) 100%)) !important;
+}
+.dark .template--madina #services {
+  background-color: var(--madina-primary-section-bg, var(--madina-primary)) !important;
+}
+.dark .template--madina .madina-section-primary-bg {
+  background-color: var(--madina-primary-section-bg, var(--madina-primary)) !important;
+}
+.dark .template--madina footer .madina-footer-top-wave path {
+  fill: var(--madina-footer-wave-color, #0F172A) !important;
+}
+
+/* Contact Form Background - follows primary in light mode */
+.madina-contact-form-bg-path {
+  fill: var(--madina-primary);
+}
+
+.dark .madina-contact-form-bg-path {
+  fill: var(--madina-contact-form-bg, var(--madina-primary));
+  fill-opacity: 1;
+}
+
+/* Contact Section Background Pattern */
+.madina-contact-bg-pattern {
+  opacity: 1;
+  filter: brightness(1);
+}
+
+.dark .madina-contact-bg-pattern {
+  opacity: 0.3;
+  filter: brightness(0.5) invert(1);
+}
+
+/* Contact Info Icons - Dark mode uses contact icon color (identity-3) or identity icon color (identity-2) */
+.dark .template--madina #contact svg {
+  color: var(--madina-contact-icon-color, var(--madina-identity-icon-color, #242625)) !important;
+}
+
+/* Identity 2 Dark Mode: Header links should be dark after scroll (on white header) */
+.dark .template--madina header a.madina-text-primary,
+.dark .template--madina header a.madina-text-body {
+  color: var(--madina-text-primary-header, inherit);
+}
+
+.dark .template--madina header button {
+  color: var(--madina-text-primary-header, inherit);
+}
+
+/* Identity 2 Dark Mode: White border for active links */
+.dark .template--madina header a.border-\\[var\\(--madina-primary\\)\\] {
+  border-color: var(--madina-header-border-color, var(--madina-primary)) !important;
+}
+
+/* Dark mode: White border for active header links after scroll */
+.dark .template--madina header nav a[class*="border-[var(--madina-primary)]"] {
+  border-bottom-color: #FFFFFF !important;
+}
+
+/* Identity 2 Dark Mode: White text for titles, features, and icons */
+.dark .template--madina .madina-text-primary {
+  color: var(--madina-identity-text-color, inherit);
+}
+
+.dark .template--madina h1,
+.dark .template--madina h2,
+.dark .template--madina h3,
+.dark .template--madina h4,
+.dark .template--madina h5,
+.dark .template--madina h6 {
+  color: var(--madina-identity-text-color, inherit);
+}
+
+/* Room features and icons */
+.dark .template--madina #rooms .madina-text-primary,
+.dark .template--madina #rooms [style*="backgroundColor"] {
+  color: var(--madina-identity-text-color, inherit);
+}
+
+/* Room feature icons inside flex containers - white in identity 2 dark mode */
+.dark .template--madina #rooms .flex.flex-col.items-center.text-center div[aria-label] {
+  background-color: var(--madina-identity-icon-color, var(--madina-primary)) !important;
+  opacity: 1 !important;
+}
+
+/* Room feature labels - light text in dark mode */
+.dark .template--madina #rooms .flex.flex-col.items-center.text-center span.text-xs {
+  color: var(--madina-identity-text-color, #E5E7EB) !important;
+}
+
+/* All masked icons in rooms section */
+.dark .template--madina #rooms div[style*="maskImage"] {
+  background-color: var(--madina-identity-icon-color, var(--madina-primary)) !important;
+}
+
+/* Direct override for identity-2 - check if variable exists */
+.dark .template--madina #rooms div[aria-label="واي فاي"],
+.dark .template--madina #rooms div[aria-label="Free WiFi"],
+.dark .template--madina #rooms div[aria-label="إمكانية الوصول"],
+.dark .template--madina #rooms div[aria-label="Accessibility"],
+.dark .template--madina #rooms div[aria-label="مواقف سيارات"],
+.dark .template--madina #rooms div[aria-label="Parking"],
+.dark .template--madina #rooms div[aria-label="وجبات"],
+.dark .template--madina #rooms div[aria-label="Meals"] {
+  background-color: var(--madina-identity-icon-color, var(--madina-primary)) !important;
+  opacity: 1 !important;
+}
+
+/* Icons before and after titles */
+.dark .template--madina [aria-label="left line"],
+.dark .template--madina [aria-label="right line"] {
+  background-color: var(--madina-identity-icon-color, var(--madina-primary)) !important;
+}
+
+/* Dark mode: section navigation arrows use nav color variable */
+.dark .template--madina .madina-section-nav-arrow,
+.dark .template--madina .madina-testimonial-nav-arrow {
+  background-color: var(--madina-nav-color, var(--madina-primary)) !important;
+}
+
+/* When modal is open, ensure all sections sit below modal overlay */
+.madina-modal-open #partners,
+.madina-modal-open #additional-services,
+.madina-modal-open #services,
+.madina-modal-open #rooms,
+.madina-modal-open #contact,
+.madina-modal-open #gallery {
+  z-index: 0 !important;
+  position: relative;
+}
