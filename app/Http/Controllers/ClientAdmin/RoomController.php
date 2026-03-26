@@ -4,6 +4,7 @@ namespace App\Http\Controllers\ClientAdmin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Room;
+use App\Models\RoomImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -91,6 +92,10 @@ class RoomController extends Controller
             'amenities' => 'nullable|array',
             'is_active' => 'boolean',
             'featured_image' => 'nullable|file|max:2048',
+            'new_images' => 'nullable|array',
+            'new_images.*' => 'file|max:2048',
+            'delete_images' => 'nullable|array',
+            'delete_images.*' => 'integer|exists:room_images,id',
         ]);
 
         if ($request->hasFile('featured_image')) {
@@ -102,6 +107,30 @@ class RoomController extends Controller
         }
 
         $room->update($validated);
+
+        // Delete images if requested
+        if (!empty($validated['delete_images'])) {
+            $imagesToDelete = RoomImage::whereIn('id', $validated['delete_images'])
+                ->where('room_id', $room->id)
+                ->get();
+
+            foreach ($imagesToDelete as $image) {
+                Storage::disk('public')->delete($image->path);
+                $image->delete();
+            }
+        }
+
+        // Add new images
+        if ($request->hasFile('new_images')) {
+            $maxSort = $room->images()->max('sort_order') ?? -1;
+            foreach ($request->file('new_images') as $index => $image) {
+                $path = $image->store('rooms', 'public');
+                $room->images()->create([
+                    'path' => $path,
+                    'sort_order' => $maxSort + $index + 1,
+                ]);
+            }
+        }
 
         return redirect()->route('client-admin.rooms.index')
             ->with('success', 'Room updated successfully');

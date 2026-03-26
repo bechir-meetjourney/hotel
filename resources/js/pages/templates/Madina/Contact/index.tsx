@@ -35,7 +35,11 @@ interface BilingualFormField {
   inputMode?: 'numeric'
 }
 
-export default function ContactSection() {
+interface Props {
+  contactSettings?: any;
+}
+
+export default function ContactSection({ contactSettings }: Props = {}) {
   const t = useTemplateT()
   const { isArabic } = useTemplateLanguage()
   const [formStyle, setFormStyle] = useState<'default' | 'simple'>('default')
@@ -135,11 +139,19 @@ export default function ContactSection() {
     // Handle form submission
   }
 
+  // Resolve contact information from backend settings or use hardcoded defaults
+  const resolvedAddress = contactSettings
+    ? (isArabic ? contactSettings.address_ar : contactSettings.address_en) || 'المدينة المنورة، المملكة العربية السعودية'
+    : 'المدينة المنورة، المملكة العربية السعودية'
+
+  const resolvedEmail = contactSettings?.email || 'info@madina-hotel.com'
+  const resolvedPhone = contactSettings?.phone || contactSettings?.whatsapp || '+966 14 XXX XXXX'
+
   // Company contact information with icons
   const contactInfo = [
-    { icon: MapPin, text: 'المدينة المنورة، المملكة العربية السعودية' },
-    { icon: Mail, text: 'info@madina-hotel.com', href: 'mailto:info@madina-hotel.com' },
-    { icon: LiaPhoneVolumeSolid, text: '+966 14 XXX XXXX', href: 'tel:+96614XXXXXXX' },
+    { icon: MapPin, text: resolvedAddress, ...(contactSettings?.google_maps_url ? { href: contactSettings.google_maps_url } : {}) },
+    { icon: Mail, text: resolvedEmail, href: `mailto:${resolvedEmail}` },
+    { icon: LiaPhoneVolumeSolid, text: resolvedPhone, href: `tel:${resolvedPhone.replace(/\s/g, '')}` },
   ]
   
   return (

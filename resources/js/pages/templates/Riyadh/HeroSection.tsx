@@ -19,8 +19,20 @@ type Slide = {
   ctaHref?: string
 }
 
-export default function HeroSection() {
+interface HeroSectionProps {
+  hotelSettings?: any;
+  siteTexts?: Record<string, any>;
+}
+
+export default function HeroSection({ hotelSettings, siteTexts }: HeroSectionProps) {
   const t = useTemplateT()
+
+  // Helper to get site text with fallback
+  const getText = (section: string, key: string, fallback: string) => {
+    const text = siteTexts?.[section]?.[key];
+    if (text) return text.value_ar || text.value_en || fallback;
+    return fallback;
+  }
   const [windowWidth, setWindowWidth] = useState(0)
   
   useEffect(() => {
@@ -51,11 +63,13 @@ export default function HeroSection() {
   
   // Build array of 30 elements
   const decorativeElements = Array.from({ length: 180 }, (_, index) => index)
+  const hotelName = hotelSettings?.hotel_name_ar || getText('hero', 'title', '');
+
   const slides: Slide[] = [
     {
       src: slider1,
-      title: t('sections.hero.title', 'إقامتك المثالية تبدأ هنا'),
-      description: t(
+      title: hotelName || t('sections.hero.title', 'إقامتك المثالية تبدأ هنا'),
+      description: getText('hero', 'subtitle', '') || t(
         'sections.hero.subtitle',
         'نحن لسنا مجرد فنادق، بل وجهة للراحة والفخامة. نحن نؤمن بأن كل رحلة تستحق نهاية مثالية، ولهذا نسعى جاهدين لتقديم أفضل الخدمات.'
       ),
@@ -64,8 +78,8 @@ export default function HeroSection() {
     },
     {
       src: slider1,
-      title: t('sections.hero.title', 'تجربة فندقية لا تُنسى'),
-      description: t(
+      title: getText('hero', 'title_2', '') || t('sections.hero.title', 'تجربة فندقية لا تُنسى'),
+      description: getText('hero', 'subtitle_2', '') || t(
         'sections.hero.subtitle',
         'استمتع بخدمات مخصصة وتصميم فاخر يراعي أدق التفاصيل لراحة ضيوفنا طوال فترة الإقامة.'
       ),
@@ -74,8 +88,8 @@ export default function HeroSection() {
     },
     {
       src: slider1,
-      title: t('sections.hero.title', 'رفاهية بمعايير عالمية'),
-      description: t(
+      title: getText('hero', 'title_3', '') || t('sections.hero.title', 'رفاهية بمعايير عالمية'),
+      description: getText('hero', 'subtitle_3', '') || t(
         'sections.hero.subtitle',
         'مزيج فريد من الضيافة الأصيلة والخدمات الحديثة لتجربة تضاهي توقعاتك.'
       ),

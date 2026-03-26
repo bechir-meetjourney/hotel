@@ -2,23 +2,358 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\SetupOtpMail;
+use App\Models\Tenant;
+use App\Models\User;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class SetupController extends Controller
 {
-public function plan()          
-{ 
-syncLangFiles('messages');
-return Inertia::render('public/setup/Plan'); 
-}
-public function template()      
-{
-syncLangFiles('messages');
-return Inertia::render('public/setup/Template'); 
-}
-public function org()           {  syncLangFiles('messages'); return Inertia::render('public/setup/Org'); }
-public function account()       {  syncLangFiles('messages'); return Inertia::render('public/setup/Account'); }
-public function review()        {  syncLangFiles('messages'); return Inertia::render('public/setup/Review'); }
-public function paymentMethod() {  syncLangFiles('messages'); return Inertia::render('public/setup/PaymentMethod'); }
-public function pay()           {  syncLangFiles('messages'); return Inertia::render('public/setup/Pay'); }
+    // ─── Step 1: Plan ──────────────────────────────────────────
+
+    public function plan()
+    {
+        syncLangFiles('messages');
+        return Inertia::render('public/setup/Plan', [
+            'setup' => session('setup', []),
+        ]);
+    }
+
+    public function storePlan(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'plan_key' => 'required|string|in:starter,premium,growth',
+            'plan_name' => 'required|string|max:100',
+        ]);
+
+        $setup = session('setup', []);
+        $setup['plan_key'] = $data['plan_key'];
+        $setup['plan_name'] = $data['plan_name'];
+        session(['setup' => $setup]);
+
+        return redirect()->route('setup.template');
+    }
+
+    // ─── Step 2: Template ──────────────────────────────────────
+
+    public function template()
+    {
+        syncLangFiles('messages');
+        return Inertia::render('public/setup/Template', [
+            'setup' => session('setup', []),
+        ]);
+    }
+
+    public function storeTemplate(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'template_id' => 'required|string|max:50',
+            'template_title' => 'required|string|max:100',
+        ]);
+
+        $setup = session('setup', []);
+        $setup['template_id'] = $data['template_id'];
+        $setup['template_title'] = $data['template_title'];
+        session(['setup' => $setup]);
+
+        return redirect()->route('setup.org');
+    }
+
+    // ─── Step 3: Organization ──────────────────────────────────
+
+    public function org()
+    {
+        syncLangFiles('messages');
+        return Inertia::render('public/setup/Org', [
+            'setup' => session('setup', []),
+        ]);
+    }
+
+    public function storeOrg(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'org_name_ar' => 'required|string|max:255',
+            'org_name_en' => 'required|string|max:255',
+        ]);
+
+        $slug = Str::slug($data['org_name_en']);
+
+        // Check slug uniqueness
+        if (Tenant::where('slug', $slug)->exists()) {
+            return back()->withErrors(['org_name_en' => 'هذا الاسم مستخدم بالفعل. اختر اسمًا آخر.']);
+        }
+
+        $setup = session('setup', []);
+        $setup['org_name_ar'] = $data['org_name_ar'];
+        $setup['org_name_en'] = $data['org_name_en'];
+        $setup['slug'] = $slug;
+        $setup['site_url'] = "www.{$slug}.com";
+        session(['setup' => $setup]);
+
+        return redirect()->route('setup.account');
+    }
+
+    // ─── Step 4: Account ───────────────────────────────────────
+
+    public function account()
+    {
+        syncLangFiles('messages');
+        return Inertia::render('public/setup/Account', [
+            'setup' => session('setup', []),
+        ]);
+    }
+
+    public function storeAccount(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'username' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email',
+            'password' => 'required|string|min:8',
+        ]);
+
+        $setup = session('setup', []);
+        $setup['username'] = $data['username'];
+        $setup['email'] = $data['email'];
+        $setup['password'] = $data['password'];
+
+        // Generate OTP
+        $otpCode = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        $setup['otp_code'] = $otpCode;
+        $setup['otp_expires_at'] = now()->addMinutes(10)->toISOString();
+
+        session(['setup' => $setup]);
+
+        // Send OTP email
+        try {
+            Mail::to($data['email'])->send(new SetupOtpMail(
+                otpCode: $otpCode,
+                userName: $data['username'],
+            ));
+        } catch (\Exception $e) {
+            // Log error but don't block — in dev, OTP is in session
+            \Log::warning('OTP email failed: ' . $e->getMessage());
+        }
+
+        return redirect()->route('setup.verifyOtp');
+    }
+
+    // ─── Step 5: Verify OTP ────────────────────────────────────
+
+    public function verifyOtp()
+    {
+        syncLangFiles('messages');
+        $setup = session('setup', []);
+
+        if (empty($setup['email'])) {
+            return redirect()->route('setup.account');
+        }
+
+        return Inertia::render('public/setup/VerifyOtp', [
+            'email' => $setup['email'] ?? '',
+            'debugOtp' => config('app.debug') ? ($setup['otp_code'] ?? null) : null,
+        ]);
+    }
+
+    public function checkOtp(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'otp' => 'required|string|size:6',
+        ]);
+
+        $setup = session('setup', []);
+
+        if (empty($setup['otp_code'])) {
+            return back()->withErrors(['otp' => 'لم يتم إرسال رمز التحقق. أعد المحاولة.']);
+        }
+
+        // Check expiry
+        if (now()->isAfter($setup['otp_expires_at'])) {
+            return back()->withErrors(['otp' => 'انتهت صلاحية رمز التحقق. أعد الإرسال.']);
+        }
+
+        // Check code
+        if ($request->otp !== $setup['otp_code']) {
+            return back()->withErrors(['otp' => 'رمز التحقق غير صحيح.']);
+        }
+
+        $setup['otp_verified'] = true;
+        session(['setup' => $setup]);
+
+        return redirect()->route('setup.review');
+    }
+
+    public function resendOtp(): RedirectResponse
+    {
+        $setup = session('setup', []);
+
+        if (empty($setup['email'])) {
+            return redirect()->route('setup.account');
+        }
+
+        $otpCode = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        $setup['otp_code'] = $otpCode;
+        $setup['otp_expires_at'] = now()->addMinutes(10)->toISOString();
+        session(['setup' => $setup]);
+
+        try {
+            Mail::to($setup['email'])->send(new SetupOtpMail(
+                otpCode: $otpCode,
+                userName: $setup['username'] ?? '',
+            ));
+        } catch (\Exception $e) {
+            \Log::warning('OTP resend failed: ' . $e->getMessage());
+        }
+
+        return back()->with('success', 'تم إعادة إرسال رمز التحقق.');
+    }
+
+    // ─── Step 6: Review ────────────────────────────────────────
+
+    public function review()
+    {
+        syncLangFiles('messages');
+        $setup = session('setup', []);
+
+        if (empty($setup['otp_verified'])) {
+            return redirect()->route('setup.verifyOtp');
+        }
+
+        return Inertia::render('public/setup/Review', [
+            'setup' => $setup,
+        ]);
+    }
+
+    // ─── Step 7: Payment Method (Bank Transfer) ────────────────
+
+    public function paymentMethod()
+    {
+        syncLangFiles('messages');
+        $setup = session('setup', []);
+
+        if (empty($setup['otp_verified'])) {
+            return redirect()->route('setup.verifyOtp');
+        }
+
+        return Inertia::render('public/setup/PaymentMethod', [
+            'setup' => $setup,
+            'bankDetails' => [
+                'bank_name_ar' => 'البنك الأهلي السعودي',
+                'bank_name_en' => 'Saudi National Bank (SNB)',
+                'account_name' => 'Diyafah Platform',
+                'iban' => 'SA0000000000000000000000',
+                'account_number' => '0000000000',
+                'swift' => 'NCBKSAJE',
+            ],
+        ]);
+    }
+
+    public function storePayment(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'receipt' => 'required|file|mimes:jpg,jpeg,png,pdf|max:5120',
+            'payment_notes' => 'nullable|string|max:500',
+        ]);
+
+        $setup = session('setup', []);
+
+        if (empty($setup['otp_verified']) || empty($setup['email'])) {
+            return redirect()->route('setup.account');
+        }
+
+        // Store receipt file
+        $receiptPath = $request->file('receipt')->store('bank-receipts', 'public');
+
+        // Create tenant
+        $tenant = Tenant::create([
+            'name' => $setup['org_name_en'] ?? $setup['org_name_ar'],
+            'slug' => $setup['slug'],
+            'subdomain' => $setup['slug'],
+            'template' => $this->resolveTemplateSlug($setup['template_id'] ?? 'madina'),
+            'email' => $setup['email'],
+            'plan' => $setup['plan_key'] ?? 'basic',
+            'is_active' => false, // Inactive until admin approves
+            'payment_status' => 'pending',
+            'payment_method' => 'bank_transfer',
+            'bank_transfer_receipt' => $receiptPath,
+            'payment_notes' => $request->payment_notes,
+            'org_name_ar' => $setup['org_name_ar'] ?? null,
+            'org_name_en' => $setup['org_name_en'] ?? null,
+            'subscription_starts_at' => null,
+            'subscription_ends_at' => null,
+        ]);
+
+        // Create default site sections
+        $sections = ['hero', 'rooms', 'services', 'gallery', 'testimonials', 'partners', 'contact'];
+        foreach ($sections as $i => $section) {
+            $tenant->siteSections()->create([
+                'section_name' => $section,
+                'is_active' => true,
+                'sort_order' => $i,
+            ]);
+        }
+
+        // Create default hotel settings
+        $tenant->hotelSettings()->create([
+            'hotel_name_ar' => $setup['org_name_ar'] ?? '',
+            'hotel_name_en' => $setup['org_name_en'] ?? '',
+            'description_ar' => '',
+            'description_en' => '',
+            'star_rating' => 5,
+            'currency' => 'SAR',
+            'timezone' => 'Asia/Riyadh',
+        ]);
+
+        // Create default contact settings
+        $tenant->contactSettings()->create([
+            'email' => $setup['email'],
+        ]);
+
+        // Create user
+        $user = User::create([
+            'name' => $setup['username'],
+            'email' => $setup['email'],
+            'password' => Hash::make($setup['password']),
+            'role' => 'client_admin',
+            'tenant_id' => $tenant->id,
+            'otp_verified' => true,
+        ]);
+
+        $user->markEmailAsVerified();
+
+        // Clear setup session
+        session()->forget('setup');
+
+        return redirect()->route('setup.pending');
+    }
+
+    // ─── Pending Approval Page ─────────────────────────────────
+
+    public function pending()
+    {
+        syncLangFiles('messages');
+        return Inertia::render('public/setup/Pending');
+    }
+
+    private function resolveTemplateSlug(string $value): string
+    {
+        // If already a valid slug, return as-is
+        $validSlugs = ['madina', 'riyadh'];
+        if (in_array($value, $validSlugs)) {
+            return $value;
+        }
+
+        // Map numeric IDs to slugs (from constants.ts)
+        $idMap = [
+            '1' => 'madina',
+            '2' => 'riyadh',
+        ];
+
+        return $idMap[$value] ?? 'madina';
+    }
 }

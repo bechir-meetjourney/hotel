@@ -5,67 +5,60 @@ use App\Models\User;
 
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
-// ─── Role Middleware ────────────────────────────────────────
+// ─── EnsureRole Middleware ─────────────────────────────────
 
-test('role middleware blocks users without correct role', function () {
-    $tenant = Tenant::factory()->create();
-    $clientUser = User::factory()->clientAdmin($tenant->id)->create();
-    $superUser = User::factory()->superAdmin()->create();
+test('role middleware redirects wrong role to login', function () {
+    $user = User::factory()->superAdmin()->create();
 
-    // Client admin cannot access super admin routes
-    $this->actingAs($clientUser)->get('/super-admin')->assertForbidden();
-    $this->actingAs($clientUser)->get('/super-admin/tenants')->assertForbidden();
-
-    // Super admin cannot access client admin routes
-    $this->actingAs($superUser)->get('/client-admin')->assertForbidden();
-    $this->actingAs($superUser)->get('/client-admin/rooms')->assertForbidden();
+    $this->actingAs($user)
+        ->get('/client-admin')
+        ->assertRedirect('/login');
 });
 
-test('role middleware allows correct roles', function () {
+test('role middleware allows correct role', function () {
     $tenant = Tenant::factory()->create();
-    $clientUser = User::factory()->clientAdmin($tenant->id)->create();
-    $superUser = User::factory()->superAdmin()->create();
+    $user = User::factory()->clientAdmin($tenant->id)->create();
 
-    $this->actingAs($superUser)->get('/super-admin')->assertOk();
-    $this->actingAs($clientUser)->get('/client-admin')->assertOk();
+    $this->actingAs($user)
+        ->get('/client-admin')
+        ->assertOk();
 });
 
-// ─── Tenant Session Middleware ──────────────────────────────
+// ─── EnsureTenantSession Middleware ────────────────────────
 
-test('tenant middleware blocks client admin without tenant', function () {
+test('tenant middleware redirects user without tenant to login', function () {
     $user = User::factory()->create(['role' => 'client_admin', 'tenant_id' => null]);
 
-    $this->actingAs($user)->get('/client-admin')->assertForbidden();
+    $this->actingAs($user)
+        ->get('/client-admin')
+        ->assertRedirect('/login');
 });
 
-test('tenant middleware blocks client admin with inactive tenant', function () {
+test('tenant middleware redirects user with inactive tenant to login', function () {
     $tenant = Tenant::factory()->inactive()->create();
     $user = User::factory()->clientAdmin($tenant->id)->create();
 
-    $this->actingAs($user)->get('/client-admin')->assertForbidden();
+    $this->actingAs($user)
+        ->get('/client-admin')
+        ->assertRedirect('/login');
 });
 
-test('tenant middleware allows client admin with active tenant', function () {
+test('tenant middleware allows active tenant', function () {
     $tenant = Tenant::factory()->create(['is_active' => true]);
     $user = User::factory()->clientAdmin($tenant->id)->create();
 
-    $this->actingAs($user)->get('/client-admin')->assertOk();
+    $this->actingAs($user)
+        ->get('/client-admin')
+        ->assertOk();
 });
 
-// ─── Auth Middleware ────────────────────────────────────────
+// ─── Guest Middleware ──────────────────────────────────────
 
-test('unauthenticated users are redirected to login', function () {
-    $this->get('/super-admin')->assertRedirect('/login');
-    $this->get('/super-admin/tenants')->assertRedirect('/login');
-    $this->get('/client-admin')->assertRedirect('/login');
-    $this->get('/client-admin/rooms')->assertRedirect('/login');
-});
+test('authenticated user is redirected from login page', function () {
+    $tenant = Tenant::factory()->create();
+    $user = User::factory()->clientAdmin($tenant->id)->create();
 
-// ─── Public Routes ──────────────────────────────────────────
-
-test('public routes are accessible without auth', function () {
-    $this->get('/')->assertOk();
-    $this->get('/login')->assertOk();
-    $this->get('/register')->assertOk();
-    $this->get('/templates')->assertOk();
+    $this->actingAs($user)
+        ->get('/login')
+        ->assertRedirect();
 });

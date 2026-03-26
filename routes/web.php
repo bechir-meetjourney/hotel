@@ -5,8 +5,6 @@ use Inertia\Inertia;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\SetupController;
 use App\Http\Controllers\TenantSiteController;
-use App\Http\Controllers\SuperAdmin\DashboardController as SuperAdminDashboard;
-use App\Http\Controllers\SuperAdmin\TenantController;
 use App\Http\Controllers\ClientAdmin\DashboardController as ClientAdminDashboard;
 use App\Http\Controllers\ClientAdmin\RoomController;
 use App\Http\Controllers\ClientAdmin\GalleryController;
@@ -14,6 +12,7 @@ use App\Http\Controllers\ClientAdmin\SiteTextController;
 use App\Http\Controllers\ClientAdmin\SiteSectionController;
 use App\Http\Controllers\ClientAdmin\ContactSettingController;
 use App\Http\Controllers\ClientAdmin\HotelSettingController;
+use App\Http\Controllers\ClientAdmin\ReportController;
 
 // ─── Public Routes ──────────────────────────────────────────
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -67,12 +66,27 @@ Route::get('/locale/{locale}', function ($locale) {
 // ─── Setup Wizard ───────────────────────────────────────────
 Route::prefix('setup')->name('setup.')->group(function () {
     Route::get('plan', [SetupController::class, 'plan'])->name('plan');
+    Route::post('plan', [SetupController::class, 'storePlan'])->name('plan.store');
+
     Route::get('template', [SetupController::class, 'template'])->name('template');
+    Route::post('template', [SetupController::class, 'storeTemplate'])->name('template.store');
+
     Route::get('org', [SetupController::class, 'org'])->name('org');
+    Route::post('org', [SetupController::class, 'storeOrg'])->name('org.store');
+
     Route::get('account', [SetupController::class, 'account'])->name('account');
+    Route::post('account', [SetupController::class, 'storeAccount'])->name('account.store');
+
+    Route::get('verify-otp', [SetupController::class, 'verifyOtp'])->name('verifyOtp');
+    Route::post('verify-otp', [SetupController::class, 'checkOtp'])->name('verifyOtp.check');
+    Route::post('resend-otp', [SetupController::class, 'resendOtp'])->name('resendOtp');
+
     Route::get('review', [SetupController::class, 'review'])->name('review');
+
     Route::get('payment-method', [SetupController::class, 'paymentMethod'])->name('paymentMethod');
-    Route::get('pay', [SetupController::class, 'pay'])->name('pay');
+    Route::post('payment-method', [SetupController::class, 'storePayment'])->name('payment.store');
+
+    Route::get('pending', [SetupController::class, 'pending'])->name('pending');
 });
 
 // ─── Tenant Public Site (by slug) ───────────────────────────
@@ -85,28 +99,9 @@ require __DIR__.'/auth.php';
 // ─── Authenticated Dashboard (default) ─────────────────────
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
-        $user = auth()->user();
-        if ($user->isSuperAdmin()) {
-            return redirect()->route('super-admin.dashboard');
-        }
         return redirect()->route('client-admin.dashboard');
     })->name('dashboard');
 });
-
-// ─── Super Admin Routes ─────────────────────────────────────
-Route::middleware(['auth', 'verified', 'role:super_admin'])
-    ->prefix('super-admin')
-    ->name('super-admin.')
-    ->group(function () {
-        Route::get('/', [SuperAdminDashboard::class, 'index'])->name('dashboard');
-
-        Route::get('tenants', [TenantController::class, 'index'])->name('tenants.index');
-        Route::get('tenants/create', [TenantController::class, 'create'])->name('tenants.create');
-        Route::post('tenants', [TenantController::class, 'store'])->name('tenants.store');
-        Route::get('tenants/{tenant}/edit', [TenantController::class, 'edit'])->name('tenants.edit');
-        Route::put('tenants/{tenant}', [TenantController::class, 'update'])->name('tenants.update');
-        Route::post('tenants/{tenant}/toggle', [TenantController::class, 'toggleStatus'])->name('tenants.toggle');
-    });
 
 // ─── Client Admin Routes ────────────────────────────────────
 Route::middleware(['auth', 'verified', 'role:client_admin', 'tenant'])
@@ -146,6 +141,11 @@ Route::middleware(['auth', 'verified', 'role:client_admin', 'tenant'])
         // Hotel Settings
         Route::get('hotel-settings', [HotelSettingController::class, 'edit'])->name('hotel-settings.edit');
         Route::put('hotel-settings', [HotelSettingController::class, 'update'])->name('hotel-settings.update');
+
+        // Reports
+        Route::get('reports/subscriptions', [ReportController::class, 'subscriptions'])->name('reports.subscriptions');
+        Route::get('reports/messages', [ReportController::class, 'messages'])->name('reports.messages');
+        Route::post('reports/messages', [ReportController::class, 'sendMessage'])->name('reports.messages.send');
     });
 
 // ─── 404 Fallback ───────────────────────────────────────────

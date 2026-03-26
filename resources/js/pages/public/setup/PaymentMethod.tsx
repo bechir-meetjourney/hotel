@@ -1,197 +1,213 @@
-import React, { useMemo, useState } from "react";
-import { router } from "@inertiajs/react";
+import React, { useState, useMemo } from "react";
+import { router, usePage, Head } from "@inertiajs/react";
 import PublicLayout from "@/layouts/public-layout";
 import SetupBanner from "@/components/public/setup/SetupBanner";
 import { plans } from "@/components/public/Pricing/plans";
-import PaymentMethods from "@/components/public/setup/PaymentMethods/PaymentMethods";
-import CustomerForm from "@/components/public/setup/forms/CustomerForm";
-import OrderSummary from "@/components/public/setup/OrderSummary";
-import Agreements from "@/components/public/setup/PaymentMethods/Agreements";
-
-import { Trash2 } from "lucide-react";
 import AnimatedHeading from '@/components/motion/AnimatedHeading'
-
-type PM = "card" | "mada" | "apple" | "google" | "paypal" | "stc";
-
 import { useLang } from '@/hooks/useLang'
+import { Upload, Building2, Copy, CheckCircle2 } from "lucide-react";
 
-export default function PaymentMethod() {
+interface BankDetails {
+  bank_name_ar: string;
+  bank_name_en: string;
+  account_name: string;
+  iban: string;
+  account_number: string;
+  swift: string;
+}
+
+interface Props {
+  setup: Record<string, string>;
+  bankDetails: BankDetails;
+}
+
+export default function PaymentMethod({ setup, bankDetails }: Props) {
   const { __ } = useLang()
-  // query params (typed)
-  type QsParams = {
-    plan_key?: string
-    plan_name?: string
-    template_id?: string
-    template_title?: string
-    org_name_ar?: string
-    org_name_en?: string
-    site_url?: string
-    username?: string
-    email?: string
-  }
+  const serverErrors = usePage().props.errors as Record<string, string>;
 
-  const qsParams = useMemo<QsParams>(() => {
-    if (typeof window === "undefined") return {};
-    const qs = new URLSearchParams(window.location.search);
-    return {
-      plan_key: qs.get("plan_key") ?? "",
-      plan_name: qs.get("plan_name") ?? "",
-      template_id: qs.get("template_id") ?? "",
-      template_title: qs.get("template_title") ?? "",
-      org_name_ar: qs.get("org_name_ar") ?? "",
-      org_name_en: qs.get("org_name_en") ?? "",
-      site_url: qs.get("site_url") ?? "",
-      username: qs.get("username") ?? "",
-      email: qs.get("email") ?? "",
-    };
-  }, []);
+  const [receipt, setReceipt] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [notes, setNotes] = useState("");
+  const [processing, setProcessing] = useState(false);
+  const [copied, setCopied] = useState<string | null>(null);
 
-  // derived
-  const plan = useMemo(() => plans.find(p => p.key === qsParams.plan_key), [qsParams]);
+  const plan = useMemo(() => plans.find(p => p.key === setup?.plan_key), [setup]);
   const price = useMemo(
     () => Number(String(plan?.price ?? "0").replace(/,/g, "")) || 0,
     [plan]
   );
 
-  // form state
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [city, setCity] = useState("");
-  const [phone, setPhone] = useState("");
-  const [orgName, setOrgName] = useState(qsParams.org_name_ar || "");
-
-  // checkout state
-  const [coupon, setCoupon] = useState("");
-  const [discount, setDiscount] = useState(0);
-  const [pmethod, setPmethod] = useState<PM>("card");
-  const [savePM, setSavePM] = useState(false);
-  const [agree, setAgree] = useState(false);
-
-  const [errors, setErrors] = useState<{
-    firstName?: string; lastName?: string; city?: string; phone?: string; orgName?: string; agree?: string;
-  }>({});
-
-  // pricing
-  const vatNoteValue = 115;
-  const setupFees = 0;
-  const subtotal = price + setupFees - discount;
-  const total = subtotal;
-
-  // coupon
-  const applyCoupon = () => {
-    if (coupon.trim().toUpperCase() === "SALE10") setDiscount(Math.round(price * 0.1));
-    else setDiscount(0);
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setReceipt(file);
+    if (file.type.startsWith("image/")) {
+      setPreviewUrl(URL.createObjectURL(file));
+    } else {
+      setPreviewUrl(null);
+    }
   };
 
-  // validation
-  const validate = () => {
-    const e: typeof errors = {};
-  if (!firstName.trim()) e.firstName = __("messages.setup.account.required_field");
-  if (!lastName.trim())  e.lastName  = __("messages.setup.account.required_field");
-  if (!city.trim())      e.city      = __("messages.setup.account.required_field");
-  if (!phone.trim())     e.phone     = __("messages.setup.account.required_field");
-  if (!orgName.trim())   e.orgName   = __("messages.setup.org.required_field" ) ;
-  if (!agree)            e.agree     = __("messages.setup.payment.must_agree");
-    setErrors(e);
-    return Object.keys(e).length === 0;
+  const copyToClipboard = (text: string, field: string) => {
+    navigator.clipboard.writeText(text);
+    setCopied(field);
+    setTimeout(() => setCopied(null), 2000);
   };
 
-  const clearOrder = () => { setCoupon(""); setDiscount(0); };
-  const confirm = () => {
-    if (!validate()) return;
-    router.visit("/setup/pay", {
-      method: "get",
-      data: {
-        ...qsParams,
-        first_name: firstName,
-        last_name: lastName,
-        city, phone,
-        org_name_final: orgName,
-        coupon, discount,
-        payment_method: pmethod,
-        save_payment_method: savePM ? 1 : 0,
-        total,
-      },
-      preserveScroll: true,
+  const submit = () => {
+    if (!receipt) return;
+
+    setProcessing(true);
+    const formData = new FormData();
+    formData.append("receipt", receipt);
+    if (notes) formData.append("payment_notes", notes);
+
+    router.post("/setup/payment-method", formData, {
+      forceFormData: true,
+      onFinish: () => setProcessing(false),
     });
   };
 
+  const goPrev = () => router.visit("/setup/review");
+
+  const BankRow = ({ label, value, field }: { label: string; value: string; field: string }) => (
+    <div className="flex items-center justify-between py-3 border-b border-slate-100 last:border-0">
+      <div>
+        <span className="text-xs text-slate-500">{label}</span>
+        <p className="font-semibold text-slate-800 text-sm" dir="ltr">{value}</p>
+      </div>
+      <button
+        type="button"
+        onClick={() => copyToClipboard(value, field)}
+        className="flex items-center gap-1 rounded-lg border border-slate-200 px-2 py-1 text-xs text-slate-600 hover:bg-slate-50 transition-colors"
+      >
+        {copied === field ? <CheckCircle2 className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
+        {copied === field ? "تم النسخ" : "نسخ"}
+      </button>
+    </div>
+  );
+
   return (
     <PublicLayout>
+      <Head title="تحويل بنكي | ضيافة" />
 
       <section className="py-10">
         <div className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">
-          <SetupBanner title={__("messages.setup.banner.thanks_title")} subtitle={__("messages.setup.banner.thanks_subtitle")} />
-          <div className="mx-auto rounded-3xl border border-public-border bg-white p-6 shadow-sm sm:p-8">
+          <SetupBanner title="شكراً لاختيارك ضيافة" subtitle="أكمل عملية الدفع لتفعيل حسابك" />
+
+          <div className="mx-auto rounded-3xl border border-public-border bg-white p-6 sm:p-8 shadow-sm">
             <AnimatedHeading dir="up" delay={0.30}>
-              <h1 className="mb-8 text-center text-2xl font-extrabold text-public-primary sm:text-3xl">
-                {__("messages.setup.payment.title")}
+              <h1 className="mb-8 text-center text-2xl sm:text-3xl font-extrabold text-public-primary">
+                الدفع عبر التحويل البنكي
               </h1>
             </AnimatedHeading>
-            {/* reset order */}
-            <div className="my-2 flex justify-end">
-              <button
-                type="button"
-                onClick={clearOrder}
-                className="inline-flex items-center gap-2 rounded-md border border-black/70 px-3 py-1.5 text-sm font-semibold text-black/70 hover:bg-slate-50"
-                title={__("messages.setup.payment.clear_title")}
-              >
-                <Trash2 className="h-4 w-4" />
-                {__("messages.setup.payment.clear_button")}
-              </button>
-            </div>
+
             <div className="grid gap-8 lg:grid-cols-2">
-              {/* right on desktop, last on mobile */}
-              <div className="order-2 lg:order-1">
-                <CustomerForm
-                  firstName={firstName}
-                  lastName={lastName}
-                  city={city}
-                  phone={phone}
-                  orgName={orgName}
-                  onChange={(f, v) => {
-                    if (f === "firstName") setFirstName(v);
-                    else if (f === "lastName") setLastName(v);
-                    else if (f === "city") setCity(v);
-                    else if (f === "phone") setPhone(v);
-                    else if (f === "orgName") setOrgName(v);
-                  }}
-                  onSubmit={confirm}
-                  errors={{
-                    firstName: errors.firstName,
-                    lastName: errors.lastName,
-                    city: errors.city,
-                    phone: errors.phone,
-                    orgName: errors.orgName,
-                  }}
-                />
+              {/* Right: Bank Details */}
+              <div className="order-1">
+                <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="grid size-10 place-items-center rounded-full bg-blue-50">
+                      <Building2 className="size-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-slate-900">بيانات الحساب البنكي</h3>
+                      <p className="text-xs text-slate-500">قم بالتحويل إلى الحساب التالي</p>
+                    </div>
+                  </div>
+
+                  <BankRow label="اسم البنك" value={bankDetails.bank_name_ar} field="bank" />
+                  <BankRow label="اسم الحساب" value={bankDetails.account_name} field="name" />
+                  <BankRow label="IBAN" value={bankDetails.iban} field="iban" />
+                  <BankRow label="رقم الحساب" value={bankDetails.account_number} field="account" />
+                  <BankRow label="SWIFT" value={bankDetails.swift} field="swift" />
+                </div>
+
+                {/* Amount to transfer */}
+                <div className="mt-4 rounded-2xl border-2 border-dashed border-public-active/30 bg-public-active/5 p-4 text-center">
+                  <p className="text-sm text-slate-600">المبلغ المطلوب تحويله</p>
+                  <p className="mt-1 text-3xl font-extrabold text-public-primary">
+                    {price.toLocaleString("en-US")} <span className="text-lg">ر.س</span>
+                  </p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    {plan?.name} — {setup?.org_name_ar}
+                  </p>
+                </div>
               </div>
 
-              {/* left on desktop, first on mobile */}
-              <aside className="order-1 lg:order-2 space-y-6">
-                <OrderSummary
-                  planName={plan?.name}
-                  price={price}
-                  coupon={coupon}
-                  onCouponChange={setCoupon}
-                  onApplyCoupon={applyCoupon}
-                  discount={discount}
-                  total={total}
-                  vatNoteValue={vatNoteValue}
-                />
+              {/* Left: Upload Receipt */}
+              <div className="order-2">
+                <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                  <h3 className="font-bold text-slate-900 mb-4">رفع إيصال التحويل</h3>
 
-                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow sm:p-5">
-                  <h3 className="mb-3 text-start text-sm font-bold text-slate-900">{__("messages.setup.payment.methods_title")}</h3>
-                    <PaymentMethods value={pmethod} onChange={(v: string) => setPmethod(v as PM)} />
-                  <Agreements
-                    savePM={savePM}
-                    onSavePMChange={setSavePM}
-                    agree={agree}
-                    onAgreeChange={setAgree}
-                    error={errors.agree}
-                  />
+                  <p className="text-sm text-slate-600 mb-4">
+                    بعد إتمام التحويل البنكي، قم برفع صورة أو ملف PDF لإيصال التحويل.
+                    سيتم مراجعة الإيصال وتفعيل حسابك خلال 24 ساعة.
+                  </p>
+
+                  {/* File upload zone */}
+                  <label className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 p-8 cursor-pointer hover:border-public-active hover:bg-public-active/5 transition-colors">
+                    <input
+                      type="file"
+                      accept="image/*,.pdf"
+                      onChange={handleFileChange}
+                      className="hidden"
+                    />
+                    {previewUrl ? (
+                      <img src={previewUrl} alt="إيصال" className="max-h-40 rounded-lg mb-3" />
+                    ) : (
+                      <Upload className="h-10 w-10 text-slate-400 mb-3" />
+                    )}
+                    <span className="font-semibold text-slate-700">
+                      {receipt ? receipt.name : "اضغط لاختيار الملف"}
+                    </span>
+                    <span className="mt-1 text-xs text-slate-400">
+                      JPG, PNG أو PDF — حد أقصى 5 ميجا
+                    </span>
+                  </label>
+
+                  {serverErrors?.receipt && (
+                    <p className="mt-2 text-sm text-red-600">{serverErrors.receipt}</p>
+                  )}
+
+                  {/* Notes */}
+                  <div className="mt-4">
+                    <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                      ملاحظات (اختياري)
+                    </label>
+                    <textarea
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      placeholder="مثال: تم التحويل من حساب شركة..."
+                      rows={3}
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-public-active focus:outline-none focus:ring-2 focus:ring-public-active/20"
+                    />
+                  </div>
                 </div>
-              </aside>
+
+                {/* Info notice */}
+                <div className="mt-4 rounded-xl bg-amber-50 border border-amber-200 p-4">
+                  <p className="text-sm text-amber-800 font-medium">
+                    ⏱ بعد رفع الإيصال، سيتم مراجعته من قبل فريق ضيافة وتفعيل حسابك خلال 24 ساعة عمل.
+                    ستصلك رسالة على بريدك الإلكتروني عند التفعيل.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Buttons */}
+            <div className="mt-8 flex items-center justify-between">
+              <button type="button" onClick={goPrev} className="rounded-xl border border-public-primary bg-white px-5 py-2 font-semibold text-public-primary hover:bg-public-primary/5">
+                السابق
+              </button>
+              <button
+                type="button"
+                onClick={submit}
+                disabled={!receipt || processing}
+                className="rounded-xl bg-public-primary px-8 py-3 font-semibold text-white hover:opacity-90 disabled:opacity-50 transition-all"
+              >
+                {processing ? "جاري الإرسال..." : "إرسال الإيصال وإنشاء الحساب"}
+              </button>
             </div>
           </div>
         </div>

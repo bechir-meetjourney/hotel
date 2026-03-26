@@ -17,6 +17,9 @@ class User extends Authenticatable
         'password',
         'tenant_id',
         'role',
+        'otp_code',
+        'otp_expires_at',
+        'otp_verified',
     ];
 
     protected $hidden = [

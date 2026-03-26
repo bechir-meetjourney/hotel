@@ -1,7 +1,9 @@
 import AppLayout from '@/layouts/app-layout';
+import { useT } from '@/hooks/use-translations';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/react';
-import { GripVertical, Eye, EyeOff } from 'lucide-react';
+import { useState } from 'react';
+import { GripVertical, ArrowUp, ArrowDown, Eye, EyeOff } from 'lucide-react';
 
 interface SiteSection {
     id: number;
@@ -14,24 +16,50 @@ interface Props {
     sections: SiteSection[];
 }
 
-const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Client Admin', href: '/client-admin' },
-    { title: 'Sections', href: '/client-admin/site-sections' },
-];
-
-const sectionLabels: Record<string, { ar: string; en: string; desc: string }> = {
-    hero: { ar: 'البانر الرئيسي', en: 'Hero Banner', desc: 'Main hero section with slider' },
-    rooms: { ar: 'الغرف', en: 'Rooms', desc: 'Room types and pricing' },
-    services: { ar: 'الخدمات', en: 'Services', desc: 'Hotel services' },
-    gallery: { ar: 'المعرض', en: 'Gallery', desc: 'Photo gallery' },
-    testimonials: { ar: 'آراء العملاء', en: 'Testimonials', desc: 'Guest reviews' },
-    partners: { ar: 'الشركاء', en: 'Partners', desc: 'Partner brands' },
-    contact: { ar: 'التواصل', en: 'Contact', desc: 'Contact form and info' },
-};
-
 export default function SiteSectionsIndex({ sections }: Props) {
+    const { t } = useT();
+
+    const breadcrumbs: BreadcrumbItem[] = [
+        { title: t('client_admin'), href: '/client-admin' },
+        { title: t('sections'), href: '/client-admin/site-sections' },
+    ];
+
+    const sectionLabels: Record<string, { name: string; desc: string }> = {
+        hero: { name: t('hero_banner'), desc: t('hero_desc') },
+        rooms: { name: t('rooms_section'), desc: t('rooms_desc') },
+        services: { name: t('services'), desc: t('services_desc') },
+        gallery: { name: t('gallery_section'), desc: t('gallery_desc') },
+        testimonials: { name: t('testimonials'), desc: t('testimonials_desc') },
+        partners: { name: t('partners'), desc: t('partners_desc') },
+        contact: { name: t('contact_section'), desc: t('contact_desc') },
+    };
+
+    const [items, setItems] = useState<SiteSection[]>(sections);
+
     function handleToggle(id: number) {
         router.post(`/client-admin/site-sections/${id}/toggle`);
+    }
+
+    function moveUp(index: number) {
+        if (index === 0) return;
+        const updated = [...items];
+        [updated[index - 1], updated[index]] = [updated[index], updated[index - 1]];
+        const reordered = updated.map((item, i) => ({ ...item, sort_order: i + 1 }));
+        setItems(reordered);
+        router.post('/client-admin/site-sections/reorder', {
+            items: reordered.map((item) => ({ id: item.id, sort_order: item.sort_order })),
+        });
+    }
+
+    function moveDown(index: number) {
+        if (index === items.length - 1) return;
+        const updated = [...items];
+        [updated[index], updated[index + 1]] = [updated[index + 1], updated[index]];
+        const reordered = updated.map((item, i) => ({ ...item, sort_order: i + 1 }));
+        setItems(reordered);
+        router.post('/client-admin/site-sections/reorder', {
+            items: reordered.map((item) => ({ id: item.id, sort_order: item.sort_order })),
+        });
     }
 
     return (
@@ -39,20 +67,35 @@ export default function SiteSectionsIndex({ sections }: Props) {
             <Head title="Site Sections" />
             <div className="flex flex-col gap-6 p-6">
                 <div>
-                    <h1 className="text-2xl font-bold">Website Sections</h1>
-                    <p className="text-sm text-muted-foreground">Enable or disable sections on your hotel website</p>
+                    <h1 className="text-2xl font-bold">{t('website_sections')}</h1>
+                    <p className="text-sm text-muted-foreground">{t('sections_desc')}</p>
                 </div>
 
-                <div className="rounded-xl border bg-card divide-y">
-                    {sections.map((section) => {
-                        const labels = sectionLabels[section.section_name] || { ar: section.section_name, en: section.section_name, desc: '' };
+                <div className="vuexy-card divide-y">
+                    {items.map((section, index) => {
+                        const labels = sectionLabels[section.section_name] || { name: section.section_name, desc: '' };
                         return (
                             <div key={section.id} className="flex items-center gap-4 p-4 hover:bg-muted/30">
-                                <GripVertical className="h-5 w-5 text-muted-foreground cursor-grab" />
+                                <div className="flex items-center gap-1">
+                                    <GripVertical className="h-5 w-5 text-muted-foreground" />
+                                    <button
+                                        onClick={() => moveUp(index)}
+                                        disabled={index === 0}
+                                        className="rounded p-1 text-muted-foreground hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed"
+                                    >
+                                        <ArrowUp className="h-4 w-4" />
+                                    </button>
+                                    <button
+                                        onClick={() => moveDown(index)}
+                                        disabled={index === items.length - 1}
+                                        className="rounded p-1 text-muted-foreground hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed"
+                                    >
+                                        <ArrowDown className="h-4 w-4" />
+                                    </button>
+                                </div>
                                 <div className="flex-1">
                                     <div className="flex items-center gap-2">
-                                        <span className="font-medium">{labels.en}</span>
-                                        <span className="text-sm text-muted-foreground">({labels.ar})</span>
+                                        <span className="font-medium">{labels.name}</span>
                                     </div>
                                     <p className="text-xs text-muted-foreground">{labels.desc}</p>
                                 </div>
@@ -65,7 +108,7 @@ export default function SiteSectionsIndex({ sections }: Props) {
                                     }`}
                                 >
                                     {section.is_active ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-                                    {section.is_active ? 'Visible' : 'Hidden'}
+                                    {section.is_active ? t('visible') : t('hidden')}
                                 </button>
                             </div>
                         );
@@ -73,8 +116,8 @@ export default function SiteSectionsIndex({ sections }: Props) {
                 </div>
 
                 {sections.length === 0 && (
-                    <div className="rounded-xl border bg-card p-12 text-center text-muted-foreground">
-                        No sections configured. They will be created when the tenant is set up.
+                    <div className="vuexy-card p-12 text-center text-muted-foreground">
+                        {t('no_sections')}
                     </div>
                 )}
             </div>

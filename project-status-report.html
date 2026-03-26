@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Diyafah Platform - Status Report</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Inter:wght@400;600;700&display=swap');
+body { font-family: 'Inter', 'Cairo', sans-serif; margin: 40px; color: #1a1a2e; font-size: 13px; }
+h1 { text-align: center; color: #01004C; font-size: 26px; margin-bottom: 5px; }
+h2 { color: #01004C; border-bottom: 2px solid #5A5ECD; padding-bottom: 6px; font-size: 18px; margin-top: 35px; }
+h3 { color: #5A5ECD; font-size: 15px; margin-top: 20px; }
+.subtitle { text-align: center; color: #666; font-size: 14px; margin-bottom: 30px; }
+.date { text-align: center; color: #999; font-size: 12px; margin-bottom: 40px; }
+table { width: 100%; border-collapse: collapse; margin: 12px 0 20px 0; font-size: 12.5px; }
+th { background: #01004C; color: white; padding: 10px 8px; text-align: left; }
+th.ar { text-align: right; font-family: 'Cairo', sans-serif; }
+td { padding: 8px; border-bottom: 1px solid #e0e0e0; }
+tr:nth-child(even) { background: #f8f9fc; }
+.done { color: #0a8a3e; font-weight: 700; }
+.partial { color: #d97706; font-weight: 700; }
+.not-done { color: #dc2626; font-weight: 700; }
+.badge { display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.badge-done { background: #d1fae5; color: #065f46; }
+.badge-partial { background: #fef3c7; color: #92400e; }
+.badge-not { background: #fee2e2; color: #991b1b; }
+.summary-box { display: flex; justify-content: space-around; margin: 20px 0 30px 0; }
+.summary-card { text-align: center; padding: 15px 30px; border-radius: 10px; }
+.summary-card.green { background: #d1fae5; }
+.summary-card.orange { background: #fef3c7; }
+.summary-card.red { background: #fee2e2; }
+.summary-card .num { font-size: 28px; font-weight: 700; }
+.summary-card .label { font-size: 11px; color: #555; }
+.rtl { direction: rtl; text-align: right; font-family: 'Cairo', sans-serif; }
+.section-ar { margin-top: 10px; padding: 10px; background: #f0f1ff; border-radius: 8px; direction: rtl; text-align: right; font-family: 'Cairo', sans-serif; }
+.page-break { page-break-before: always; }
+.header-logo { text-align: center; margin-bottom: 10px; }
+.footer { text-align: center; color: #999; font-size: 10px; margin-top: 50px; border-top: 1px solid #ddd; padding-top: 10px; }
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div style="text-align:center; margin-top: 120px;">
+  <h1 style="font-size:34px;">Diyafah Platform</h1>
+  <p style="font-size:20px; color:#5A5ECD;">Project Status Report / تقرير حالة المشروع</p>
+  <p class="rtl" style="font-size:22px; color:#01004C; margin-top:10px;">وثيقة تحليل متطلبات منصة ضيافة V.01</p>
+  <br><br>
+  <p style="color:#888; font-size:14px;">Generated: March 26, 2026</p>
+  <p class="rtl" style="color:#888; font-size:14px;">تاريخ التقرير: 26 مارس 2026</p>
+</div>
+
+<!-- PAGE 2: SUMMARY -->
+<div class="page-break"></div>
+
+<h1>Executive Summary</h1>
+<p class="subtitle">Overview of implemented vs pending features</p>
+
+<div class="summary-box">
+  <div class="summary-card green"><div class="num">8</div><div class="label">Done / مكتمل ✅</div></div>
+  <div class="summary-card orange"><div class="num">7</div><div class="label">Partial / جزئي ⚠️</div></div>
+  <div class="summary-card red"><div class="num">10</div><div class="label">Not Done / غير مكتمل ❌</div></div>
+</div>
+
+<div class="section-ar">
+  <strong>ملخص:</strong> من أصل 25 ميزة مطلوبة في وثيقة المتطلبات، تم إنجاز 8 بشكل كامل، و7 بشكل جزئي، و10 لم يتم البدء فيها بعد.
+</div>
+
+<!-- PAGE 3: SUPER ADMIN -->
+<div class="page-break"></div>
+
+<h2>1. Super Admin Dashboard — ادمن ضيافة</h2>
+<p>URL: <code>http://127.0.0.1:8001</code></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Feature</th>
+      <th class="ar">الميزة</th>
+      <th>Status</th>
+      <th>Details</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Financial Reports</td>
+      <td class="rtl">التقارير المالية</td>
+      <td><span class="badge badge-done">✅ DONE</span></td>
+      <td>Filter by date, status, payment type. Export to Excel/PDF. Stat cards for approved/pending/rejected.</td>
+    </tr>
+    <tr>
+      <td>Subscription Reports</td>
+      <td class="rtl">تقارير الاشتراكات</td>
+      <td><span class="badge badge-done">✅ DONE</span></td>
+      <td>Filter by plan/status. Active, pending, expired, expiring soon stats. Days remaining calculation.</td>
+    </tr>
+    <tr>
+      <td>Messages & Support</td>
+      <td class="rtl">الرسائل (دعم/شكاوى/استفسارات/تقنية)</td>
+      <td><span class="badge badge-done">✅ DONE</span></td>
+      <td>4 message types, reply system, status management, auto-refresh every 15s, search.</td>
+    </tr>
+    <tr>
+      <td>Tenant Management</td>
+      <td class="rtl">إدارة العملاء (الأساسية)</td>
+      <td><span class="badge badge-done">✅ DONE</span></td>
+      <td>CRUD tenants, search, filter, toggle status, payment approval/rejection.</td>
+    </tr>
+    <tr>
+      <td>Dashboard Overview</td>
+      <td class="rtl">لوحة التحكم الرئيسية</td>
+      <td><span class="badge badge-done">✅ DONE</span></td>
+      <td>Stats cards, quick actions, recent tenants list.</td>
+    </tr>
+    <tr>
+      <td>Package/Plan Management</td>
+      <td class="rtl">إدارة الباقات</td>
+      <td><span class="badge badge-not">❌ NOT DONE</span></td>
+      <td>No CRUD for plans. No discount codes. No plan features configuration. No enable/disable.</td>
+    </tr>
+    <tr>
+      <td>Orders / Activation Requests</td>
+      <td class="rtl">الطلبات</td>
+      <td><span class="badge badge-partial">⚠️ PARTIAL</span></td>
+      <td>Payment approval exists in tenant list, but no dedicated orders page with full details.</td>
+    </tr>
+    <tr>
+      <td>Subscription Management</td>
+      <td class="rtl">إدارة الاشتراكات</td>
+      <td><span class="badge badge-partial">⚠️ PARTIAL</span></td>
+      <td>View subscriptions in tenant list. No manual subscription creation or payment link generation.</td>
+    </tr>
+    <tr>
+      <td>Template Management</td>
+      <td class="rtl">ادارة القوالب</td>
+      <td><span class="badge badge-not">❌ NOT DONE</span></td>
+      <td>No template enable/disable, no preview sharing, no template configuration page.</td>
+    </tr>
+    <tr>
+      <td>Client Field Management</td>
+      <td class="rtl">إدارة حقول العملاء</td>
+      <td><span class="badge badge-partial">⚠️ PARTIAL</span></td>
+      <td>Basic tenant info managed. No custom field builder for client profiles.</td>
+    </tr>
+    <tr>
+      <td>Invoicing / Finance</td>
+      <td class="rtl">المالية (الفواتير)</td>
+      <td><span class="badge badge-not">❌ NOT DONE</span></td>
+      <td>No invoice generation, no manual invoice export, no invoice templates.</td>
+    </tr>
+    <tr>
+      <td>Integrations</td>
+      <td class="rtl">التكاملات (بوابات دفع/رسائل/فوترة)</td>
+      <td><span class="badge badge-not">❌ NOT DONE</span></td>
+      <td>No payment gateways, no SMS/messaging integrations, no billing integrations.</td>
+    </tr>
+    <tr>
+      <td>Form Builder</td>
+      <td class="rtl">إدارة النماذج</td>
+      <td><span class="badge badge-not">❌ NOT DONE</span></td>
+      <td>No dynamic form builder for subscriptions/contact/support forms.</td>
+    </tr>
+    <tr>
+      <td>Page Management (CMS)</td>
+      <td class="rtl">إدارة الصفحات</td>
+      <td><span class="badge badge-not">❌ NOT DONE</span></td>
+      <td>No CMS for creating/managing pages, SEO, header/footer placement.</td>
+    </tr>
+    <tr>
+      <td>Main Site Identity</td>
+      <td class="rtl">تعديل محتوى وهوية الموقع الرئيسي</td>
+      <td><span class="badge badge-not">❌ NOT DONE</span></td>
+      <td>No logo/colors/fonts/branding control for the main Diyafah site.</td>
+    </tr>
+    <tr>
+      <td>Menu / Header / Footer Control</td>
+      <td class="rtl">التحكم (هيدر/فوتر/قوائم)</td>
+      <td><span class="badge badge-not">❌ NOT DONE</span></td>
+      <td>No menu management, no header/footer customization for the main site.</td>
+    </tr>
+    <tr>
+      <td>Users & Permissions</td>
+      <td class="rtl">المستخدمين والصلاحيات</td>
+      <td><span class="badge badge-not">❌ NOT DONE</span></td>
+      <td>No internal user management, no roles/permissions system for super admin staff.</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- PAGE 4: CLIENT ADMIN -->
+<div class="page-break"></div>
+
+<h2>2. Client Admin Dashboard — ادمن الفندق</h2>
+<p>URL: <code>http://127.0.0.1:8000</code></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Feature</th>
+      <th class="ar">الميزة</th>
+      <th>Status</th>
+      <th>Details</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Dashboard Overview</td>
+      <td class="rtl">لوحة التحكم الرئيسية</td>
+      <td><span class="badge badge-done">✅ DONE</span></td>
+      <td>Stats cards, quick actions, hotel name display, link to public site.</td>
+    </tr>
+    <tr>
+      <td>Room Management</td>
+      <td class="rtl">إدارة الغرف</td>
+      <td><span class="badge badge-done">✅ DONE</span></td>
+      <td>Full CRUD, bilingual, images, amenities, price, capacity, types, pagination, search.</td>
+    </tr>
+    <tr>
+      <td>Gallery</td>
+      <td class="rtl">معرض الصور</td>
+      <td><span class="badge badge-done">✅ DONE</span></td>
+      <td>6 categories, bulk upload, reorder, bilingual titles, pagination (24/page).</td>
+    </tr>
+    <tr>
+      <td>Site Texts</td>
+      <td class="rtl">نصوص الموقع</td>
+      <td><span class="badge badge-done">✅ DONE</span></td>
+      <td>8 sections, bilingual editor (AR/EN), add/edit text keys, bulk save.</td>
+    </tr>
+    <tr>
+      <td>Site Sections</td>
+      <td class="rtl">أقسام الموقع</td>
+      <td><span class="badge badge-done">✅ DONE</span></td>
+      <td>Toggle visibility, reorder sections (hero, rooms, services, gallery, etc.).</td>
+    </tr>
+    <tr>
+      <td>Hotel Settings</td>
+      <td class="rtl">إعدادات الفندق</td>
+      <td><span class="badge badge-done">✅ DONE</span></td>
+      <td>Identity, logo, favicon, colors, star rating, currency, timezone, check-in/out.</td>
+    </tr>
+    <tr>
+      <td>Contact Settings</td>
+      <td class="rtl">إعدادات التواصل</td>
+      <td><span class="badge badge-done">✅ DONE</span></td>
+      <td>Phone, WhatsApp, email, address (AR/EN), Google Maps, 5 social media links.</td>
+    </tr>
+    <tr>
+      <td>Messages & Support</td>
+      <td class="rtl">الرسائل والدعم الفني</td>
+      <td><span class="badge badge-done">✅ DONE</span></td>
+      <td>Send/receive support messages, 4 types, status tracking, auto-refresh.</td>
+    </tr>
+    <tr>
+      <td>Subscription Report</td>
+      <td class="rtl">تقرير الاشتراك</td>
+      <td><span class="badge badge-done">✅ DONE</span></td>
+      <td>Current plan, dates, payment status, days remaining, expiry warnings.</td>
+    </tr>
+    <tr>
+      <td>Setup Wizard</td>
+      <td class="rtl">معالج التسجيل</td>
+      <td><span class="badge badge-done">✅ DONE</span></td>
+      <td>Plan → Template → Org → Account → Payment → OTP → Review → Pending.</td>
+    </tr>
+    <tr>
+      <td>Service Categories (generic)</td>
+      <td class="rtl">أقسام الخدمات (غرف/قاعات/الخ)</td>
+      <td><span class="badge badge-partial">⚠️ PARTIAL</span></td>
+      <td>Only Rooms implemented. No generic service categories (halls, spa, etc.).</td>
+    </tr>
+    <tr>
+      <td>Services (generic with video/pricing)</td>
+      <td class="rtl">إدارة خدمات (فيديو/تسعير)</td>
+      <td><span class="badge badge-partial">⚠️ PARTIAL</span></td>
+      <td>Rooms have details. No video upload, no generic service model.</td>
+    </tr>
+    <tr>
+      <td>Reports (full)</td>
+      <td class="rtl">التقارير الكاملة</td>
+      <td><span class="badge badge-partial">⚠️ PARTIAL</span></td>
+      <td>Subscription report done. Financial report basic. No custom report builder.</td>
+    </tr>
+    <tr>
+      <td>Account Info (renewal/invoices)</td>
+      <td class="rtl">معلومات الحساب (تجديد/فاتورة)</td>
+      <td><span class="badge badge-partial">⚠️ PARTIAL</span></td>
+      <td>Shows current plan. No renewal workflow, no invoice download.</td>
+    </tr>
+    <tr>
+      <td>Users & Permissions</td>
+      <td class="rtl">المستخدمين (موظفين + صلاحيات)</td>
+      <td><span class="badge badge-not">❌ NOT DONE</span></td>
+      <td>No employee management, no roles/permissions for hotel staff.</td>
+    </tr>
+    <tr>
+      <td>Integrations</td>
+      <td class="rtl">التكاملات</td>
+      <td><span class="badge badge-not">❌ NOT DONE</span></td>
+      <td>No payment gateways, no SMS integrations, no external APIs.</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- PAGE 5: SUMMARY TABLE -->
+<div class="page-break"></div>
+
+<h2>3. Summary by Dashboard / ملخص حسب لوحة التحكم</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Dashboard</th>
+      <th style="background:#0a8a3e;">✅ Done</th>
+      <th style="background:#d97706;">⚠️ Partial</th>
+      <th style="background:#dc2626;">❌ Not Done</th>
+      <th>Completion</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Super Admin</strong> (ادمن ضيافة)</td>
+      <td class="done">5</td>
+      <td class="partial">3</td>
+      <td class="not-done">9</td>
+      <td><strong>~38%</strong></td>
+    </tr>
+    <tr>
+      <td><strong>Client Admin</strong> (ادمن الفندق)</td>
+      <td class="done">10</td>
+      <td class="partial">4</td>
+      <td class="not-done">2</td>
+      <td><strong>~75%</strong></td>
+    </tr>
+    <tr style="background:#e8eaff; font-weight:700;">
+      <td>TOTAL</td>
+      <td class="done">15</td>
+      <td class="partial">7</td>
+      <td class="not-done">11</td>
+      <td><strong>~55%</strong></td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>4. Priority Items Remaining / الأولويات المتبقية</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Feature</th>
+      <th class="ar">الميزة</th>
+      <th>Dashboard</th>
+      <th>Priority</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>1</td><td>Package/Plan Management</td><td class="rtl">إدارة الباقات</td><td>Super Admin</td><td><span class="badge badge-not">HIGH</span></td></tr>
+    <tr><td>2</td><td>Users & Permissions</td><td class="rtl">المستخدمين والصلاحيات</td><td>Both</td><td><span class="badge badge-not">HIGH</span></td></tr>
+    <tr><td>3</td><td>Invoicing / Finance</td><td class="rtl">المالية / الفواتير</td><td>Super Admin</td><td><span class="badge badge-not">HIGH</span></td></tr>
+    <tr><td>4</td><td>Template Management</td><td class="rtl">ادارة القوالب</td><td>Super Admin</td><td><span class="badge badge-partial">MEDIUM</span></td></tr>
+    <tr><td>5</td><td>Generic Service Categories</td><td class="rtl">أقسام الخدمات العامة</td><td>Client Admin</td><td><span class="badge badge-partial">MEDIUM</span></td></tr>
+    <tr><td>6</td><td>Integrations (payments/SMS)</td><td class="rtl">التكاملات</td><td>Both</td><td><span class="badge badge-partial">MEDIUM</span></td></tr>
+    <tr><td>7</td><td>Form Builder</td><td class="rtl">إدارة النماذج</td><td>Super Admin</td><td><span class="badge badge-partial">MEDIUM</span></td></tr>
+    <tr><td>8</td><td>CMS Pages & Menus</td><td class="rtl">الصفحات والقوائم</td><td>Super Admin</td><td>LOW</td></tr>
+    <tr><td>9</td><td>Main Site Branding</td><td class="rtl">هوية الموقع الرئيسي</td><td>Super Admin</td><td>LOW</td></tr>
+    <tr><td>10</td><td>Account Renewal Workflow</td><td class="rtl">تجديد الاشتراك</td><td>Client Admin</td><td>LOW</td></tr>
+  </tbody>
+</table>
+
+<div class="footer">
+  <p>Diyafah Platform — Project Status Report V.01 — March 26, 2026</p>
+  <p class="rtl">منصة ضيافة — تقرير حالة المشروع — النسخة 0.01</p>
+</div>
+
+</body>
+</html>

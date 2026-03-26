@@ -1,57 +1,53 @@
-import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
+import { useT } from '@/hooks/use-translations';
+import { useLocale } from '@/hooks/use-locale';
 import { type NavItem } from '@/types';
-import { Link, usePage } from '@inertiajs/react';
+import { Link } from '@inertiajs/react';
 import {
     LayoutGrid,
-    Building2,
     BedDouble,
     Image,
     FileText,
     ToggleRight,
     Phone,
     Settings,
-    BookOpen,
-    Folder,
+    BarChart3,
+    CreditCard,
+    MessageSquare,
 } from 'lucide-react';
 import AppLogo from './app-logo';
 
-const superAdminNav: NavItem[] = [
-    { title: 'Dashboard', href: '/super-admin', icon: LayoutGrid },
-    { title: 'Tenants', href: '/super-admin/tenants', icon: Building2 },
-];
-
-const clientAdminNav: NavItem[] = [
-    { title: 'Dashboard', href: '/client-admin', icon: LayoutGrid },
-    { title: 'Rooms', href: '/client-admin/rooms', icon: BedDouble },
-    { title: 'Gallery', href: '/client-admin/gallery', icon: Image },
-    { title: 'Site Texts', href: '/client-admin/site-texts', icon: FileText },
-    { title: 'Sections', href: '/client-admin/site-sections', icon: ToggleRight },
-    { title: 'Contact', href: '/client-admin/contact-settings', icon: Phone },
-    { title: 'Hotel Settings', href: '/client-admin/hotel-settings', icon: Settings },
-];
-
-const footerNavItems: NavItem[] = [
-    { title: 'Repository', href: 'https://github.com/laravel/react-starter-kit', icon: Folder },
-    { title: 'Documentation', href: 'https://laravel.com/docs/starter-kits#react', icon: BookOpen },
-];
-
 export function AppSidebar() {
-    const { auth } = usePage<{ auth: { user: { role?: string } | null } }>().props;
-    const role = auth?.user?.role;
+    const { t } = useT();
+    const { isArabic } = useLocale();
 
-    const navItems = role === 'super_admin' ? superAdminNav : clientAdminNav;
-    const dashboardHref = role === 'super_admin' ? '/super-admin' : '/client-admin';
+    const clientDashboard: NavItem[] = [
+        { title: t('dashboard'), href: '/client-admin', icon: LayoutGrid },
+    ];
+
+    const clientManagement: NavItem[] = [
+        { title: t('rooms'), href: '/client-admin/rooms', icon: BedDouble },
+        { title: t('gallery'), href: '/client-admin/gallery', icon: Image },
+        { title: t('site_texts'), href: '/client-admin/site-texts', icon: FileText },
+        { title: t('sections'), href: '/client-admin/site-sections', icon: ToggleRight },
+        { title: t('contact'), href: '/client-admin/contact-settings', icon: Phone },
+        { title: t('hotel_settings'), href: '/client-admin/hotel-settings', icon: Settings },
+    ];
+
+    const clientReports: NavItem[] = [
+        { title: isArabic ? 'تقرير الاشتراك' : 'Subscription', href: '/client-admin/reports/subscriptions', icon: CreditCard },
+        { title: isArabic ? 'الرسائل والدعم' : 'Messages & Support', href: '/client-admin/reports/messages', icon: MessageSquare },
+    ];
 
     return (
-        <Sidebar collapsible="icon" variant="sidebar">
+        <Sidebar collapsible="icon" variant="sidebar" side={isArabic ? 'right' : 'left'}>
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <Link href={dashboardHref} prefetch>
+                            <Link href="/client-admin" prefetch>
                                 <AppLogo />
                             </Link>
                         </SidebarMenuButton>
@@ -60,11 +56,12 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={navItems} />
+                <NavMain items={clientDashboard} label={t('main')} />
+                <NavMain items={clientManagement} label={t('management')} />
+                <NavMain items={clientReports} label={isArabic ? 'التقارير' : 'Reports'} />
             </SidebarContent>
 
             <SidebarFooter>
-                <NavFooter items={footerNavItems} className="mt-auto" />
                 <NavUser />
             </SidebarFooter>
         </Sidebar>

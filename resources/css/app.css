@@ -4,6 +4,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700&family=Noto+Sans:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap');
 
 @import 'tailwindcss';
 
@@ -65,7 +66,7 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-    --font-sans: "Lama Sans", ui-sans-serif, system-ui, sans-serif,
+    --font-sans: "Public Sans", "Lama Sans", ui-sans-serif, system-ui, sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
         
     --color-public-primary: var(--public-primary);
@@ -122,89 +123,159 @@
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-ring: var(--sidebar-ring);
+
+    --color-vuexy-primary: var(--vuexy-primary);
+    --color-vuexy-secondary: var(--vuexy-secondary);
+    --color-vuexy-success: var(--vuexy-success);
+    --color-vuexy-danger: var(--vuexy-danger);
+    --color-vuexy-warning: var(--vuexy-warning);
+    --color-vuexy-info: var(--vuexy-info);
+
+    --shadow-vuexy-xs: 0 0.0625rem 0.375rem 0 rgba(47, 43, 61, 0.16);
+    --shadow-vuexy: 0 0.1875rem 0.75rem 0 rgba(47, 43, 61, 0.12);
+    --shadow-vuexy-lg: 0 0.25rem 1.125rem 0 rgba(47, 43, 61, 0.22);
 }
 
 :root {
        /* color-scheme: light dark; */
-    --public-primary: #01004C;   
+    --public-primary: #01004C;
     --public-secondary: #8689E3;
-    --public-active: #5A5ECD; 
-    --public-bg: #DCDCDC; 
-    --public-title: #00004D;    
-    --public-sub-title: #454891;  
+    --public-active: #5A5ECD;
+    --public-bg: #DCDCDC;
+    --public-title: #00004D;
+    --public-sub-title: #454891;
     --public-button: #027F84;
 
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
+    --background: #f8f7fa;
+    --foreground: #2f2b3d;
+    --card: #ffffff;
+    --card-foreground: #2f2b3d;
     --popover: oklch(1 0 0);
     --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --destructive-foreground: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.87 0 0);
+    --primary: #7367f0;
+    --primary-foreground: #ffffff;
+    --secondary: #808390;
+    --secondary-foreground: #ffffff;
+    --muted: #f3f2f3;
+    --muted-foreground: #97959e;
+    --accent: #f3f2f3;
+    --accent-foreground: #2f2b3d;
+    --destructive: #ff4c51;
+    --destructive-foreground: #ffffff;
+    --border: #e6e6e8;
+    --input: #acaab1;
+    --ring: #7367f0;
     --chart-1: oklch(0.646 0.222 41.116);
     --chart-2: oklch(0.6 0.118 184.704);
     --chart-3: oklch(0.398 0.07 227.392);
     --chart-4: oklch(0.828 0.189 84.429);
     --chart-5: oklch(0.769 0.188 70.08);
-    --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.87 0 0);
+    --radius: 0.375rem;
+    --sidebar: #2f3349;
+    --sidebar-foreground: #cfcde4;
+    --sidebar-primary: #7367f0;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: rgba(115, 103, 240, 0.16);
+    --sidebar-accent-foreground: #cfcde4;
+    --sidebar-border: rgba(207, 205, 228, 0.12);
+    --sidebar-ring: #7367f0;
+
+    --vuexy-primary: #7367f0;
+    --vuexy-secondary: #808390;
+    --vuexy-success: #28c76f;
+    --vuexy-danger: #ff4c51;
+    --vuexy-warning: #ff9f43;
+    --vuexy-info: #00bad1;
 }
 
 .dark {
-    --background: #060D1E;
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.145 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.145 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.985 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.396 0.141 25.723);
-    --destructive-foreground: oklch(0.637 0.237 25.331);
-    --border: oklch(0.269 0 0);
-    --input: oklch(0.269 0 0);
-    --ring: oklch(0.439 0 0);
+    --background: #25293c;
+    --foreground: #cfcde4;
+    --card: #2f3349;
+    --card-foreground: #cfcde4;
+    --popover: #2f3349;
+    --popover-foreground: #cfcde4;
+    --primary: #7367f0;
+    --primary-foreground: #ffffff;
+    --secondary: #808390;
+    --secondary-foreground: #ffffff;
+    --muted: #3a3d53;
+    --muted-foreground: #9293ae;
+    --accent: #3a3d53;
+    --accent-foreground: #cfcde4;
+    --destructive: #ff4c51;
+    --destructive-foreground: #ffffff;
+    --border: #44485e;
+    --input: #44485e;
+    --ring: #7367f0;
     --chart-1: oklch(0.488 0.243 264.376);
     --chart-2: oklch(0.696 0.17 162.48);
     --chart-3: oklch(0.769 0.188 70.08);
     --chart-4: oklch(0.627 0.265 303.9);
     --chart-5: oklch(0.645 0.246 16.439);
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.985 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(0.269 0 0);
-    --sidebar-ring: oklch(0.439 0 0);
+    --sidebar: #25293c;
+    --sidebar-foreground: #cfcde4;
+    --sidebar-primary: #7367f0;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: rgba(115, 103, 240, 0.16);
+    --sidebar-accent-foreground: #cfcde4;
+    --sidebar-border: rgba(207, 205, 228, 0.12);
+    --sidebar-ring: #7367f0;
 }
 
 
+
+/* Vuexy Admin Utilities */
+.vuexy-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 0.375rem;
+  box-shadow: 0 0.1875rem 0.75rem 0 rgba(47, 43, 61, 0.12);
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+.vuexy-card:hover {
+  box-shadow: 0 0.25rem 1.125rem 0 rgba(47, 43, 61, 0.22);
+}
+.dark .vuexy-card {
+  box-shadow: 0 0.1875rem 0.75rem 0 rgba(19, 17, 32, 0.2);
+}
+.dark .vuexy-card:hover {
+  box-shadow: 0 0.25rem 1.125rem 0 rgba(19, 17, 32, 0.3);
+}
+
+.vuexy-input {
+  width: 100%;
+  border-radius: 0.375rem;
+  border: 1px solid var(--input);
+  background: var(--card);
+  padding: 0.5rem 0.875rem;
+  font-size: 0.9375rem;
+  color: var(--foreground);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.vuexy-input:focus {
+  border-color: var(--vuexy-primary, #7367f0);
+  box-shadow: 0 0 0 0.2rem rgba(115, 103, 240, 0.25);
+}
+.vuexy-input::placeholder {
+  color: var(--muted-foreground);
+}
+
+.vuexy-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.625rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1;
+}
+.vuexy-badge-primary { background: rgba(115, 103, 240, 0.16); color: #7367f0; }
+.vuexy-badge-success { background: rgba(40, 199, 111, 0.16); color: #28c76f; }
+.vuexy-badge-danger { background: rgba(255, 76, 81, 0.16); color: #ff4c51; }
+.vuexy-badge-warning { background: rgba(255, 159, 67, 0.16); color: #ff9f43; }
+.vuexy-badge-info { background: rgba(0, 186, 209, 0.16); color: #00bad1; }
 
 @layer base {
     * {

@@ -8,49 +8,50 @@ import GallerySection from './GallerySection'
 import GallerySlider from './GallerySlider'
 import ContactSection from './ContactSection'
 import { useTemplateT } from '@/hooks/useTemplateTranslations'
+
+interface Props {
+  tenant?: any;
+  hotelSettings?: any;
+  contactSettings?: any;
+  rooms?: any[];
+  gallery?: any[];
+  siteTexts?: Record<string, any>;
+  activeSections?: string[];
+  templateTranslations?: any;
+  locale?: string;
+}
+
 /**
  * قالب الرياض - قالب فندق احترافي مستوحى من العاصمة السعودية
- * يحتوي على جميع أقسام الموقع المطلوبة لفندق متكامل
  * Riyadh Template - Professional hotel template inspired by the Saudi capital
- * Contains all required website sections for a complete hotel
  */
-export default function Riyadh() {
+export default function Riyadh({ tenant, hotelSettings, contactSettings, rooms, gallery, siteTexts, activeSections, locale }: Props) {
   const t = useTemplateT()
-  
+
+  const shouldShow = (name: string) => !activeSections || activeSections.length === 0 || activeSections.includes(name);
+
   return (
     <TemplateLayout
-      title={t('template.riyadh.title', 'قالب الرياض - فندق فاخر')}
-      description={t('template.riyadh.description', 'قالب موقع فندق فاخر مستوحى من هوية العاصمة الرياض')}
-      templateName={t('template.riyadh.name', 'قالب الرياض')}
+      title={hotelSettings?.hotel_name_ar || t('template.riyadh.title', 'قالب الرياض - فندق فاخر')}
+      description={hotelSettings?.description_ar || t('template.riyadh.description', 'قالب موقع فندق فاخر مستوحى من هوية العاصمة الرياض')}
+      templateName={hotelSettings?.hotel_name_en || t('template.riyadh.name', 'قالب الرياض')}
     >
       <div className="template--riyadh overflow-hidden bg-background dark:bg-black text-foreground dark:text-white">
-        {/* Animated gradient orb in center */}
-        {/* Hero section / slider */}
-        <HeroSection />
+        {shouldShow('hero') && <HeroSection hotelSettings={hotelSettings} siteTexts={siteTexts} />}
 
+        {shouldShow('rooms') && <RoomsSection rooms={rooms} />}
 
+        {shouldShow('services') && <ServicesSection />}
 
-        {/* Rooms section */}
-        <RoomsSection />
-        
-        {/* Services section */}
-        <ServicesSection />
-        
-        {/* Partners section */}
-        <PartnersSection />
-        
-        {/* Testimonials section */}
-        <TestimonialsSection />
-        
-        {/* Gallery section */}
-        <GallerySection />
-        
-        {/* Gallery slider */}
-        <GallerySlider />
-        
-        {/* Contact section */}
-        <ContactSection />
+        {shouldShow('partners') && <PartnersSection />}
 
+        {shouldShow('testimonials') && <TestimonialsSection />}
+
+        {shouldShow('gallery') && <GallerySection gallery={gallery} />}
+
+        <GallerySlider gallery={gallery} />
+
+        {shouldShow('contact') && <ContactSection contactSettings={contactSettings} />}
       </div>
     </TemplateLayout>
   )

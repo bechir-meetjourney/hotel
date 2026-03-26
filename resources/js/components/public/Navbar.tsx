@@ -1,6 +1,6 @@
 // resources/js/components/public/Navbar.tsx
 import { Link, router } from '@inertiajs/react'
-import { Menu, X } from 'lucide-react'            
+import { Menu, X, LogIn } from 'lucide-react'
 import { useState } from 'react'
 import LanguageSwitcher from './navbar/LanguageSwitcher'
 import SubscribeButton from './navbar/SubscribeButton'
@@ -65,6 +65,13 @@ export default function Navbar() {
         
         {/* Desktop action buttons */}
         <div className="hidden lg:flex items-center gap-3">
+          <Link
+            href="/login"
+            className="inline-flex items-center gap-2 rounded-lg border border-public-primary px-4 py-2 text-sm font-semibold text-public-primary transition-colors hover:bg-public-primary hover:text-white"
+          >
+            <LogIn className="h-4 w-4" />
+            {__('messages.nav.login')}
+          </Link>
           <SubscribeButton />
           <LanguageSwitcher />
         </div>

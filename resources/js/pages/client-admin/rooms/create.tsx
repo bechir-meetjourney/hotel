@@ -1,18 +1,34 @@
 import AppLayout from '@/layouts/app-layout';
+import { useT } from '@/hooks/use-translations';
 import { type BreadcrumbItem } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
 import { Upload, X } from 'lucide-react';
 import { useState } from 'react';
 
-const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Client Admin', href: '/client-admin' },
-    { title: 'Rooms', href: '/client-admin/rooms' },
-    { title: 'Create', href: '#' },
-];
-
 const amenitiesList = ['wifi', 'tv', 'minibar', 'safe', 'air_conditioning', 'balcony', 'sea_view', 'room_service', 'jacuzzi', 'kitchen'];
 
 export default function CreateRoom() {
+    const { t } = useT();
+
+    const breadcrumbs: BreadcrumbItem[] = [
+        { title: t('client_admin'), href: '/client-admin' },
+        { title: t('rooms'), href: '/client-admin/rooms' },
+        { title: t('create'), href: '#' },
+    ];
+
+    const amenityLabels: Record<string, string> = {
+        wifi: t('wifi'),
+        tv: t('tv'),
+        minibar: t('minibar'),
+        safe: t('safe'),
+        air_conditioning: t('air_conditioning'),
+        balcony: t('balcony'),
+        sea_view: t('sea_view'),
+        room_service: t('room_service'),
+        jacuzzi: t('jacuzzi'),
+        kitchen: t('kitchen'),
+    };
+
     const { data, setData, post, processing, errors } = useForm<{
         name_ar: string;
         name_en: string;
@@ -77,74 +93,74 @@ export default function CreateRoom() {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Create Room" />
             <div className="mx-auto max-w-3xl p-6">
-                <h1 className="mb-6 text-2xl font-bold">Add New Room</h1>
+                <h1 className="mb-6 text-2xl font-bold">{t('create_room')}</h1>
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-6">
                     {/* Basic Info */}
-                    <div className="rounded-xl border bg-card p-6">
-                        <h2 className="mb-4 text-lg font-semibold">Room Details</h2>
+                    <div className="vuexy-card p-6">
+                        <h2 className="mb-4 text-lg font-semibold">{t('room_details')}</h2>
                         <div className="grid gap-4 sm:grid-cols-2">
-                            <Field label="Name (Arabic)" error={errors.name_ar}>
-                                <input type="text" value={data.name_ar} onChange={(e) => setData('name_ar', e.target.value)} className="input" required dir="rtl" />
+                            <Field label={t('name_ar')} error={errors.name_ar}>
+                                <input type="text" value={data.name_ar} onChange={(e) => setData('name_ar', e.target.value)} className="vuexy-input" required dir="rtl" />
                             </Field>
-                            <Field label="Name (English)" error={errors.name_en}>
-                                <input type="text" value={data.name_en} onChange={(e) => setData('name_en', e.target.value)} className="input" required />
+                            <Field label={t('name_en')} error={errors.name_en}>
+                                <input type="text" value={data.name_en} onChange={(e) => setData('name_en', e.target.value)} className="vuexy-input" required />
                             </Field>
-                            <Field label="Type" error={errors.type}>
-                                <select value={data.type} onChange={(e) => setData('type', e.target.value)} className="input">
-                                    <option value="standard">Standard</option>
-                                    <option value="deluxe">Deluxe</option>
-                                    <option value="suite">Suite</option>
-                                    <option value="family">Family</option>
+                            <Field label={t('type')} error={errors.type}>
+                                <select value={data.type} onChange={(e) => setData('type', e.target.value)} className="vuexy-input">
+                                    <option value="standard">{t('standard')}</option>
+                                    <option value="deluxe">{t('deluxe')}</option>
+                                    <option value="suite">{t('suite')}</option>
+                                    <option value="family">{t('family')}</option>
                                 </select>
                             </Field>
-                            <Field label="Price (SAR)" error={errors.price}>
-                                <input type="number" value={data.price} onChange={(e) => setData('price', e.target.value)} className="input" required min="0" step="0.01" />
+                            <Field label={t('price_sar')} error={errors.price}>
+                                <input type="number" value={data.price} onChange={(e) => setData('price', e.target.value)} className="vuexy-input" required min="0" step="0.01" />
                             </Field>
-                            <Field label="Capacity" error={errors.capacity}>
-                                <input type="number" value={data.capacity} onChange={(e) => setData('capacity', e.target.value)} className="input" required min="1" />
+                            <Field label={t('capacity')} error={errors.capacity}>
+                                <input type="number" value={data.capacity} onChange={(e) => setData('capacity', e.target.value)} className="vuexy-input" required min="1" />
                             </Field>
                         </div>
                         <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                            <Field label="Description (Arabic)" error={errors.description_ar}>
-                                <textarea value={data.description_ar} onChange={(e) => setData('description_ar', e.target.value)} className="input" rows={3} dir="rtl" />
+                            <Field label={t('desc_ar')} error={errors.description_ar}>
+                                <textarea value={data.description_ar} onChange={(e) => setData('description_ar', e.target.value)} className="vuexy-input" rows={3} dir="rtl" />
                             </Field>
-                            <Field label="Description (English)" error={errors.description_en}>
-                                <textarea value={data.description_en} onChange={(e) => setData('description_en', e.target.value)} className="input" rows={3} />
+                            <Field label={t('desc_en')} error={errors.description_en}>
+                                <textarea value={data.description_en} onChange={(e) => setData('description_en', e.target.value)} className="vuexy-input" rows={3} />
                             </Field>
                         </div>
                     </div>
 
                     {/* Amenities */}
-                    <div className="rounded-xl border bg-card p-6">
-                        <h2 className="mb-4 text-lg font-semibold">Amenities</h2>
+                    <div className="vuexy-card p-6">
+                        <h2 className="mb-4 text-lg font-semibold">{t('amenities')}</h2>
                         <div className="flex flex-wrap gap-2">
                             {amenitiesList.map((amenity) => (
                                 <button
                                     key={amenity}
                                     type="button"
                                     onClick={() => toggleAmenity(amenity)}
-                                    className={`rounded-full px-4 py-2 text-sm capitalize transition ${
+                                    className={`rounded-full px-4 py-2 text-sm transition ${
                                         data.amenities.includes(amenity)
                                             ? 'bg-primary text-primary-foreground'
                                             : 'border hover:bg-muted'
                                     }`}
                                 >
-                                    {amenity.replace('_', ' ')}
+                                    {amenityLabels[amenity]}
                                 </button>
                             ))}
                         </div>
                     </div>
 
                     {/* Images */}
-                    <div className="rounded-xl border bg-card p-6">
-                        <h2 className="mb-4 text-lg font-semibold">Images</h2>
+                    <div className="vuexy-card p-6">
+                        <h2 className="mb-4 text-lg font-semibold">{t('images')}</h2>
 
                         <div className="mb-4">
-                            <label className="mb-2 block text-sm font-medium">Featured Image</label>
+                            <label className="mb-2 block text-sm font-medium">{t('featured_image')}</label>
                             <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 transition hover:bg-muted">
                                 <Upload className="h-5 w-5 text-muted-foreground" />
-                                <span className="text-sm text-muted-foreground">Click to upload</span>
+                                <span className="text-sm text-muted-foreground">{t('click_to_upload')}</span>
                                 <input type="file" accept="image/*" onChange={handleFeaturedImage} className="hidden" />
                             </label>
                             {featuredPreview && (
@@ -155,10 +171,10 @@ export default function CreateRoom() {
                         </div>
 
                         <div>
-                            <label className="mb-2 block text-sm font-medium">Additional Images</label>
+                            <label className="mb-2 block text-sm font-medium">{t('additional_images')}</label>
                             <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 transition hover:bg-muted">
                                 <Upload className="h-5 w-5 text-muted-foreground" />
-                                <span className="text-sm text-muted-foreground">Click to upload multiple</span>
+                                <span className="text-sm text-muted-foreground">{t('click_upload_multiple')}</span>
                                 <input type="file" accept="image/*" multiple onChange={handleImages} className="hidden" />
                             </label>
                             {imagePreviews.length > 0 && (
@@ -179,23 +195,17 @@ export default function CreateRoom() {
                     {/* Active */}
                     <label className="flex items-center gap-2 text-sm">
                         <input type="checkbox" checked={data.is_active} onChange={(e) => setData('is_active', e.target.checked)} className="rounded border-gray-300" />
-                        Active (visible on website)
+                        {t('active_visible')}
                     </label>
 
                     <div className="flex justify-end gap-3">
-                        <a href="/client-admin/rooms" className="rounded-lg border px-6 py-2.5 text-sm hover:bg-muted">Cancel</a>
+                        <a href="/client-admin/rooms" className="rounded-lg border px-6 py-2.5 text-sm hover:bg-muted">{t('cancel')}</a>
                         <button type="submit" disabled={processing} className="rounded-lg bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50">
-                            {processing ? 'Creating...' : 'Create Room'}
+                            {processing ? t('creating') : t('create_room')}
                         </button>
                     </div>
                 </form>
             </div>
-
-            <style>{`
-                .input { width:100%; border-radius:0.5rem; border:1px solid hsl(var(--border)); background:hsl(var(--background)); padding:0.625rem 1rem; font-size:0.875rem; outline:none; }
-                .input:focus { box-shadow:0 0 0 2px hsl(var(--primary)/0.2); }
-                textarea.input { resize:vertical; }
-            `}</style>
         </AppLayout>
     );
 }

@@ -27,7 +27,11 @@ import rightLine from '@/assets/images/riyadh-template/rooms/right-line.svg'
 
 
 
-export default function ContactSection() {
+interface ContactSectionProps {
+  contactSettings?: any;
+}
+
+export default function ContactSection({ contactSettings }: ContactSectionProps) {
   const t = useTemplateT()
   const { isArabic } = useTemplateLanguage()
   // Bilingual contact form fields configuration
@@ -90,11 +94,11 @@ export default function ContactSection() {
     console.log('Form submitted:', formData)
   }
 
-  // Company contact information with icons
+  // Company contact information — use backend data if available
   const contactInfo = [
-    { icon: MapPin, text: 'الرياض، المملكة العربية السعودية' },
-    { icon: Mail, text: 'info@diyafa.com', href: 'mailto:info@diyafa.com' },
-    { icon: LiaPhoneVolumeSolid, text: '+966 666 666 66', href: 'tel:+96666666666' },
+    { icon: MapPin, text: (isArabic ? contactSettings?.address_ar : contactSettings?.address_en) || 'الرياض، المملكة العربية السعودية' },
+    { icon: Mail, text: contactSettings?.email || 'info@diyafa.com', href: `mailto:${contactSettings?.email || 'info@diyafa.com'}` },
+    { icon: LiaPhoneVolumeSolid, text: contactSettings?.phone || '+966 666 666 66', href: `tel:${contactSettings?.phone || '+96666666666'}` },
   ]
 
   return (

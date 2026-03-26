@@ -231,5 +231,5 @@ test('client admin can delete a room', function () {
 test('super admin cannot access room management', function () {
     $user = User::factory()->superAdmin()->create();
 
-    $this->actingAs($user)->get('/client-admin/rooms')->assertForbidden();
+    $this->actingAs($user)->get('/client-admin/rooms')->assertRedirect('/login');
 });

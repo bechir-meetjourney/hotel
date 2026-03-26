@@ -10,7 +10,7 @@
  */
 import { useState, useEffect } from 'react'
 import BackgroundTitle from '@/components/templates/BackgroundTitle'
-import { useTemplateT } from '@/hooks/useTemplateTranslations'
+import { useTemplateT, useTemplateLanguage } from '@/hooks/useTemplateTranslations'
 import leftLine from '../images/rooms/left-line.svg'
 import rightLine from '../images/rooms/right-line.svg'
 import CircularGallery from './CircularGallery'
@@ -22,8 +22,13 @@ import image2 from '../images/galary/imag2.png'
 import image3 from '../images/galary/imag3.png'
 import image4 from '../images/galary/imag4.png'
 
-export default function Gallery() {
+interface Props {
+  gallery?: any[];
+}
+
+export default function Gallery({ gallery }: Props) {
   const t = useTemplateT()
+  const { isArabic } = useTemplateLanguage()
   const [galleryStyle, setGalleryStyle] = useState<'riyadh' | 'madina'>('riyadh')
 
   // Load gallery slider style from localStorage
@@ -52,13 +57,23 @@ export default function Gallery() {
     }
   }, [])
 
-  // Image data for circular gallery
-  const galleryItems = [
+  // Static fallback gallery items
+  const staticGalleryItems = [
     { image: image1, text: 'غرفة ديلوكس' },
     { image: image2, text: 'مطعم فاخر' },
     { image: image3, text: 'مسبح داخلي' },
     { image: image4, text: 'منتجع صحي' },
   ]
+
+  // Map dynamic backend data if available, otherwise use static fallback
+  const dynamicGalleryItems = gallery && gallery.length > 0
+    ? gallery.map(img => ({
+        image: `/storage/${img.path}`,
+        text: isArabic ? (img.title_ar || img.category) : (img.title_en || img.category),
+      }))
+    : null;
+
+  const galleryItems = dynamicGalleryItems || staticGalleryItems;
   
   // If style is madina (curved), use SliderGallery with same images
   if (galleryStyle === 'madina') {

@@ -66,39 +66,43 @@ import priceIcon from '@/assets/images/riyadh-template/rooms/icons/price.svg'
 import leftLine from '@/assets/images/riyadh-template/rooms/left-line.svg'
 import rightLine from '@/assets/images/riyadh-template/rooms/right-line.svg'
 
-export default function RoomsSection() {
+interface RoomsSectionProps {
+  rooms?: any[];
+}
+
+export default function RoomsSection({ rooms: backendRooms }: RoomsSectionProps) {
   const t = useTemplateT()
   const { isArabic } = useTemplateLanguage()
   const [modalOpen, setModalOpen] = useState(false)
   const [defaultType, setDefaultType] = useState<BookingType>('غرفة')
-  // Use real template room data; limit to three items for this section layout
+
+  // Use backend rooms if available, otherwise fallback to static data
   const rooms = useMemo(() => {
-    // Add English translations to the room data
+    if (backendRooms && backendRooms.length > 0) {
+      return backendRooms.slice(0, 3).map((room, i) => ({
+        id: room.id,
+        name: room.name_ar || room.name,
+        nameEn: room.name_en || room.name,
+        description: room.description_ar || room.description || '',
+        descriptionEn: room.description_en || room.description || '',
+        price: room.price,
+        maxGuests: room.capacity || 2,
+        image: room.featured_image ? `/storage/${room.featured_image}` : roomImage,
+        amenities: room.amenities || [],
+      }));
+    }
+
+    // Fallback to static data
     return riyadhRoomsData.slice(0, 3).map(room => ({
       ...room,
-      // Default English translations - in a real app, these would come from the database
       nameEn: getBilingualRoomData(room.id).nameEn,
       descriptionEn: getBilingualRoomData(room.id).descriptionEn,
       currencyEn: 'SAR',
       featuresEn: getBilingualRoomData(room.id).featuresEn,
       bedTypeEn: getBilingualRoomData(room.id).bedTypeEn,
-      amenitiesEn: room.amenities?.map(amenity => {
-        // Map Arabic amenities to English - simplified example
-        const amenityMap: Record<string, string> = {
-          'تلفزيون ذكي 75 بوصة': 'Smart TV 75"',
-          'نظام صوتي متطور': 'Advanced Sound System',
-          'مينيبار مجاني': 'Free Minibar',
-          'خدمة غرف 24/7': '24/7 Room Service',
-          'إنترنت فائق السرعة': 'High-Speed Internet',
-          'تكييف ذكي': 'Smart AC',
-          'خزنة إلكترونية': 'Electronic Safe',
-          'آلة صنع القهوة': 'Coffee Machine',
-        };
-        return amenityMap[amenity] || amenity;
-      }),
-      popularTagEn: room.popularTag ? (room.popularTag === 'الأكثر طلباً' ? 'Most Popular' : 'Family Friendly') : undefined,
+      image: roomImage,
     })) as BilingualRoom[];
-  }, [])
+  }, [backendRooms])
 
   const onBookClick = () => {
     // In a real app, we'd pass the room ID here
@@ -141,8 +145,8 @@ export default function RoomsSection() {
               {/* Room image */}
               <div className=" overflow-hidden rounded-xl mb-4 flex-shrink-0">
                 <img
-                  src={roomImage}
-                  alt={room.name}
+                  src={room.image || roomImage}
+                  alt={isArabic ? room.name : (room.nameEn || room.name)}
                   className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                 />
               </div>

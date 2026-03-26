@@ -22,12 +22,12 @@ test('client admin can access their dashboard', function () {
         );
 });
 
-test('super admin cannot access client admin dashboard', function () {
+test('super admin cannot access client admin dashboard and is redirected to login', function () {
     $user = User::factory()->superAdmin()->create();
 
     $this->actingAs($user)
         ->get('/client-admin')
-        ->assertForbidden();
+        ->assertRedirect('/login');
 });
 
 test('guest cannot access client admin dashboard', function () {
@@ -35,10 +35,19 @@ test('guest cannot access client admin dashboard', function () {
         ->assertRedirect('/login');
 });
 
-test('client admin without tenant is forbidden', function () {
+test('client admin without tenant is redirected to login', function () {
     $user = User::factory()->create(['role' => 'client_admin', 'tenant_id' => null]);
 
     $this->actingAs($user)
         ->get('/client-admin')
-        ->assertForbidden();
+        ->assertRedirect('/login');
+});
+
+test('client admin with inactive tenant is redirected to login', function () {
+    $tenant = Tenant::factory()->inactive()->create();
+    $user = User::factory()->clientAdmin($tenant->id)->create();
+
+    $this->actingAs($user)
+        ->get('/client-admin')
+        ->assertRedirect('/login');
 });

@@ -25,6 +25,12 @@ class Tenant extends Model
         'plan',
         'is_active',
         'settings',
+        'payment_status',
+        'payment_method',
+        'bank_transfer_receipt',
+        'payment_notes',
+        'org_name_ar',
+        'org_name_en',
     ];
 
     protected function casts(): array

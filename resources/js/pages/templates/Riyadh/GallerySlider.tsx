@@ -34,7 +34,11 @@ interface BilingualGalleryImage {
   altEn: string
 }
 
-export default function GallerySlider() {
+interface GallerySliderProps {
+  gallery?: any[];
+}
+
+export default function GallerySlider({ gallery: backendGallery }: GallerySliderProps) {
   const t = useTemplateT()
   const { isArabic } = useTemplateLanguage()
   const swiperRef = useRef<SwiperType | null>(null)
@@ -66,8 +70,15 @@ export default function GallerySlider() {
     }
   }, [])
 
-  // Mock bilingual gallery data - can be replaced with dynamic data later
-  const galleryImages: BilingualGalleryImage[] = [
+  // Use backend gallery if available, otherwise fallback to static data
+  const galleryImages: BilingualGalleryImage[] = (backendGallery && backendGallery.length > 0)
+    ? backendGallery.map((img, i) => ({
+        id: img.id || i + 1,
+        src: img.path ? `/storage/${img.path}` : image1,
+        altAr: img.title_ar || '',
+        altEn: img.title_en || '',
+      }))
+    : [
     { id: 1, src: image1, altAr: 'غرفة ديلوكس مع إطلالة رائعة', altEn: 'Deluxe room with amazing view' },
     { id: 2, src: image2, altAr: 'مطعم فاخر بتصميم عصري', altEn: 'Luxury restaurant with modern design' },
     { id: 3, src: image3, altAr: 'مسبح داخلي مُدفأ', altEn: 'Indoor heated swimming pool' },

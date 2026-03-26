@@ -14,6 +14,10 @@ return [
     'subscribe' => 'Subscribe',
     'language'  => 'English',
 
+    'nav' => [
+        'login' => 'Log in',
+    ],
+
     'hero' => [
         'logo_alt'    => 'Diyafah logo',
         'title'       => 'Create, control, and grow your bookings',

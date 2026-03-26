@@ -53,7 +53,11 @@ import priceIcon from '../images/rooms/icons/price.svg'
 import leftIcon from '../images/rooms/left-icon.svg'
 import rightIcon from '../images/rooms/right-icon.svg'
 
-export default function RoomsSection() {
+interface Props {
+  rooms?: any[];
+}
+
+export default function RoomsSection({ rooms: backendRooms }: Props) {
   const t = useTemplateT()
   const { isArabic } = useTemplateLanguage()
   const [modalOpen, setModalOpen] = useState(false)
@@ -152,8 +156,29 @@ export default function RoomsSection() {
     },
   ]
   
-  // Convert to current language
-  const rooms = useMemo(() => {
+  // Use backend rooms if available, otherwise use static data
+  const roomsSource = useMemo(() => {
+    if (backendRooms && backendRooms.length > 0) {
+      return backendRooms.map((room, index) => ({
+        id: room.id,
+        name: isArabic ? room.name_ar : room.name_en,
+        description: isArabic ? (room.description_ar || '') : (room.description_en || ''),
+        price: Number(room.price) || 0,
+        originalPrice: undefined,
+        currency: isArabic ? 'ريال' : 'SAR',
+        features: isArabic
+          ? (room.amenities || []).slice(0, 3).map((a: string) => a)
+          : (room.amenities || []).slice(0, 3).map((a: string) => a),
+        bedType: isArabic ? 'سرير مزدوج' : 'Double Bed',
+        amenities: room.amenities || [],
+        maxGuests: room.capacity || 2,
+        size: 30,
+        image: room.featured_image ? `/storage/${room.featured_image}` : (room.images?.[0]?.path ? `/storage/${room.images[0].path}` : bilingualRoomsData[index % bilingualRoomsData.length]?.image),
+        popularTag: undefined,
+        isAvailable: true,
+      }));
+    }
+    // Fallback to static data
     return bilingualRoomsData.map(room => ({
       id: room.id,
       name: isArabic ? room.nameAr : room.nameEn,
@@ -167,12 +192,12 @@ export default function RoomsSection() {
       maxGuests: room.maxGuests,
       size: room.size,
       image: room.image,
-      popularTag: room.popularTagAr || room.popularTagEn 
+      popularTag: room.popularTagAr || room.popularTagEn
         ? (isArabic ? room.popularTagAr : room.popularTagEn)
         : undefined,
       isAvailable: true,
     }));
-  }, [isArabic])
+  }, [isArabic, backendRooms])
 
   // Update SVG gradient colors when CSS variable changes
   useEffect(() => {
@@ -185,7 +210,7 @@ export default function RoomsSection() {
       const primaryLightColor = roomButtonLight || root.getPropertyValue('--madina-primary-light').trim()
       
       // Update all gradient stops
-      rooms.forEach((room) => {
+      roomsSource.forEach((room) => {
         const stop0 = document.querySelector(`#paint0_linear_${room.id} stop:nth-child(1)`) as SVGStopElement
         const stop1 = document.querySelector(`#paint0_linear_${room.id} stop:nth-child(2)`) as SVGStopElement
         const stop2 = document.querySelector(`#paint1_linear_${room.id} stop:nth-child(1)`) as SVGStopElement
@@ -207,7 +232,7 @@ export default function RoomsSection() {
     return () => {
       clearInterval(interval)
     }
-  }, [rooms])
+  }, [roomsSource])
 
   const onBookClick = () => {
     setDefaultType('جناح');
@@ -274,7 +299,7 @@ export default function RoomsSection() {
 
         {/* Rooms grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {rooms.map((room) => (
+          {roomsSource.map((room) => (
             <div
               key={room.id}
               className={`relative transition-all duration-300 ${

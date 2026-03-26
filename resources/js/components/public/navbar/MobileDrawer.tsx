@@ -2,7 +2,9 @@
 import { useEffect } from 'react'
 import SubscribeButton from './SubscribeButton'
 import LanguageSwitcher from './LanguageSwitcher'
-import { router } from '@inertiajs/react'
+import { Link, router } from '@inertiajs/react'
+import { LogIn } from 'lucide-react'
+import { useLang } from '@/hooks/useLang'
 
 type Item = { href: string; label: string }
 
@@ -35,6 +37,7 @@ export default function MobileDrawer({
   onClose: () => void
   items: Item[]
 }) {
+  const { __ } = useLang()
   useEffect(() => {
     if (!open) return
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
@@ -66,6 +69,15 @@ export default function MobileDrawer({
             {label}
           </button>
         ))}
+
+        <Link
+          href="/login"
+          onClick={onClose}
+          className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-public-primary px-4 py-2.5 text-sm font-semibold text-public-primary transition-colors hover:bg-public-primary hover:text-white"
+        >
+          <LogIn className="h-4 w-4" />
+          {__('messages.nav.login')}
+        </Link>
 
         <div className="pt-2">
           <SubscribeButton onClick={onClose} />

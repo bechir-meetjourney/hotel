@@ -2,7 +2,7 @@
 import React, { useMemo, useState } from "react";
 import { router, Head } from "@inertiajs/react";
 import PublicLayout from "@/layouts/public-layout";
-import { ChevronDown, Eye } from "lucide-react";
+import { ChevronDown, Eye, Clock } from "lucide-react";
 import {
   FILTERS,
   TEMPLATES,
@@ -90,54 +90,73 @@ export default function Templates() {
 
           {/* Templates grid */}
           <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-3">
-            {items.map((item) => (
+            {items.map((item) => {
+              const title = item.titleKey ? __(item.titleKey) : item.title;
+              return (
               <article key={item.id} className="group relative flex flex-col items-center text-center">
                 <div className="relative w-full overflow-hidden rounded-xl shadow-md transition-colors duration-300">
                   {/* Image */}
                   <img
                     src={item.src}
-                    alt={item.title ?? "قالب"}
-                    className="w-full h-auto object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                    alt={title ?? "قالب"}
+                    className={`w-full h-auto object-cover transition-transform duration-300 ${item.comingSoon ? 'grayscale opacity-60' : 'group-hover:scale-[1.03]'}`}
                     loading="lazy"
                     decoding="async"
                   />
 
-                  {/* Hover preview overlay — does not block choose button */}
-                  <div className="pointer-events-none absolute inset-0 z-10 grid place-items-center opacity-0 transition-all duration-300 group-hover:opacity-100 bg-black/55">
-                    <button
-                      type="button"
-                      onClick={() => setPreview(item)}
-                      className="pointer-events-auto inline-flex flex-col items-center gap-2 text-white/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 rounded-md px-3 py-2"
-                      aria-label={__("messages.templates_page.preview_aria") || "معاينة القالب"}
-                    >
-                      <Eye className="h-10 w-10" aria-hidden="true" />
-                      <span className="text-base sm:text-lg tracking-wide">
-                        {__("messages.common.preview") || "معاينة"}
-                      </span>
-                    </button>
-                  </div>
+                  {item.comingSoon ? (
+                    /* Coming Soon overlay */
+                    <div className="absolute inset-0 z-10 grid place-items-center bg-black/50">
+                      <div className="flex flex-col items-center gap-3 text-white">
+                        <div className="rounded-full bg-white/20 p-4 backdrop-blur-sm">
+                          <Clock className="h-8 w-8" />
+                        </div>
+                        <span className="text-xl sm:text-2xl font-bold">قريبـــاً</span>
+                        <span className="text-sm text-white/70">Coming Soon</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      {/* Hover preview overlay */}
+                      <div className="pointer-events-none absolute inset-0 z-10 grid place-items-center opacity-0 transition-all duration-300 group-hover:opacity-100 bg-black/55">
+                        <button
+                          type="button"
+                          onClick={() => setPreview(item)}
+                          className="pointer-events-auto inline-flex flex-col items-center gap-2 text-white/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 rounded-md px-3 py-2"
+                          aria-label={__("messages.templates_page.preview_aria") || "معاينة القالب"}
+                        >
+                          <Eye className="h-10 w-10" aria-hidden="true" />
+                          <span className="text-base sm:text-lg tracking-wide">
+                            {__("messages.common.preview") || "معاينة"}
+                          </span>
+                        </button>
+                      </div>
 
-                  <button
-                    type="button"
-                    onClick={() =>
-                      router.visit(route('setup.plan', {
-                        template_id: item.id,
-                        template_title: item.title,
-                      }))
-                    }
-                    className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 w-fit rounded-lg border-2 px-4 py-3 font-bold
-                              bg-[#C5C7FC] text-public-sub-title border-public-sub-title hover:opacity-90 duration-300
-                              focus:outline-none focus-visible:ring-2 focus-visible:ring-public-sub-title cursor-pointer"
-                  >
-                    {__("messages.templates_page.choose_this_template") || "اختيــــار هذا القـــالب"}
-                  </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          router.visit(route('setup.plan', {
+                            template_id: item.id,
+                            template_title: title,
+                          }))
+                        }
+                        className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 w-fit rounded-lg border-2 px-4 py-3 font-bold
+                                  bg-[#C5C7FC] text-public-sub-title border-public-sub-title hover:opacity-90 duration-300
+                                  focus:outline-none focus-visible:ring-2 focus-visible:ring-public-sub-title cursor-pointer"
+                      >
+                        {__("messages.templates_page.choose_this_template") || "اختيــــار هذا القـــالب"}
+                      </button>
+                    </>
+                  )}
                 </div>
 
-                <h3 className="mt-3 text-md sm:text-xl font-semibold text-black">
-                  {item.title}
+                <h3 className={`mt-3 text-md sm:text-xl font-semibold ${item.comingSoon ? 'text-gray-400' : 'text-black'}`}>
+                  {title}
+                  {item.comingSoon && <span className="ms-2 text-xs text-gray-400">(قريباً)</span>}
                 </h3>
               </article>
-            ))}
+              );
+            })}
           </div>
 
           {canShowMore && (
