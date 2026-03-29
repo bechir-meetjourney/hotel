@@ -1,8 +1,7 @@
 {
     "$schema": "https://railway.app/railway.schema.json",
     "build": {
-        "builder": "NIXPACKS",
-        "buildCommand": "composer install --no-dev --optimize-autoloader --no-interaction && npm ci && npm run build"
+        "builder": "NIXPACKS"
     },
     "deploy": {
         "startCommand": "php artisan config:clear && php artisan route:clear && php artisan view:clear && php artisan migrate --force && php artisan db:seed --class=PlanSeeder --force && php artisan db:seed --class=TemplateSeeder --force && php artisan db:seed --class=PermissionSeeder --force && php artisan serve --host=0.0.0.0 --port=$PORT",
