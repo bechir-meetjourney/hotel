@@ -16,7 +16,7 @@ return [
     |
     */
 
-    'default' => env('DB_CONNECTION', 'sqlite'),
+    'default' => env('DATABASE_URL') ? 'pgsql' : trim(env('DB_CONNECTION', 'sqlite')),
 
     /*
     |--------------------------------------------------------------------------
