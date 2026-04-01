@@ -1,5 +1,5 @@
 # Stage 1: Build frontend assets
-FROM node:20-alpine AS node-builder
+FROM node:20 AS node-builder
 
 WORKDIR /app
 
