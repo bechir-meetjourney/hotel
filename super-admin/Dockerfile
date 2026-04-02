@@ -32,11 +32,11 @@ RUN mkdir -p storage/framework/{sessions,views,cache} \
 
 EXPOSE ${PORT:-8080}
 
-CMD php artisan config:clear && \
-    php artisan route:clear && \
-    php artisan view:clear && \
-    php artisan migrate --force && \
-    php artisan db:seed --class=PlanSeeder --force && \
-    php artisan db:seed --class=TemplateSeeder --force && \
-    php artisan db:seed --class=PermissionSeeder --force && \
+CMD php artisan config:clear; \
+    php artisan route:clear; \
+    php artisan view:clear; \
+    php artisan migrate --force; \
+    php artisan db:seed --class=PlanSeeder --force || true; \
+    php artisan db:seed --class=TemplateSeeder --force || true; \
+    php artisan db:seed --class=PermissionSeeder --force || true; \
     php artisan serve --host=0.0.0.0 --port=${PORT:-8080}
