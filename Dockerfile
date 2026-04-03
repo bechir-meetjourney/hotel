@@ -25,6 +25,7 @@ RUN apk add --no-cache \
     unzip \
     icu-dev \
     oniguruma-dev \
+    postgresql-dev \
     linux-headers
 
 # Install PHP extensions
@@ -40,10 +41,6 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     zip \
     intl \
     opcache
-
-# Install PostgreSQL dev libraries (needed for pdo_pgsql)
-RUN apk add --no-cache postgresql-dev \
-    && docker-php-ext-install pdo_pgsql
 
 # Configure PHP for production
 RUN cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
