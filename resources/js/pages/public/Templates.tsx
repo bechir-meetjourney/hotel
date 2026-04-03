@@ -15,8 +15,13 @@ import SetupBanner from "@/components/public/setup/SetupBanner";
 
 import { useLang } from '@/hooks/useLang'
 
+interface Props {
+  activeTemplates?: string[];
+}
+
 // Public page: Templates gallery — allows filtering and template selection.
-export default function Templates() {
+// Filters out templates disabled by super-admin via activeTemplates prop.
+export default function Templates({ activeTemplates }: Props) {
   const { __ } = useLang();
 
   // Use the template key instead of translated text for filtering
@@ -24,10 +29,21 @@ export default function Templates() {
   const [visibleCount, setVisibleCount] = useState(9);
   const [preview, setPreview] = useState<TemplateItem | null>(null);
 
-  // Filter by values (keys)
+  // Filter out templates disabled by super-admin (if activeTemplates provided)
+  const availableTemplates = useMemo(() => {
+    if (!activeTemplates || activeTemplates.length === 0) return TEMPLATES;
+    return TEMPLATES.map(t => {
+      if (t.templateSlug && !activeTemplates.includes(t.templateSlug)) {
+        return { ...t, comingSoon: true };
+      }
+      return t;
+    });
+  }, [activeTemplates]);
+
+  // Filter by region
   const filtered = useMemo(
-    () => (active === "all" ? TEMPLATES : TEMPLATES.filter(t => t.region === active)),
-    [active]
+    () => (active === "all" ? availableTemplates : availableTemplates.filter(t => t.region === active)),
+    [active, availableTemplates]
   );
 
   const items = filtered.slice(0, visibleCount);

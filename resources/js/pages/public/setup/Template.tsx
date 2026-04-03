@@ -7,13 +7,24 @@ import { TEMPLATES, type TemplateItem } from "@/components/public/templates/cons
 import AnimatedHeading from '@/components/motion/AnimatedHeading'
 import { useLang } from '@/hooks/useLang'
 
-interface Props {
-  setup: Record<string, string>
+interface DbTemplate {
+  id: number; key: string; name_ar: string; name_en: string;
 }
 
-export default function Template({ setup }: Props) {
+interface Props {
+  setup: Record<string, string>
+  dbTemplates?: DbTemplate[]
+}
+
+export default function Template({ setup, dbTemplates }: Props) {
   const { __ } = useLang()
   const [preview, setPreview] = useState<TemplateItem | null>(null);
+
+  // Filter templates: if dbTemplates provided, hide disabled ones
+  const activeKeys = dbTemplates?.map(t => t.key) || [];
+  const availableTemplates = activeKeys.length > 0
+    ? TEMPLATES.map(t => t.templateSlug && !activeKeys.includes(t.templateSlug) ? { ...t, comingSoon: true } : t)
+    : TEMPLATES;
 
   const chooseTemplate = (item: TemplateItem) => {
     const title = item.titleKey ? __(item.titleKey) : (item.title || `Template ${item.id}`);
@@ -39,15 +50,15 @@ export default function Template({ setup }: Props) {
           <p className="text-public-sub-title mt-3 text-center text-sm sm:text-base">
             {__("messages.setup.template.templates_count_label")}
             <span className="ms-2 inline-flex items-center justify-center rounded-md bg-public-sub-title px-3 py-1 text-sm font-bold text-white">
-              {TEMPLATES.filter(t => !t.comingSoon).length}
+              {availableTemplates.filter(t => !t.comingSoon).length}
             </span>
             <span className="ms-2 text-xs text-slate-400">
-              (+{TEMPLATES.filter(t => t.comingSoon).length} قريباً)
+              (+{availableTemplates.filter(t => t.comingSoon).length} قريباً)
             </span>
           </p>
 
           <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-3">
-            {TEMPLATES.map((item) => {
+            {availableTemplates.map((item) => {
               const title = item.titleKey ? __(item.titleKey) : (item.title || `Template ${item.id}`);
               return (
               <article key={item.id} className="group relative flex flex-col items-center text-center">

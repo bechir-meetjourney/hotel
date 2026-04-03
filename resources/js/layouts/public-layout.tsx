@@ -16,7 +16,10 @@ export default function PublicLayout({ children }: PropsWithChildren) {
   const page = usePage()
   // page.props comes from the server and has many possible fields. Cast via
   // `unknown` first to avoid unsafe direct conversions and keep TS happy.
-  const { locale, dir } = (page.props as unknown) as { locale: Locale; dir?: 'rtl' | 'ltr' }
+  const { locale, dir, siteSettings } = (page.props as unknown) as {
+    locale: Locale; dir?: 'rtl' | 'ltr';
+    siteSettings?: { colors?: { primary_color?: string; secondary_color?: string }; typography?: { font_family?: string } }
+  }
   const { url } = page // URL changes on each Inertia navigation
 
   const effectiveDir = dir ?? (RTL_LOCALES.includes(locale) ? 'rtl' : 'ltr')
@@ -26,7 +29,16 @@ export default function PublicLayout({ children }: PropsWithChildren) {
     html.lang = locale
     html.dir = effectiveDir
     document.body.classList.toggle('rtl', effectiveDir === 'rtl')
-  }, [locale, effectiveDir])
+
+    // Apply super-admin branding colors as CSS variables
+    if (siteSettings?.colors?.primary_color) {
+      html.style.setProperty('--public-primary', siteSettings.colors.primary_color)
+      html.style.setProperty('--public-active', siteSettings.colors.primary_color)
+    }
+    if (siteSettings?.colors?.secondary_color) {
+      html.style.setProperty('--public-secondary', siteSettings.colors.secondary_color)
+    }
+  }, [locale, effectiveDir, siteSettings])
 
   return (
     // MotionConfig: one place to control defaults & reduced-motion

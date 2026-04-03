@@ -44,7 +44,12 @@ if (!function_exists('inertiaWithLang')) {
 }
 
 Route::get('/Privacy', fn () => inertiaWithLang('public/Privacy'))->name('privacy');
-Route::get('/templates', fn () => inertiaWithLang('public/Templates'))->name('templates');
+Route::get('/templates', function () {
+    syncLangFiles('messages');
+    return \Inertia\Inertia::render('public/Templates', [
+        'activeTemplates' => \App\Models\Template::where('is_active', true)->pluck('key')->toArray(),
+    ]);
+})->name('templates');
 
 // ─── Template Preview Routes ────────────────────────────────
 Route::prefix('template')->name('template.')->group(function () {
