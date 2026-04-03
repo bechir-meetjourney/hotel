@@ -1,7 +1,0 @@
-node_modules
-.git
-.env
-vendor
-tests
-*.md
-public/hot
