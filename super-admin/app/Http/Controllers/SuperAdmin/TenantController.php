@@ -113,7 +113,9 @@ class TenantController extends Controller
                 ->where('subscription_ends_at', '<', $now)
                 ->count(),
             'rejected' => Tenant::where('payment_status', 'rejected')->count(),
-            'inactive' => Tenant::where('is_active', false)->count(),
+            'inactive' => Tenant::where('is_active', false)
+                ->whereNotIn('payment_status', ['pending', 'rejected'])
+                ->count(),
         ];
     }
 
@@ -133,7 +135,8 @@ class TenantController extends Controller
                 ->whereNotNull('tenants.subscription_ends_at')
                 ->where('tenants.subscription_ends_at', '<', $now),
             'rejected' => $query->where('tenants.payment_status', 'rejected'),
-            'inactive' => $query->where('tenants.is_active', false),
+            'inactive' => $query->where('tenants.is_active', false)
+                ->whereNotIn('tenants.payment_status', ['pending', 'rejected']),
             default => null,
         };
     }
@@ -279,7 +282,7 @@ class TenantController extends Controller
 
     public function show(Tenant $tenant)
     {
-        $tenant->load('users:id,tenant_id,name,email,phone,photo,role,created_at', 'planModel:id,name_ar,name_en,slug,price', 'tags:id,label,color');
+        $tenant->load('users:id,tenant_id,name,email,phone,photo,role,created_at', 'planModel:id,name_ar,name_en,slug,price', 'tags:id,label,color', 'approver:id,name');
 
         $primaryUser = $tenant->users->firstWhere('role', 'client_admin');
 
@@ -332,8 +335,8 @@ class TenantController extends Controller
         }
 
         if ($tenant->payment_status === 'approved') {
-            $processor = $renewal?->processedByUser;
-            $when = $renewal?->processed_at ?? $tenant->subscription_starts_at ?? $tenant->updated_at;
+            $processor = $renewal?->processedByUser ?? $tenant->approver;
+            $when = $renewal?->processed_at ?? $tenant->approved_at ?? $tenant->subscription_starts_at ?? $tenant->updated_at;
             $events[] = [
                 'label_ar' => 'تم تأكيد عملية الدفع',
                 'label_en' => 'Payment confirmed',
@@ -344,9 +347,9 @@ class TenantController extends Controller
             $events[] = [
                 'label_ar' => 'تم تغيير الحالة من قيد التنفيذ إلى مكتمل',
                 'label_en' => 'Status changed from in-progress to completed',
-                'date' => $tenant->updated_at?->toDateTimeString(),
+                'date' => $tenant->approved_at?->toDateTimeString() ?? $tenant->updated_at?->toDateTimeString(),
                 'type' => 'completed',
-                'actor' => null,
+                'actor' => $tenant->approver?->name,
             ];
         }
 
@@ -503,6 +506,8 @@ class TenantController extends Controller
             'is_active' => true,
             'subscription_starts_at' => now(),
             'subscription_ends_at' => now()->addYear(),
+            'approved_by' => request()->user()?->id,
+            'approved_at' => now(),
         ]);
 
         $admin = User::where('tenant_id', $tenant->id)->where('role', 'client_admin')->first();
@@ -526,6 +531,8 @@ class TenantController extends Controller
         $tenant->update([
             'payment_status' => 'rejected',
             'payment_notes' => $request->rejection_reason,
+            'approved_by' => $request->user()?->id,
+            'approved_at' => now(),
         ]);
 
         return back()->with('success', 'تم رفض طلب الدفع');

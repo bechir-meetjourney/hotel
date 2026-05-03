@@ -33,6 +33,15 @@ const KEY_TO_REGION: Record<string, RegionOption> = {
   sulamani: 'sulamani',
 }
 
+// Read region hint from the city columns (city_ar/city_en) when key isn't recognised.
+const CITY_TO_REGION: Record<string, RegionOption> = {
+  'madinah': 'madinah', 'المدينة': 'madinah', 'المدينة المنورة': 'madinah',
+  'makkah': 'makkah', 'مكة': 'makkah', 'مكة المكرمة': 'makkah',
+  'jeddah': 'hijaz', 'جدة': 'hijaz', 'hejaz': 'hijaz', 'الحجاز': 'hijaz',
+  'riyadh': 'central', 'الرياض': 'central', 'central': 'central', 'الوسطى': 'central',
+  'sulamani': 'sulamani', 'السليماني': 'sulamani',
+}
+
 /**
  * Templates component - Template showcase section
  * Prefers server-provided templates; falls back to the static TEMPLATES.
@@ -43,14 +52,20 @@ export default function Templates({ dbTemplates }: Props) {
 
   const items: TemplateItem[] = useMemo(() => {
     if (!dbTemplates || dbTemplates.length === 0) return TEMPLATES
-    return dbTemplates.map<TemplateItem>((t, i) => ({
-      id: t.id,
-      src: storageUrl(t.preview_image) ?? TEMPLATES[i % TEMPLATES.length].src,
-      title: t.name_ar || t.name_en,
-      region: KEY_TO_REGION[t.key] ?? 'madinah',
-      templateSlug: t.is_active && !t.is_coming_soon ? t.key : undefined,
-      comingSoon: t.is_coming_soon || !t.is_active,
-    }))
+    return dbTemplates.map<TemplateItem>((t, i) => {
+      const regionFromKey = KEY_TO_REGION[t.key.toLowerCase()]
+      const regionFromCity = t.city_en ? CITY_TO_REGION[t.city_en.toLowerCase()] : undefined
+      const regionFromCityAr = t.city_ar ? CITY_TO_REGION[t.city_ar.trim()] : undefined
+      const region = regionFromKey ?? regionFromCity ?? regionFromCityAr ?? 'madinah'
+      return {
+        id: t.id,
+        src: storageUrl(t.preview_image) ?? TEMPLATES[i % TEMPLATES.length].src,
+        title: t.name_ar || t.name_en,
+        region,
+        templateSlug: t.is_active && !t.is_coming_soon ? t.key : undefined,
+        comingSoon: t.is_coming_soon || !t.is_active,
+      }
+    })
   }, [dbTemplates, storageUrl])
 
   // Active filter state (use localized "all")

@@ -51,7 +51,27 @@ class RoleController extends Controller
             ->orderBy('name_en')
             ->get();
 
+        // Only surface super-admin scoped permissions in the role builder.
+        // Tenant-level perms (rooms/gallery/services/...) live in the same DB
+        // but belong to the client_admin app and must not appear here.
+        $superAdminGroups = ['dashboard', 'tenants', 'clients', 'invoices', 'transactions', 'renewals', 'catalog', 'cms', 'reviews', 'reports', 'integrations', 'staff'];
+        $allowedKeys = [
+            'tenants.view','tenants.create','tenants.edit','tenants.approve','tenants.reject','tenants.delete','tenants.message',
+            'clients.view','clients.create','clients.edit','clients.set_tier','clients.set_status',
+            'invoices.view','invoices.create','invoices.edit','invoices.send','invoices.mark_paid','invoices.delete',
+            'transactions.view','transactions.manage',
+            'renewals.view','renewals.approve','renewals.reject',
+            'plans.manage','templates.manage','discount_codes.manage','form_builder.manage',
+            'pages.manage','menus.manage','site_settings.edit',
+            'reviews.view','reviews.moderate','reviews.reply',
+            'reports.view','reports.financial','reports.subscriptions','reports.messages',
+            'integrations.manage',
+            'dashboard.view',
+            'staff.view','staff.create','staff.edit','staff.delete','roles.manage',
+        ];
         $permissions = Permission::query()
+            ->whereIn('group', $superAdminGroups)
+            ->whereIn('key', $allowedKeys)
             ->orderBy('group')
             ->orderBy('id')
             ->get(['id', 'key', 'name_ar', 'name_en', 'group']);
@@ -111,6 +131,10 @@ class RoleController extends Controller
 
         if (array_key_exists('permissions', $validated)) {
             $role->permissions()->sync($validated['permissions']);
+            // Drop cached permissions for every user holding this role.
+            $role->users()->pluck('id')->each(function ($uid) {
+                cache()->forget("user.{$uid}.permissions");
+            });
         }
 
         return back()->with('success', 'تم تحديث الدور');

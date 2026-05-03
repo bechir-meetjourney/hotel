@@ -32,6 +32,8 @@ class HandleInertiaRequests extends Middleware
                     'role' => $user->role ?? null,
                     'tenant_id' => $user->tenant_id ?? null,
                 ] : null,
+                // ['*'] for super_admin (implicit all), specific keys for staff.
+                'permissions' => $user ? $user->permissionKeys() : [],
             ],
             'ziggy' => fn (): array => [
                 ...(new Ziggy)->toArray(),

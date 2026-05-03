@@ -40,6 +40,7 @@ class StaffController extends Controller
             'role_id' => $validated['role_id'] ?? null,
             'tenant_id' => null,
             'is_active' => true,
+            'email_verified_at' => now(),
         ]);
 
         if ($validated['send_password_by_email'] ?? false) {
@@ -80,6 +81,7 @@ class StaffController extends Controller
         }
 
         $user->update($validated);
+        cache()->forget("user.{$user->id}.permissions");
 
         return back()->with('success', 'تم تحديث الموظف');
     }

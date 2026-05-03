@@ -34,6 +34,8 @@ class Tenant extends Model
         'settings',
         'payment_status',
         'payment_method',
+        'approved_by',
+        'approved_at',
         'bank_transfer_receipt',
         'payment_notes',
         'admin_notes',
@@ -52,7 +54,13 @@ class Tenant extends Model
             'settings' => 'array',
             'subscription_starts_at' => 'date',
             'subscription_ends_at' => 'date',
+            'approved_at' => 'datetime',
         ];
+    }
+
+    public function approver(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'approved_by');
     }
 
     protected static function booted(): void

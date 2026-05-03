@@ -74,10 +74,10 @@ const STATUS_CARDS: Array<{ key: keyof Stats; labelAr: string; labelEn: string; 
 
 function deriveStatus(t: Tenant): 'completed' | 'pending' | 'expired' | 'rejected' | 'inactive' {
     if ((t.pending_count ?? 0) > 0) return 'pending';
+    if (t.payment_status === 'pending') return 'pending';
     if (t.payment_status === 'rejected') return 'rejected';
     if (!t.is_active) return 'inactive';
     if (t.subscription_ends_at && new Date(t.subscription_ends_at) < new Date()) return 'expired';
-    if (t.payment_status === 'pending') return 'pending';
     return 'completed';
 }
 

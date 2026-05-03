@@ -25,6 +25,7 @@ interface Plan {
     variant: string;
     sort_order: number;
     is_active: boolean;
+    is_coming_soon: boolean;
     tenants_count: number;
     created_at: string;
 }
@@ -154,9 +155,16 @@ export default function PlansIndex({ plans, filters }: Props) {
                                         </td>
                                         <td className="px-4 py-3">{plan.tenants_count}</td>
                                         <td className="px-4 py-3">
-                                            <Badge variant={plan.is_active ? 'default' : 'destructive'} className="rounded-full">
-                                                {plan.is_active ? t('active') : t('inactive')}
-                                            </Badge>
+                                            <div className="flex flex-wrap items-center gap-1">
+                                                <Badge variant={plan.is_active ? 'default' : 'destructive'} className="rounded-full">
+                                                    {plan.is_active ? t('active') : t('inactive')}
+                                                </Badge>
+                                                {plan.is_coming_soon && (
+                                                    <Badge variant="outline" className="rounded-full bg-amber-50 text-amber-700 border-amber-300">
+                                                        قريباً
+                                                    </Badge>
+                                                )}
+                                            </div>
                                         </td>
                                         <td className="px-4 py-3">
                                             <div className="flex items-center gap-1">

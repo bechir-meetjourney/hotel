@@ -9,44 +9,83 @@ class PermissionSeeder extends Seeder
 {
     public function run(): void
     {
-        // ─── Create Permissions ──────────────────────────────────
+        // Super-admin scoped permissions only — no tenant-level rooms/gallery/services.
+        // Those belong to the client-admin app.
         $permissions = [
+            // Dashboard
             ['key' => 'dashboard.view', 'name_ar' => 'عرض لوحة التحكم', 'name_en' => 'View Dashboard', 'group' => 'dashboard'],
 
-            ['key' => 'rooms.view', 'name_ar' => 'عرض الغرف', 'name_en' => 'View Rooms', 'group' => 'rooms'],
-            ['key' => 'rooms.create', 'name_ar' => 'إنشاء غرفة', 'name_en' => 'Create Room', 'group' => 'rooms'],
-            ['key' => 'rooms.edit', 'name_ar' => 'تعديل غرفة', 'name_en' => 'Edit Room', 'group' => 'rooms'],
-            ['key' => 'rooms.delete', 'name_ar' => 'حذف غرفة', 'name_en' => 'Delete Room', 'group' => 'rooms'],
+            // Tenants (requests)
+            ['key' => 'tenants.view', 'name_ar' => 'عرض الطلبات', 'name_en' => 'View Requests', 'group' => 'tenants'],
+            ['key' => 'tenants.create', 'name_ar' => 'إنشاء طلب', 'name_en' => 'Create Request', 'group' => 'tenants'],
+            ['key' => 'tenants.edit', 'name_ar' => 'تعديل طلب', 'name_en' => 'Edit Request', 'group' => 'tenants'],
+            ['key' => 'tenants.approve', 'name_ar' => 'قبول الطلب وتفعيل الموقع', 'name_en' => 'Approve & Activate Site', 'group' => 'tenants'],
+            ['key' => 'tenants.reject', 'name_ar' => 'رفض الطلب', 'name_en' => 'Reject Request', 'group' => 'tenants'],
+            ['key' => 'tenants.delete', 'name_ar' => 'حذف الطلب', 'name_en' => 'Delete Request', 'group' => 'tenants'],
+            ['key' => 'tenants.message', 'name_ar' => 'مراسلة العميل', 'name_en' => 'Message Client', 'group' => 'tenants'],
 
-            ['key' => 'gallery.view', 'name_ar' => 'عرض المعرض', 'name_en' => 'View Gallery', 'group' => 'gallery'],
-            ['key' => 'gallery.upload', 'name_ar' => 'رفع صور', 'name_en' => 'Upload Images', 'group' => 'gallery'],
-            ['key' => 'gallery.delete', 'name_ar' => 'حذف صور', 'name_en' => 'Delete Images', 'group' => 'gallery'],
+            // Clients (post-conversion view)
+            ['key' => 'clients.view', 'name_ar' => 'عرض العملاء', 'name_en' => 'View Clients', 'group' => 'clients'],
+            ['key' => 'clients.create', 'name_ar' => 'إضافة عميل', 'name_en' => 'Add Client', 'group' => 'clients'],
+            ['key' => 'clients.edit', 'name_ar' => 'تعديل العميل', 'name_en' => 'Edit Client', 'group' => 'clients'],
+            ['key' => 'clients.set_tier', 'name_ar' => 'تغيير وسام العميل', 'name_en' => 'Set Client Tier', 'group' => 'clients'],
+            ['key' => 'clients.set_status', 'name_ar' => 'تغيير حالة العميل', 'name_en' => 'Set Client Status', 'group' => 'clients'],
 
-            ['key' => 'site_texts.view', 'name_ar' => 'عرض النصوص', 'name_en' => 'View Site Texts', 'group' => 'site_texts'],
-            ['key' => 'site_texts.edit', 'name_ar' => 'تعديل النصوص', 'name_en' => 'Edit Site Texts', 'group' => 'site_texts'],
+            // Invoices
+            ['key' => 'invoices.view', 'name_ar' => 'عرض الفواتير', 'name_en' => 'View Invoices', 'group' => 'invoices'],
+            ['key' => 'invoices.create', 'name_ar' => 'إنشاء فاتورة', 'name_en' => 'Create Invoice', 'group' => 'invoices'],
+            ['key' => 'invoices.edit', 'name_ar' => 'تعديل فاتورة', 'name_en' => 'Edit Invoice', 'group' => 'invoices'],
+            ['key' => 'invoices.send', 'name_ar' => 'إرسال فاتورة', 'name_en' => 'Send Invoice', 'group' => 'invoices'],
+            ['key' => 'invoices.mark_paid', 'name_ar' => 'تسجيل دفع الفاتورة', 'name_en' => 'Mark Invoice Paid', 'group' => 'invoices'],
+            ['key' => 'invoices.delete', 'name_ar' => 'حذف فاتورة', 'name_en' => 'Delete Invoice', 'group' => 'invoices'],
 
-            ['key' => 'site_sections.view', 'name_ar' => 'عرض الأقسام', 'name_en' => 'View Sections', 'group' => 'site_sections'],
-            ['key' => 'site_sections.toggle', 'name_ar' => 'تفعيل/تعطيل الأقسام', 'name_en' => 'Toggle Sections', 'group' => 'site_sections'],
+            // Transactions
+            ['key' => 'transactions.view', 'name_ar' => 'عرض العمليات المالية', 'name_en' => 'View Transactions', 'group' => 'transactions'],
+            ['key' => 'transactions.manage', 'name_ar' => 'إدارة العمليات المالية', 'name_en' => 'Manage Transactions', 'group' => 'transactions'],
 
-            ['key' => 'contact.view', 'name_ar' => 'عرض التواصل', 'name_en' => 'View Contact', 'group' => 'contact'],
-            ['key' => 'contact.edit', 'name_ar' => 'تعديل التواصل', 'name_en' => 'Edit Contact', 'group' => 'contact'],
+            // Renewals
+            ['key' => 'renewals.view', 'name_ar' => 'عرض التجديدات', 'name_en' => 'View Renewals', 'group' => 'renewals'],
+            ['key' => 'renewals.approve', 'name_ar' => 'قبول طلب تجديد', 'name_en' => 'Approve Renewal', 'group' => 'renewals'],
+            ['key' => 'renewals.reject', 'name_ar' => 'رفض طلب تجديد', 'name_en' => 'Reject Renewal', 'group' => 'renewals'],
 
-            ['key' => 'hotel_settings.view', 'name_ar' => 'عرض الإعدادات', 'name_en' => 'View Hotel Settings', 'group' => 'hotel_settings'],
-            ['key' => 'hotel_settings.edit', 'name_ar' => 'تعديل الإعدادات', 'name_en' => 'Edit Hotel Settings', 'group' => 'hotel_settings'],
+            // Plans / Templates / Discount codes
+            ['key' => 'plans.manage', 'name_ar' => 'إدارة الباقات', 'name_en' => 'Manage Plans', 'group' => 'catalog'],
+            ['key' => 'templates.manage', 'name_ar' => 'إدارة القوالب', 'name_en' => 'Manage Templates', 'group' => 'catalog'],
+            ['key' => 'discount_codes.manage', 'name_ar' => 'إدارة أكواد الخصم', 'name_en' => 'Manage Discount Codes', 'group' => 'catalog'],
+            ['key' => 'form_builder.manage', 'name_ar' => 'إدارة نماذج الحجز', 'name_en' => 'Manage Form Builder', 'group' => 'catalog'],
 
+            // CMS
+            ['key' => 'pages.manage', 'name_ar' => 'إدارة الصفحات', 'name_en' => 'Manage Pages', 'group' => 'cms'],
+            ['key' => 'menus.manage', 'name_ar' => 'إدارة القوائم', 'name_en' => 'Manage Menus', 'group' => 'cms'],
+            ['key' => 'site_settings.edit', 'name_ar' => 'تعديل إعدادات الموقع', 'name_en' => 'Edit Site Settings', 'group' => 'cms'],
+
+            // Reviews
+            ['key' => 'reviews.view', 'name_ar' => 'عرض التقييمات', 'name_en' => 'View Reviews', 'group' => 'reviews'],
+            ['key' => 'reviews.moderate', 'name_ar' => 'مراجعة وقبول التقييمات', 'name_en' => 'Moderate Reviews', 'group' => 'reviews'],
+            ['key' => 'reviews.reply', 'name_ar' => 'الرد على التقييمات', 'name_en' => 'Reply to Reviews', 'group' => 'reviews'],
+
+            // Reports
+            ['key' => 'reports.view', 'name_ar' => 'عرض التقارير', 'name_en' => 'View Reports', 'group' => 'reports'],
+            ['key' => 'reports.financial', 'name_ar' => 'التقارير المالية', 'name_en' => 'Financial Reports', 'group' => 'reports'],
             ['key' => 'reports.subscriptions', 'name_ar' => 'تقرير الاشتراكات', 'name_en' => 'Subscription Reports', 'group' => 'reports'],
             ['key' => 'reports.messages', 'name_ar' => 'الرسائل والدعم', 'name_en' => 'Messages & Support', 'group' => 'reports'],
 
-            ['key' => 'services.view', 'name_ar' => 'عرض الخدمات', 'name_en' => 'View Services', 'group' => 'services'],
-            ['key' => 'services.create', 'name_ar' => 'إنشاء خدمة', 'name_en' => 'Create Service', 'group' => 'services'],
-            ['key' => 'services.edit', 'name_ar' => 'تعديل خدمة', 'name_en' => 'Edit Service', 'group' => 'services'],
-            ['key' => 'services.delete', 'name_ar' => 'حذف خدمة', 'name_en' => 'Delete Service', 'group' => 'services'],
+            // Integrations
+            ['key' => 'integrations.manage', 'name_ar' => 'إدارة التكاملات', 'name_en' => 'Manage Integrations', 'group' => 'integrations'],
 
+            // Staff & roles (super-admin staff management)
             ['key' => 'staff.view', 'name_ar' => 'عرض الموظفين', 'name_en' => 'View Staff', 'group' => 'staff'],
             ['key' => 'staff.create', 'name_ar' => 'إنشاء موظف', 'name_en' => 'Create Staff', 'group' => 'staff'],
             ['key' => 'staff.edit', 'name_ar' => 'تعديل موظف', 'name_en' => 'Edit Staff', 'group' => 'staff'],
             ['key' => 'staff.delete', 'name_ar' => 'حذف موظف', 'name_en' => 'Delete Staff', 'group' => 'staff'],
+            ['key' => 'roles.manage', 'name_ar' => 'إدارة الأدوار', 'name_en' => 'Manage Roles', 'group' => 'staff'],
         ];
+
+        // NOTE: this seeder shares its `permissions` table with the main app,
+        // which owns tenant-level perms (rooms.*, gallery.*, services.*, etc.).
+        // We MUST NOT delete those — they belong to client_admin staff roles.
+        // Instead, RoleController::index filters by group so the super-admin
+        // role builder only surfaces super-admin scoped permissions.
 
         foreach ($permissions as $perm) {
             DB::table('permissions')->updateOrInsert(
@@ -55,31 +94,58 @@ class PermissionSeeder extends Seeder
             );
         }
 
-        $allPermissionIds = DB::table('permissions')->pluck('id')->toArray();
+        // Restrict to super-admin scoped groups when handing perms to roles.
+        $superAdminGroups = ['dashboard', 'tenants', 'clients', 'invoices', 'transactions', 'renewals', 'catalog', 'cms', 'reviews', 'reports', 'integrations', 'staff'];
+        $allPermissionIds = DB::table('permissions')
+            ->whereIn('group', $superAdminGroups)
+            ->whereIn('key', array_column($permissions, 'key'))
+            ->pluck('id')->toArray();
 
-        // ─── Create System Roles ─────────────────────────────────
-
-        // Super Admin - all permissions
+        // ─── System roles ────────────────────────────────────────
+        // Super Admin — gets every permission.
         $superAdminId = $this->createRole('super_admin', 'مدير النظام', 'Super Admin', true);
         $this->syncPermissions($superAdminId, $allPermissionIds);
 
-        // Client Admin - all permissions
-        $clientAdminId = $this->createRole('client_admin', 'مدير المنشأة', 'Hotel Admin', true);
-        $this->syncPermissions($clientAdminId, $allPermissionIds);
-
-        // Manager - all except staff.delete and hotel_settings.edit
-        $managerPerms = DB::table('permissions')
-            ->whereNotIn('key', ['staff.delete', 'hotel_settings.edit'])
+        // Operations — everything except staff/role management.
+        $opsPerms = DB::table('permissions')
+            ->whereNotIn('group', ['staff'])
             ->pluck('id')->toArray();
-        $managerId = $this->createRole('manager', 'مدير', 'Manager', true);
-        $this->syncPermissions($managerId, $managerPerms);
+        $opsId = $this->createRole('operations', 'فريق العمليات', 'Operations', true);
+        $this->syncPermissions($opsId, $opsPerms);
 
-        // Receptionist - limited access
-        $receptionistPerms = DB::table('permissions')
-            ->whereIn('key', ['dashboard.view', 'rooms.view', 'gallery.view', 'reports.messages'])
+        // Support — read-only on requests/clients/invoices, can message and reply to reviews.
+        $supportPerms = DB::table('permissions')
+            ->whereIn('key', [
+                'dashboard.view',
+                'tenants.view', 'tenants.message',
+                'clients.view',
+                'invoices.view',
+                'reviews.view', 'reviews.reply',
+                'reports.messages',
+            ])
             ->pluck('id')->toArray();
-        $receptionistId = $this->createRole('receptionist', 'موظف استقبال', 'Receptionist', true);
-        $this->syncPermissions($receptionistId, $receptionistPerms);
+        $supportId = $this->createRole('support', 'الدعم الفني', 'Support', true);
+        $this->syncPermissions($supportId, $supportPerms);
+
+        // Finance — invoices + transactions + financial reports.
+        $financePerms = DB::table('permissions')
+            ->whereIn('key', [
+                'dashboard.view',
+                'invoices.view', 'invoices.create', 'invoices.edit', 'invoices.send', 'invoices.mark_paid',
+                'transactions.view', 'transactions.manage',
+                'reports.view', 'reports.financial', 'reports.subscriptions',
+                'tenants.view', 'clients.view',
+                'renewals.view', 'renewals.approve', 'renewals.reject',
+            ])
+            ->pluck('id')->toArray();
+        $financeId = $this->createRole('finance', 'المحاسبة', 'Finance', true);
+        $this->syncPermissions($financeId, $financePerms);
+
+        // Drop legacy tenant-level system roles that have no place in super-admin staff.
+        DB::table('roles')
+            ->whereNull('tenant_id')
+            ->whereIn('key', ['client_admin', 'manager', 'receptionist'])
+            ->delete();
     }
 
     private function createRole(string $key, string $nameAr, string $nameEn, bool $isSystem): int

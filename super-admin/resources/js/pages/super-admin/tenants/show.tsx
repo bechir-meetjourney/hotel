@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useT } from '@/hooks/use-translations';
 import { useStorageUrl } from '@/lib/storage';
+import { usePermission } from '@/hooks/use-permission';
 import { useState } from 'react';
 
 interface Tenant {
@@ -27,11 +28,15 @@ interface Tenant {
     is_active: boolean;
     payment_status: string | null;
     payment_method: string | null;
+    payment_notes: string | null;
+    bank_transfer_receipt_url: string | null;
     city: string | null;
     created_at: string;
     updated_at: string;
+    approved_at: string | null;
     org_name_ar: string | null;
     tags: { id: number; label: string; color: string }[];
+    approver: { id: number; name: string } | null;
 }
 
 interface PrimaryUser {
@@ -106,6 +111,7 @@ const TIMELINE_COLORS: Record<ActivityEvent['type'], string> = {
 export default function TenantShow({ tenant, primary_user, latest_invoice, latest_renewal, completed_requests_count, activity }: Props) {
     const { t, locale, isArabic } = useT();
     const storageUrl = useStorageUrl();
+    const { can } = usePermission();
     const flash = usePage().props.flash as { success?: string; error?: string } | undefined;
     const numLocale = locale === 'ar' ? 'ar-SA' : 'en-US';
 
@@ -125,6 +131,34 @@ export default function TenantShow({ tenant, primary_user, latest_invoice, lates
         if (!confirm(isArabic ? 'تأكيد حذف الطلب؟ لا يمكن التراجع.' : 'Confirm delete? This cannot be undone.')) return;
         router.delete(`/super-admin/tenants/${tenant.id}`);
     }
+
+    function approveRequest() {
+        if (!confirm(isArabic ? 'قبول الطلب وتفعيل الموقع؟' : 'Approve and activate site?')) return;
+        router.post(`/super-admin/tenants/${tenant.id}/approve`, {}, { preserveScroll: true });
+    }
+
+    function rejectRequest() {
+        const reason = prompt(isArabic ? 'سبب الرفض؟' : 'Rejection reason?');
+        if (!reason) return;
+        router.post(`/super-admin/tenants/${tenant.id}/reject`, { rejection_reason: reason }, { preserveScroll: true });
+    }
+
+    const paymentMethodLabel = (() => {
+        const pm = tenant.payment_method;
+        if (!pm) return '—';
+        const map: Record<string, { ar: string; en: string }> = {
+            bank_transfer: { ar: 'حوالة بنكية', en: 'Bank transfer' },
+            moyasar: { ar: 'ميسر', en: 'Moyasar' },
+            tap: { ar: 'تاب', en: 'Tap' },
+            manual: { ar: 'يدوي / كاش', en: 'Manual / Cash' },
+            credit_card: { ar: 'بطاقة ائتمان', en: 'Credit card' },
+            mada: { ar: 'مدى', en: 'Mada' },
+            apple_pay: { ar: 'Apple Pay', en: 'Apple Pay' },
+        };
+        return isArabic ? (map[pm]?.ar ?? pm) : (map[pm]?.en ?? pm);
+    })();
+
+    const isPending = tenant.payment_status === 'pending';
 
     const cardMasked = (() => {
         if (!latest_invoice) return null;
@@ -152,10 +186,38 @@ export default function TenantShow({ tenant, primary_user, latest_invoice, lates
                             {new Date(tenant.created_at).toLocaleString(numLocale, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                         </span>
                     </div>
-                    <Button variant="destructive" size="sm" onClick={deleteRequest}>
-                        <Trash2 className="h-4 w-4" /> {isArabic ? 'حذف الطلب' : 'Delete request'}
-                    </Button>
+                    <div className="flex flex-wrap gap-2">
+                        {isPending && can('tenants.approve') && (
+                            <Button size="sm" onClick={approveRequest} className="bg-emerald-600 hover:bg-emerald-700">
+                                <CheckCircle className="h-4 w-4" /> {isArabic ? 'قبول الطلب' : 'Approve'}
+                            </Button>
+                        )}
+                        {isPending && can('tenants.reject') && (
+                            <Button size="sm" variant="outline" onClick={rejectRequest} className="text-red-600 border-red-200 hover:bg-red-50">
+                                <XCircle className="h-4 w-4" /> {isArabic ? 'رفض الطلب' : 'Reject'}
+                            </Button>
+                        )}
+                        {can('tenants.delete') && (
+                            <Button variant="destructive" size="sm" onClick={deleteRequest}>
+                                <Trash2 className="h-4 w-4" /> {isArabic ? 'حذف الطلب' : 'Delete request'}
+                            </Button>
+                        )}
+                    </div>
                 </div>
+
+                {/* Activator (who approved) */}
+                {tenant.approver && (
+                    <div className="rounded-lg border border-emerald-200 bg-emerald-50/60 px-4 py-3 text-sm flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4 text-emerald-600" />
+                        <span className="text-muted-foreground">{isArabic ? 'تم تفعيل الموقع بواسطة' : 'Site activated by'}</span>
+                        <strong>{tenant.approver.name}</strong>
+                        {tenant.approved_at && (
+                            <span className="text-xs text-muted-foreground">
+                                · {new Date(tenant.approved_at).toLocaleString(numLocale, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                        )}
+                    </div>
+                )}
 
                 {/* Row 1: Details + Client data */}
                 <div className="grid gap-4 lg:grid-cols-2">
@@ -270,20 +332,28 @@ export default function TenantShow({ tenant, primary_user, latest_invoice, lates
                             {latest_invoice && paymentStatusBadge(latest_invoice.status, isArabic)}
                         </CardHeader>
                         <CardContent className="space-y-3">
-                            {!latest_invoice ? (
-                                <p className="text-sm text-muted-foreground">{isArabic ? 'لا توجد عمليات دفع' : 'No payment operation'}</p>
-                            ) : (
+                            <div className="flex items-center gap-3">
+                                <div className="rounded-lg bg-muted p-3">
+                                    <CreditCard className="h-6 w-6 text-blue-600" />
+                                </div>
+                                <div>
+                                    <div className="text-sm font-medium">{paymentMethodLabel}</div>
+                                    {latest_invoice && <div className="text-xs text-muted-foreground">{cardMasked}</div>}
+                                </div>
+                            </div>
+                            {tenant.payment_method === 'bank_transfer' && tenant.bank_transfer_receipt_url && (
+                                <a href={tenant.bank_transfer_receipt_url} target="_blank" rel="noopener noreferrer"
+                                   className="flex items-center gap-2 rounded-md border bg-muted/40 px-3 py-2 text-xs hover:bg-muted">
+                                    <FileText className="h-4 w-4 text-amber-600" />
+                                    {isArabic ? 'إيصال الحوالة البنكية' : 'Bank transfer receipt'}
+                                </a>
+                            )}
+                            {tenant.payment_notes && (
+                                <p className="text-xs text-muted-foreground border-t pt-2">{tenant.payment_notes}</p>
+                            )}
+                            {latest_invoice ? (
                                 <>
-                                    <div className="flex items-center gap-3">
-                                        <div className="rounded-lg bg-muted p-3">
-                                            <CreditCard className="h-6 w-6 text-blue-600" />
-                                        </div>
-                                        <div>
-                                            <div className="text-sm font-medium">{latest_invoice.payment_method ?? 'Credit Card'}</div>
-                                            <div className="text-xs text-muted-foreground">{cardMasked}</div>
-                                        </div>
-                                    </div>
-                                    <div className="grid gap-2 text-sm">
+                                    <div className="grid gap-2 text-sm border-t pt-3">
                                         <InfoRow label={isArabic ? 'رقم الفاتورة' : 'Invoice #'} value={<span className="font-mono text-xs">#{latest_invoice.invoice_number}</span>} />
                                         <InfoRow label={isArabic ? 'المبلغ' : 'Amount'} value={<strong>{Number(latest_invoice.total).toLocaleString(numLocale)} {isArabic ? 'ر.س' : 'SAR'}</strong>} />
                                         {latest_invoice.paid_at && (
@@ -292,10 +362,16 @@ export default function TenantShow({ tenant, primary_user, latest_invoice, lates
                                     </div>
                                     <Button variant="outline" className="w-full" asChild>
                                         <Link href={`/super-admin/invoices/${latest_invoice.id}`}>
-                                            {isArabic ? 'رؤية المزيد' : 'See invoice'}
+                                            {isArabic ? 'رؤية الفاتورة' : 'See invoice'}
                                         </Link>
                                     </Button>
                                 </>
+                            ) : (
+                                <Button variant="outline" className="w-full" asChild>
+                                    <Link href={`/super-admin/invoices/create?tenant_id=${tenant.id}`}>
+                                        <FileText className="h-4 w-4" /> {isArabic ? 'إنشاء فاتورة' : 'Create invoice'}
+                                    </Link>
+                                </Button>
                             )}
                         </CardContent>
                     </Card>
@@ -317,8 +393,8 @@ export default function TenantShow({ tenant, primary_user, latest_invoice, lates
                             />
                             <QuickLink
                                 icon={FileText}
-                                label={isArabic ? 'رؤية الفاتورة' : 'View invoice'}
-                                href={latest_invoice ? `/super-admin/invoices/${latest_invoice.id}` : '/super-admin/invoices'}
+                                label={latest_invoice ? (isArabic ? 'رؤية الفاتورة' : 'View invoice') : (isArabic ? 'إنشاء فاتورة' : 'Create invoice')}
+                                href={latest_invoice ? `/super-admin/invoices/${latest_invoice.id}` : `/super-admin/invoices/create?tenant_id=${tenant.id}`}
                                 external={false}
                             />
                         </CardContent>

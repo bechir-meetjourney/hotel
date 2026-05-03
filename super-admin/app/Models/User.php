@@ -56,4 +56,42 @@ class User extends Authenticatable
     {
         return $this->role === 'client_admin';
     }
+
+    /**
+     * Super-admins implicitly have every permission.
+     * Staff need a role that grants the requested key.
+     * Cached per request via memoization on the loaded role.
+     */
+    public function hasPermission(string $key): bool
+    {
+        if ($this->isSuperAdmin()) {
+            return true;
+        }
+
+        if (!$this->role_id) {
+            return false;
+        }
+
+        $cacheKey = "user.{$this->id}.permissions";
+        $keys = cache()->remember($cacheKey, 300, function () {
+            return $this->roleModel
+                ? $this->roleModel->permissions()->pluck('key')->all()
+                : [];
+        });
+
+        return in_array($key, $keys, true);
+    }
+
+    public function permissionKeys(): array
+    {
+        if ($this->isSuperAdmin()) {
+            return ['*'];
+        }
+        if (!$this->role_id) {
+            return [];
+        }
+        return $this->roleModel
+            ? $this->roleModel->permissions()->pluck('key')->all()
+            : [];
+    }
 }

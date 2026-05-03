@@ -51,7 +51,13 @@ Route::get('/Privacy', fn () => inertiaWithLang('public/Privacy'))->name('privac
 Route::get('/templates', function () {
     syncLangFiles('messages');
 
-    $templates = \App\Models\Template::where('is_active', true)
+    // Show every template that is either active OR explicitly marked coming-soon.
+    // Inactive-without-coming-soon are drafts and stay hidden.
+    $templates = \App\Models\Template::query()
+        ->where(function ($q) {
+            $q->where('is_active', true)
+                ->orWhere('is_coming_soon', true);
+        })
         ->orderBy('sort_order')
         ->orderBy('id')
         ->get()
@@ -74,7 +80,7 @@ Route::get('/templates', function () {
                 'preview_url' => $previewUrl,
                 'demo_url' => $t->demo_url,
                 'regions' => $regions,
-                'is_coming_soon' => (bool) ($t->is_coming_soon ?? false),
+                'is_coming_soon' => (bool) ($t->is_coming_soon ?? false) || !(bool) $t->is_active,
             ];
         })
         ->values();

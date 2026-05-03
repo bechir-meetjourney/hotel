@@ -37,6 +37,12 @@ export default function ClientCreate({ plans, templates, cities }: Props) {
         password: string;
         logo: File | null;
         city: string;
+        payment_method: string;
+        payment_status: string;
+        client_status: string;
+        tier_override: string;
+        bank_transfer_receipt: File | null;
+        payment_notes: string;
     }>({
         name: '',
         email: '',
@@ -47,6 +53,12 @@ export default function ClientCreate({ plans, templates, cities }: Props) {
         password: '',
         logo: null,
         city: '',
+        payment_method: 'manual',
+        payment_status: 'approved',
+        client_status: 'active',
+        tier_override: '',
+        bank_transfer_receipt: null,
+        payment_notes: '',
     });
 
     function submit(e: React.FormEvent) {
@@ -57,7 +69,7 @@ export default function ClientCreate({ plans, templates, cities }: Props) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={isArabic ? 'إضافة عميل' : 'Add client'} />
-            <div className="mx-auto max-w-2xl p-6">
+            <div className="mx-auto max-w-3xl p-6">
                 <h1 className="text-2xl font-bold mb-6">{isArabic ? 'إضافة عميل جديد' : 'Add new client'}</h1>
 
                 <form onSubmit={submit} className="flex flex-col gap-4">
@@ -105,6 +117,66 @@ export default function ClientCreate({ plans, templates, cities }: Props) {
                             </Field>
                             <Field label={isArabic ? 'الصورة (اختياري)' : 'Logo (optional)'} error={(errors as Record<string, string>).logo}>
                                 <Input type="file" accept="image/*" onChange={(e) => setData('logo', e.target.files?.[0] ?? null)} />
+                            </Field>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader><CardTitle className="text-base">{isArabic ? 'الدفع والحالة' : 'Payment & status'}</CardTitle></CardHeader>
+                        <CardContent className="grid gap-4 sm:grid-cols-2">
+                            <Field label={isArabic ? 'طريقة الدفع' : 'Payment method'} error={(errors as Record<string, string>).payment_method}>
+                                <Select value={data.payment_method} onValueChange={(v) => setData('payment_method', v)}>
+                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="manual">{isArabic ? 'كاش / يدوي' : 'Cash / Manual'}</SelectItem>
+                                        <SelectItem value="bank_transfer">{isArabic ? 'حوالة بنكية' : 'Bank transfer'}</SelectItem>
+                                        <SelectItem value="moyasar">Moyasar</SelectItem>
+                                        <SelectItem value="tap">Tap</SelectItem>
+                                        <SelectItem value="credit_card">{isArabic ? 'بطاقة ائتمان' : 'Credit card'}</SelectItem>
+                                        <SelectItem value="mada">{isArabic ? 'مدى' : 'Mada'}</SelectItem>
+                                        <SelectItem value="apple_pay">Apple Pay</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </Field>
+                            <Field label={isArabic ? 'حالة الموقع' : 'Site status'} error={(errors as Record<string, string>).payment_status}>
+                                <Select value={data.payment_status} onValueChange={(v) => setData('payment_status', v)}>
+                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="approved">{isArabic ? 'مفعّل' : 'Active'}</SelectItem>
+                                        <SelectItem value="pending">{isArabic ? 'تحت المراجعة' : 'Under review'}</SelectItem>
+                                        <SelectItem value="rejected">{isArabic ? 'مرفوض' : 'Rejected'}</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </Field>
+                            {data.payment_method === 'bank_transfer' && (
+                                <Field label={isArabic ? 'إيصال الحوالة (PDF/صورة)' : 'Bank receipt (PDF/image)'} error={(errors as Record<string, string>).bank_transfer_receipt}>
+                                    <Input type="file" accept="image/*,application/pdf" onChange={(e) => setData('bank_transfer_receipt', e.target.files?.[0] ?? null)} />
+                                </Field>
+                            )}
+                            <Field label={isArabic ? 'ملاحظات الدفع' : 'Payment notes'} error={(errors as Record<string, string>).payment_notes}>
+                                <Input value={data.payment_notes} onChange={(e) => setData('payment_notes', e.target.value)} />
+                            </Field>
+                            <Field label={isArabic ? 'تصنيف العميل (وسام)' : 'Client tier'} error={(errors as Record<string, string>).tier_override}>
+                                <Select value={data.tier_override || 'auto'} onValueChange={(v) => setData('tier_override', v === 'auto' ? '' : v)}>
+                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="auto">{isArabic ? 'تلقائي (حسب الفواتير)' : 'Automatic (by invoices)'}</SelectItem>
+                                        <SelectItem value="bronze">{isArabic ? 'برونزي' : 'Bronze'}</SelectItem>
+                                        <SelectItem value="silver">{isArabic ? 'فضي' : 'Silver'}</SelectItem>
+                                        <SelectItem value="gold">{isArabic ? 'ذهبي' : 'Gold'}</SelectItem>
+                                        <SelectItem value="platinum">{isArabic ? 'بلاتيني' : 'Platinum'}</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </Field>
+                            <Field label={isArabic ? 'حالة العميل' : 'Client status'} error={(errors as Record<string, string>).client_status}>
+                                <Select value={data.client_status} onValueChange={(v) => setData('client_status', v)}>
+                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="active">{isArabic ? 'نشط' : 'Active'}</SelectItem>
+                                        <SelectItem value="frozen">{isArabic ? 'مجمّد' : 'Frozen'}</SelectItem>
+                                        <SelectItem value="banned">{isArabic ? 'محظور' : 'Banned'}</SelectItem>
+                                    </SelectContent>
+                                </Select>
                             </Field>
                         </CardContent>
                     </Card>

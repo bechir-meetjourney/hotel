@@ -109,6 +109,7 @@ class ClientController extends Controller
         // Attach computed tier + derived fields for the frontend
         $tenants->getCollection()->transform(function ($t) {
             $t->tier = $t->getTier();
+            $t->tier_is_override = !empty($t->tier_override);
             $t->logo_url = $t->logo ? \Storage::disk('public')->url($t->logo) : null;
             $t->hotel_name = $t->org_name_ar ?? $t->org_name_en ?? $t->name;
             return $t;
@@ -189,11 +190,22 @@ class ClientController extends Controller
             'password' => 'required|string|min:8',
             'logo' => 'nullable|file|image|max:2048',
             'city' => 'nullable|string|max:100',
+            'payment_method' => 'nullable|in:manual,bank_transfer,moyasar,tap,credit_card,mada,apple_pay',
+            'payment_status' => 'nullable|in:pending,approved,rejected',
+            'client_status' => 'nullable|in:active,frozen,banned',
+            'tier_override' => 'nullable|in:bronze,silver,gold,platinum',
+            'bank_transfer_receipt' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
+            'payment_notes' => 'nullable|string|max:500',
         ]);
 
         $logoPath = null;
         if ($request->hasFile('logo')) {
             $logoPath = $request->file('logo')->store('tenant-logos', 'public');
+        }
+
+        $receiptPath = null;
+        if ($request->hasFile('bank_transfer_receipt')) {
+            $receiptPath = $request->file('bank_transfer_receipt')->store('bank-receipts', 'public');
         }
 
         $slug = Str::slug($validated['hotel_name']);
@@ -203,6 +215,9 @@ class ClientController extends Controller
             $slug = $baseSlug . '-' . (++$suffix);
         }
 
+        $paymentStatus = $validated['payment_status'] ?? 'approved';
+        $isApproved = $paymentStatus === 'approved';
+
         $tenant = Tenant::create([
             'name' => $validated['hotel_name'],
             'slug' => $slug,
@@ -210,16 +225,21 @@ class ClientController extends Controller
             'email' => $validated['email'],
             'phone' => $validated['phone'] ?? null,
             'plan_id' => $validated['plan_id'],
-            'is_active' => true,
-            'client_status' => 'active',
-            'payment_status' => 'approved',
-            'payment_method' => 'manual',
+            'is_active' => $isApproved,
+            'client_status' => $validated['client_status'] ?? 'active',
+            'tier_override' => $validated['tier_override'] ?? null,
+            'payment_status' => $paymentStatus,
+            'payment_method' => $validated['payment_method'] ?? 'manual',
+            'bank_transfer_receipt' => $receiptPath,
+            'payment_notes' => $validated['payment_notes'] ?? null,
+            'approved_by' => $isApproved ? $request->user()?->id : null,
+            'approved_at' => $isApproved ? now() : null,
             'logo' => $logoPath,
             'city' => $validated['city'] ?? null,
             'org_name_ar' => $validated['hotel_name'],
             'org_name_en' => $validated['hotel_name'],
-            'subscription_starts_at' => now(),
-            'subscription_ends_at' => now()->addYear(),
+            'subscription_starts_at' => $isApproved ? now() : null,
+            'subscription_ends_at' => $isApproved ? now()->addYear() : null,
         ]);
 
         User::create([

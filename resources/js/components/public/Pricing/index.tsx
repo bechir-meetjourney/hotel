@@ -16,6 +16,7 @@ interface DbPlan {
   id: number; slug: string; name_ar: string; name_en: string;
   price: string; billing_cycle: string; features_ar: string[] | null;
   features_en: string[] | null; variant: string | null; icon: string | null;
+  is_coming_soon?: boolean;
 }
 
 interface Props {
@@ -56,12 +57,14 @@ const Pricing: React.FC<Props> = ({ dbPlans }) => {
         vatNote: 'شامل ضريبة القيمة المضافة',
         features: p.features_ar || [],
         variant: (p.variant as Plan['variant']) || 'light',
+        comingSoon: !!p.is_coming_soon,
       }));
     }
     return fallbackPlans;
   }, [dbPlans]);
 
   const handleSubscribe = (plan: Plan) => {
+    if (plan.comingSoon) return;
     // If we have DB plans, find the ID for the setup flow
     const dbPlan = dbPlans?.find((p) => p.slug === plan.key);
 

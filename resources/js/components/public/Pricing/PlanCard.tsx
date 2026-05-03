@@ -2,7 +2,7 @@
 // File: src/components/public/Pricing/PlanCard.tsx
 import React from "react";
 import { useLang } from '@/hooks/useLang'
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Clock } from "lucide-react";
 import type { Plan } from "./types";
 
 // Decorative line images
@@ -59,7 +59,13 @@ const PlanCard: React.FC<Props> = ({ plan, onSubscribe }) => {
   const { __ } = useLang()
 
   return (
-    <div className={`${base} ${palette}`}>
+    <div className={`${base} ${palette} ${plan.comingSoon ? 'opacity-70 grayscale' : ''}`}>
+      {plan.comingSoon && (
+        <div className="absolute top-3 end-3 z-20 inline-flex items-center gap-1 rounded-full bg-amber-500 px-3 py-1 text-xs font-bold text-white shadow">
+          <Clock className="h-3.5 w-3.5" />
+          قريباً
+        </div>
+      )}
       {/* Background SVG for solid variant */}
       {plan.variant === "solid" && (
         <div className="absolute inset-0 -z-1 overflow-hidden rounded-2xl">
@@ -162,15 +168,16 @@ const PlanCard: React.FC<Props> = ({ plan, onSubscribe }) => {
       <div className="mt-auto pt-6">
   <button
           type="button"
+          disabled={plan.comingSoon}
           onClick={() => onSubscribe?.(plan)}  // Invoke callback and pass the selected plan
-          className={
+          className={`${
             plan.variant === "solid"
               ? "w-full rounded-lg bg-public-button   border-gray-100/50 border hover:bg-public-primary duration-300 px-6 sm:px-12 py-2 text-white shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/60 cursor-pointer"
               : "w-full rounded-lg bg-public-primary hover:border-gray-700  hover:bg-public-button duration-300 px-6 sm:px-12 py-2 text-white shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-slate-900/60 cursor-pointer"
-          }
+          } ${plan.comingSoon ? 'opacity-60 cursor-not-allowed' : ''}`}
           aria-label={__("messages.pricing.subscribe_button_aria", { plan: plan.name })}
         >
-          {__("messages.pricing.subscribe_button")}
+          {plan.comingSoon ? 'قريباً' : __("messages.pricing.subscribe_button")}
         </button>
       </div>
     </div>

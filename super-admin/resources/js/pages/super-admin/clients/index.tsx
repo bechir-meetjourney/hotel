@@ -31,6 +31,7 @@ interface Tenant {
     paid_invoices_count: number;
     total_invoices_count: number;
     tier: 'bronze' | 'silver' | 'gold' | 'platinum';
+    tier_is_override: boolean;
     created_at: string;
 }
 
@@ -293,7 +294,7 @@ export default function ClientsIndex({ tenants, stats, range, filters, plans, ci
                                         <td className="px-3 py-2">{statusBadge(row.client_status, isArabic)}</td>
                                         <td className="px-3 py-2">
                                             <div className="flex items-center gap-0.5">
-                                                <TierPicker tenantId={row.id} current={row.tier} onChange={changeTier} isArabic={isArabic} />
+                                                <TierPicker tenantId={row.id} current={row.tier_is_override ? row.tier : 'auto'} onChange={changeTier} isArabic={isArabic} />
                                                 <Button size="icon" variant="ghost" className="h-7 w-7 text-blue-600" asChild title={isArabic ? 'عرض' : 'View'}>
                                                     <Link href={`/super-admin/clients/${row.id}`}><Eye className="h-4 w-4" /></Link>
                                                 </Button>

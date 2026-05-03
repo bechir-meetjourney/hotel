@@ -21,4 +21,5 @@ export interface Plan {
   /** optional language keys for features */
   featuresKeys?: string[];
   variant?: Variant;
+  comingSoon?: boolean;
 }
