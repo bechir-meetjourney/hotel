@@ -282,7 +282,7 @@ class TenantController extends Controller
 
     public function show(Tenant $tenant)
     {
-        $tenant->load('users:id,tenant_id,name,email,phone,photo,role,created_at', 'planModel:id,name_ar,name_en,slug,price', 'tags:id,label,color', 'approver:id,name');
+        $tenant->load('users:id,tenant_id,name,email,phone,photo,role,created_at', 'planModel:id,name_ar,name_en,slug,price', 'tags:id,label,color', 'approver:id,name', 'deployer:id,name');
 
         $primaryUser = $tenant->users->firstWhere('role', 'client_admin');
 
@@ -308,6 +308,11 @@ class TenantController extends Controller
             'latest_renewal' => $latestRenewal,
             'completed_requests_count' => $completedRequestsCount,
             'activity' => $activity,
+            'deployment' => [
+                'url' => $tenant->deploymentUrl(),
+                'subdomain' => $tenant->subdomain,
+                'base_domain' => env('TENANT_BASE_DOMAIN', ''),
+            ],
         ]);
     }
 
@@ -520,6 +525,36 @@ class TenantController extends Controller
         }
 
         return back()->with('success', 'تم تفعيل المنشأة بنجاح');
+    }
+
+    /**
+     * Mark the tenant site as deployed: ensure subdomain is set,
+     * activate it, record the deployer + timestamp. Returns the live URL.
+     */
+    public function deploy(Request $request, Tenant $tenant)
+    {
+        $validated = $request->validate([
+            'subdomain' => 'nullable|string|alpha_dash|max:60',
+        ]);
+
+        $subdomain = $validated['subdomain'] ?? $tenant->subdomain;
+        if (!$subdomain) {
+            $subdomain = Str::slug($tenant->slug);
+        }
+
+        // Make sure the chosen subdomain is unique across other tenants.
+        if (Tenant::where('subdomain', $subdomain)->where('id', '!=', $tenant->id)->exists()) {
+            return back()->with('error', 'هذا النطاق الفرعي مستخدم بالفعل');
+        }
+
+        $tenant->update([
+            'subdomain' => $subdomain,
+            'is_active' => true,
+            'deployed_at' => now(),
+            'deployed_by' => $request->user()?->id,
+        ]);
+
+        return back()->with('success', 'تم نشر الموقع بنجاح: ' . $tenant->fresh()->deploymentUrl());
     }
 
     public function rejectPayment(Request $request, Tenant $tenant)

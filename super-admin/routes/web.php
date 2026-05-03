@@ -135,6 +135,7 @@ Route::middleware(['auth', 'verified', 'role:super_admin,staff'])
             Route::post('tenants/{tenant}/toggle', [TenantController::class, 'toggleStatus'])->name('tenants.toggle');
             Route::post('tenants/{tenant}/tags', [TenantController::class, 'syncTags'])->name('tenants.tags.sync');
         });
+        Route::post('tenants/{tenant}/deploy', [TenantController::class, 'deploy'])->middleware('permission:tenants.deploy')->name('tenants.deploy');
         Route::post('tenants/{tenant}/approve', [TenantController::class, 'approvePayment'])->middleware('permission:tenants.approve')->name('tenants.approve');
         Route::post('tenants/{tenant}/reject', [TenantController::class, 'rejectPayment'])->middleware('permission:tenants.reject')->name('tenants.reject');
         Route::post('tenants/{tenant}/approve-renewal', [TenantController::class, 'approveRenewal'])->middleware('permission:renewals.approve')->name('tenants.approve-renewal');

@@ -56,7 +56,7 @@ class RoleController extends Controller
         // but belong to the client_admin app and must not appear here.
         $superAdminGroups = ['dashboard', 'tenants', 'clients', 'invoices', 'transactions', 'renewals', 'catalog', 'cms', 'reviews', 'reports', 'integrations', 'staff'];
         $allowedKeys = [
-            'tenants.view','tenants.create','tenants.edit','tenants.approve','tenants.reject','tenants.delete','tenants.message',
+            'tenants.view','tenants.create','tenants.edit','tenants.approve','tenants.reject','tenants.delete','tenants.message','tenants.deploy',
             'clients.view','clients.create','clients.edit','clients.set_tier','clients.set_status',
             'invoices.view','invoices.create','invoices.edit','invoices.send','invoices.mark_paid','invoices.delete',
             'transactions.view','transactions.manage',

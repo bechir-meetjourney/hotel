@@ -23,6 +23,7 @@ class PermissionSeeder extends Seeder
             ['key' => 'tenants.reject', 'name_ar' => 'رفض الطلب', 'name_en' => 'Reject Request', 'group' => 'tenants'],
             ['key' => 'tenants.delete', 'name_ar' => 'حذف الطلب', 'name_en' => 'Delete Request', 'group' => 'tenants'],
             ['key' => 'tenants.message', 'name_ar' => 'مراسلة العميل', 'name_en' => 'Message Client', 'group' => 'tenants'],
+            ['key' => 'tenants.deploy', 'name_ar' => 'نشر الموقع', 'name_en' => 'Deploy Site', 'group' => 'tenants'],
 
             // Clients (post-conversion view)
             ['key' => 'clients.view', 'name_ar' => 'عرض العملاء', 'name_en' => 'View Clients', 'group' => 'clients'],

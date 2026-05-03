@@ -4,7 +4,7 @@ import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import {
     ArrowLeft, Trash2, CheckCircle, Clock, CreditCard, FileText,
     Eye, Globe, Palette, Mail, Phone, User as UserIcon, XCircle,
-    AlertCircle, Wallet,
+    AlertCircle, Wallet, Rocket, Copy,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,6 +24,7 @@ interface Tenant {
     template: string;
     domain: string | null;
     custom_domain: string | null;
+    subdomain: string | null;
     plan_model: { id: number; name_ar: string; name_en: string; slug: string; price: string } | null;
     is_active: boolean;
     payment_status: string | null;
@@ -34,9 +35,17 @@ interface Tenant {
     created_at: string;
     updated_at: string;
     approved_at: string | null;
+    deployed_at: string | null;
     org_name_ar: string | null;
     tags: { id: number; label: string; color: string }[];
     approver: { id: number; name: string } | null;
+    deployer: { id: number; name: string } | null;
+}
+
+interface Deployment {
+    url: string;
+    subdomain: string | null;
+    base_domain: string;
 }
 
 interface PrimaryUser {
@@ -80,6 +89,7 @@ interface Props {
     latest_renewal: Renewal | null;
     completed_requests_count: number;
     activity: ActivityEvent[];
+    deployment: Deployment;
 }
 
 function statusBadge(tenant: Tenant, isAr: boolean) {
@@ -108,7 +118,7 @@ const TIMELINE_COLORS: Record<ActivityEvent['type'], string> = {
     completed: 'bg-violet-500',
 };
 
-export default function TenantShow({ tenant, primary_user, latest_invoice, latest_renewal, completed_requests_count, activity }: Props) {
+export default function TenantShow({ tenant, primary_user, latest_invoice, latest_renewal, completed_requests_count, activity, deployment }: Props) {
     const { t, locale, isArabic } = useT();
     const storageUrl = useStorageUrl();
     const { can } = usePermission();
@@ -161,6 +171,25 @@ export default function TenantShow({ tenant, primary_user, latest_invoice, lates
     })();
 
     const isPending = tenant.payment_status === 'pending';
+    const isDeployed = !!tenant.deployed_at;
+    const [subdomainInput, setSubdomainInput] = useState(tenant.subdomain ?? tenant.slug);
+    const [copied, setCopied] = useState(false);
+
+    function deploySite() {
+        const subdomain = subdomainInput.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-');
+        if (!subdomain) return;
+        const msg = isDeployed
+            ? (isArabic ? 'إعادة نشر الموقع بهذا النطاق الفرعي؟' : 'Re-deploy site with this subdomain?')
+            : (isArabic ? 'نشر الموقع وتفعيله؟' : 'Deploy and activate site?');
+        if (!confirm(msg)) return;
+        router.post(`/super-admin/tenants/${tenant.id}/deploy`, { subdomain }, { preserveScroll: true });
+    }
+
+    function copyDeploymentUrl() {
+        navigator.clipboard.writeText(deployment.url);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    }
 
     const cardMasked = (() => {
         if (!latest_invoice) return null;
@@ -320,6 +349,71 @@ export default function TenantShow({ tenant, primary_user, latest_invoice, lates
                                 ))}
                             </div>
                         </div>
+                    </CardContent>
+                </Card>
+
+                {/* Deployment card */}
+                <Card className={isDeployed ? 'border-emerald-200 bg-emerald-50/40' : 'border-amber-200 bg-amber-50/40'}>
+                    <CardHeader className="pb-3 flex-row items-center justify-between">
+                        <CardTitle className="text-base flex items-center gap-2">
+                            <Rocket className={`h-4 w-4 ${isDeployed ? 'text-emerald-600' : 'text-amber-600'}`} />
+                            {isArabic ? 'نشر الموقع' : 'Site deployment'}
+                        </CardTitle>
+                        {isDeployed && (
+                            <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">
+                                {isArabic ? 'منشور' : 'Deployed'}
+                            </Badge>
+                        )}
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                        {isDeployed && (
+                            <div className="flex items-center gap-2 rounded-lg border bg-white p-3">
+                                <Globe className="h-4 w-4 text-emerald-600 flex-shrink-0" />
+                                <a href={deployment.url} target="_blank" rel="noopener noreferrer"
+                                   className="text-sm font-mono text-emerald-700 hover:underline truncate flex-1" dir="ltr">
+                                    {deployment.url}
+                                </a>
+                                <Button size="icon" variant="ghost" className="h-7 w-7" onClick={copyDeploymentUrl}
+                                        title={isArabic ? 'نسخ' : 'Copy'}>
+                                    {copied ? <CheckCircle className="h-4 w-4 text-emerald-600" /> : <Copy className="h-4 w-4" />}
+                                </Button>
+                            </div>
+                        )}
+                        {tenant.deployer && tenant.deployed_at && (
+                            <p className="text-xs text-muted-foreground">
+                                {isArabic ? 'نُشر بواسطة' : 'Deployed by'} <strong>{tenant.deployer.name}</strong>{' '}
+                                · {new Date(tenant.deployed_at).toLocaleString(numLocale, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                        )}
+                        {can('tenants.deploy') && (
+                            <div className="grid gap-3 sm:grid-cols-[1fr_auto] items-end">
+                                <div>
+                                    <Label className="text-xs">
+                                        {isArabic ? 'النطاق الفرعي' : 'Subdomain'}
+                                    </Label>
+                                    <div className="flex items-center gap-1" dir="ltr">
+                                        <Input value={subdomainInput} onChange={(e) => setSubdomainInput(e.target.value)}
+                                               placeholder="grand-hotel" className="font-mono" />
+                                        {deployment.base_domain && (
+                                            <span className="text-sm text-muted-foreground whitespace-nowrap">.{deployment.base_domain}</span>
+                                        )}
+                                    </div>
+                                </div>
+                                <Button onClick={deploySite} className="bg-emerald-600 hover:bg-emerald-700">
+                                    <Rocket className="h-4 w-4" />
+                                    {isDeployed
+                                        ? (isArabic ? 'إعادة النشر' : 'Re-deploy')
+                                        : (isArabic ? 'نشر الموقع' : 'Deploy site')}
+                                </Button>
+                            </div>
+                        )}
+                        {!deployment.base_domain && (
+                            <p className="text-xs text-amber-700">
+                                {isArabic
+                                    ? 'لتفعيل النطاقات الفرعية الكاملة (مثال: grand.diyafah.com) يرجى ضبط متغير البيئة TENANT_BASE_DOMAIN'
+                                    : 'To enable full subdomain URLs (e.g. grand.diyafah.com), set TENANT_BASE_DOMAIN env var.'}
+                            </p>
+                        )}
                     </CardContent>
                 </Card>
 

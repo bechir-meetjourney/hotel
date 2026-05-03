@@ -36,6 +36,8 @@ class Tenant extends Model
         'payment_method',
         'approved_by',
         'approved_at',
+        'deployed_at',
+        'deployed_by',
         'bank_transfer_receipt',
         'payment_notes',
         'admin_notes',
@@ -55,12 +57,38 @@ class Tenant extends Model
             'subscription_starts_at' => 'date',
             'subscription_ends_at' => 'date',
             'approved_at' => 'datetime',
+            'deployed_at' => 'datetime',
         ];
     }
 
     public function approver(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public function deployer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'deployed_by');
+    }
+
+    /**
+     * Compute the live deployment URL based on whether a custom domain
+     * or a subdomain has been registered. Falls back to the slug-based
+     * /hotel/{slug} URL on the main app.
+     */
+    public function deploymentUrl(): string
+    {
+        if ($this->custom_domain) {
+            return 'https://' . ltrim($this->custom_domain, '/');
+        }
+
+        $base = trim(env('TENANT_BASE_DOMAIN', ''), '/');
+        if ($this->subdomain && $base) {
+            return "https://{$this->subdomain}.{$base}";
+        }
+
+        $main = rtrim(env('MAIN_APP_URL', env('APP_URL', '')), '/');
+        return "{$main}/hotel/{$this->slug}";
     }
 
     protected static function booted(): void
