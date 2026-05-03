@@ -35,5 +35,10 @@
         "recharts": "^3.8.1",
         "tailwind-merge": "^3.0.1",
         "tailwindcss-animate": "^1.0.7"
+    },
+    "optionalDependencies": {
+        "@rollup/rollup-linux-x64-gnu": "^4.9.5",
+        "@tailwindcss/oxide-linux-x64-gnu": "^4.0.1",
+        "lightningcss-linux-x64-gnu": "^1.29.1"
     }
 }
