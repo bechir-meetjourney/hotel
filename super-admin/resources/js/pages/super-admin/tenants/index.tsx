@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useT } from '@/hooks/use-translations';
+import { usePermission } from '@/hooks/use-permission';
 import { useState } from 'react';
 
 interface Tag { id: number; label: string; color: string }
@@ -95,6 +96,7 @@ function statusBadge(status: string, isAr: boolean) {
 
 export default function TenantsIndex({ tenants, stats, filters, plans, tags }: Props) {
     const { t, locale, isArabic } = useT();
+    const { can } = usePermission();
     const flash = usePage().props.flash as { success?: string; error?: string; new_password?: string } | undefined;
 
     const breadcrumbs: BreadcrumbItem[] = [
@@ -126,6 +128,21 @@ export default function TenantsIndex({ tenants, stats, filters, plans, tags }: P
         const reason = prompt(isArabic ? 'سبب الرفض؟' : 'Rejection reason?');
         if (reason === null) return;
         router.post(`/super-admin/tenants/${t.id}/reject-renewal`, { rejection_reason: reason }, { preserveScroll: true });
+    }
+
+    function approveInitial(t: Tenant) {
+        const isBank = t.payment_method === 'bank_transfer';
+        const msg = isBank
+            ? (isArabic ? 'تأكيد قبول الحوالة البنكية وتفعيل الموقع؟' : 'Confirm bank transfer & activate site?')
+            : (isArabic ? 'قبول الطلب وتفعيل الموقع؟' : 'Approve and activate site?');
+        if (!confirm(msg)) return;
+        router.post(`/super-admin/tenants/${t.id}/approve`, {}, { preserveScroll: true });
+    }
+
+    function rejectInitial(t: Tenant) {
+        const reason = prompt(isArabic ? 'سبب الرفض؟' : 'Rejection reason?');
+        if (!reason) return;
+        router.post(`/super-admin/tenants/${t.id}/reject`, { rejection_reason: reason }, { preserveScroll: true });
     }
 
     return (
@@ -305,15 +322,35 @@ export default function TenantsIndex({ tenants, stats, filters, plans, tags }: P
                                             </td>
                                             <td className="px-3 py-2">
                                                 <div className="flex items-center gap-1">
-                                                    {status === 'pending' && (row.pending_count ?? 0) > 0 && (
+                                                    {/* Pending renewal request (existing tenant asking to renew) */}
+                                                    {status === 'pending' && (row.pending_count ?? 0) > 0 && can('renewals.approve') && (
                                                         <>
-                                                            <Button size="icon" variant="ghost" className="h-7 w-7 text-emerald-600" onClick={() => approveRenewal(row)} title={isArabic ? 'قبول' : 'Approve'}>
+                                                            <Button size="icon" variant="ghost" className="h-7 w-7 text-emerald-600" onClick={() => approveRenewal(row)} title={isArabic ? 'قبول التجديد' : 'Approve renewal'}>
                                                                 <CheckCircle className="h-4 w-4" />
                                                             </Button>
-                                                            <Button size="icon" variant="ghost" className="h-7 w-7 text-red-600" onClick={() => rejectRenewal(row)} title={isArabic ? 'رفض' : 'Reject'}>
+                                                            <Button size="icon" variant="ghost" className="h-7 w-7 text-red-600" onClick={() => rejectRenewal(row)} title={isArabic ? 'رفض التجديد' : 'Reject renewal'}>
                                                                 <XCircle className="h-4 w-4" />
                                                             </Button>
                                                         </>
+                                                    )}
+                                                    {/* Pending initial request (new signup awaiting approval — typically bank transfer) */}
+                                                    {row.payment_status === 'pending' && (row.pending_count ?? 0) === 0 && can('tenants.approve') && (
+                                                        <Button
+                                                            size="icon"
+                                                            variant="ghost"
+                                                            className={`h-7 w-7 ${row.payment_method === 'bank_transfer' ? 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100' : 'text-emerald-600'}`}
+                                                            onClick={() => approveInitial(row)}
+                                                            title={row.payment_method === 'bank_transfer'
+                                                                ? (isArabic ? 'قبول الحوالة وتفعيل الموقع' : 'Approve bank transfer & activate')
+                                                                : (isArabic ? 'قبول الطلب وتفعيل الموقع' : 'Approve & activate site')}
+                                                        >
+                                                            <CheckCircle className="h-4 w-4" />
+                                                        </Button>
+                                                    )}
+                                                    {row.payment_status === 'pending' && (row.pending_count ?? 0) === 0 && can('tenants.reject') && (
+                                                        <Button size="icon" variant="ghost" className="h-7 w-7 text-red-600" onClick={() => rejectInitial(row)} title={isArabic ? 'رفض الطلب' : 'Reject request'}>
+                                                            <XCircle className="h-4 w-4" />
+                                                        </Button>
                                                     )}
                                                     <Button size="icon" variant="ghost" className="h-7 w-7" asChild title={isArabic ? 'زيارة الموقع' : 'Visit site'}>
                                                         <a href={siteUrl} target="_blank" rel="noopener noreferrer"><ExternalLink className="h-4 w-4" /></a>
