@@ -97,7 +97,9 @@ function statusBadge(status: string, isAr: boolean) {
 export default function TenantsIndex({ tenants, stats, filters, plans, tags }: Props) {
     const { t, locale, isArabic } = useT();
     const { can } = usePermission();
-    const flash = usePage().props.flash as { success?: string; error?: string; new_password?: string } | undefined;
+    const pageProps = usePage().props as { flash?: { success?: string; error?: string; new_password?: string }; mainAppUrl?: string };
+    const flash = pageProps.flash;
+    const mainAppUrl = (pageProps.mainAppUrl ?? '').replace(/\/$/, '');
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: t('super_admin'), href: '/super-admin' },
@@ -279,7 +281,7 @@ export default function TenantsIndex({ tenants, stats, filters, plans, tags }: P
                                     const status = deriveStatus(row);
                                     const siteUrl = row.custom_domain
                                         ? `https://${row.custom_domain}`
-                                        : `/hotel/${row.slug}`;
+                                        : `${mainAppUrl}/hotel/${row.slug}`;
                                     return (
                                         <tr key={row.id} className="border-b last:border-0 hover:bg-muted/30 align-middle">
                                             <td className="px-3 py-2 text-muted-foreground text-xs font-mono">#{row.id}</td>

@@ -112,7 +112,9 @@ export default function TenantShow({ tenant, primary_user, latest_invoice, lates
     const { t, locale, isArabic } = useT();
     const storageUrl = useStorageUrl();
     const { can } = usePermission();
-    const flash = usePage().props.flash as { success?: string; error?: string } | undefined;
+    const pageProps = usePage().props as { flash?: { success?: string; error?: string }; mainAppUrl?: string };
+    const flash = pageProps.flash;
+    const mainAppUrl = (pageProps.mainAppUrl ?? '').replace(/\/$/, '');
     const numLocale = locale === 'ar' ? 'ar-SA' : 'en-US';
 
     const [msgOpen, setMsgOpen] = useState(false);
@@ -125,7 +127,7 @@ export default function TenantShow({ tenant, primary_user, latest_invoice, lates
 
     const siteUrl = tenant.custom_domain
         ? `https://${tenant.custom_domain}`
-        : `/hotel/${tenant.slug}`;
+        : `${mainAppUrl}/hotel/${tenant.slug}`;
 
     function deleteRequest() {
         if (!confirm(isArabic ? 'تأكيد حذف الطلب؟ لا يمكن التراجع.' : 'Confirm delete? This cannot be undone.')) return;
@@ -229,7 +231,7 @@ export default function TenantShow({ tenant, primary_user, latest_invoice, lates
                             <InfoRow label={isArabic ? 'القالب المختار' : 'Selected template'} value={tenant.template} />
                             <InfoRow label={isArabic ? 'رابط الموقع' : 'Site URL'} value={
                                 <a href={siteUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                                    {tenant.custom_domain ?? `${window.location.host}/hotel/${tenant.slug}`}
+                                    {tenant.custom_domain ?? siteUrl.replace(/^https?:\/\//, '')}
                                 </a>
                             } />
                             {tenant.tags.length > 0 && (
@@ -388,7 +390,7 @@ export default function TenantShow({ tenant, primary_user, latest_invoice, lates
                             <QuickLink
                                 icon={Palette}
                                 label={isArabic ? 'معاينة القالب المختار' : 'Preview selected template'}
-                                href={`/template/${tenant.template}`}
+                                href={`${mainAppUrl}/template/${tenant.template}`}
                                 external
                             />
                             <QuickLink
