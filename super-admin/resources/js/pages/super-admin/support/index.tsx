@@ -26,7 +26,7 @@ interface ConversationListItem {
     last_message_at: string | null;
     admin_unread_count: number;
     messages_count: number;
-    tenant: { id: number; name: string; logo_url?: string | null } | null;
+    tenant: { id: number; name: string; logo?: string | null } | null;
     assigned_to: { id: number; name: string } | null;
     latest_message: { body: string; sender_type: string } | null;
 }

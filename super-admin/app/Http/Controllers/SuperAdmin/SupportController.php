@@ -17,7 +17,7 @@ class SupportController extends Controller
     public function index(Request $request)
     {
         $query = Conversation::query()
-            ->with(['tenant:id,name,logo_url', 'assignedTo:id,name', 'latestMessage'])
+            ->with(['tenant:id,name,logo', 'assignedTo:id,name', 'latestMessage'])
             ->withCount('messages');
 
         if ($request->category && $request->category !== 'all') {
@@ -48,7 +48,7 @@ class SupportController extends Controller
 
         $selected = null;
         if ($request->conversation) {
-            $selected = Conversation::with(['tenant:id,name,logo_url', 'assignedTo:id,name', 'messages.sender:id,name', 'messages.attachments'])
+            $selected = Conversation::with(['tenant:id,name,logo', 'assignedTo:id,name', 'messages.sender:id,name', 'messages.attachments'])
                 ->find($request->conversation);
 
             if ($selected) {
