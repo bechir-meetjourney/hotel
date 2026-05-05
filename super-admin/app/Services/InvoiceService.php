@@ -16,6 +16,17 @@ class InvoiceService
             ? "Renewal #{$renewal->id} via Moyasar"
             : "Renewal #{$renewal->id} via bank transfer";
 
+        return $this->createSubscriptionInvoice($tenant, $plan, $paymentMethod, $notes);
+    }
+
+    public function createInitialInvoice(Tenant $tenant, Plan $plan, string $paymentMethod = 'bank_transfer'): Invoice
+    {
+        $notes = "Initial subscription #{$tenant->id}";
+        return $this->createSubscriptionInvoice($tenant, $plan, $paymentMethod, $notes);
+    }
+
+    private function createSubscriptionInvoice(Tenant $tenant, Plan $plan, string $paymentMethod, string $notes): Invoice
+    {
         $amount = (float) $plan->price;
         $taxRate = 15.00;
         $taxAmount = round($amount * ($taxRate / 100), 2);

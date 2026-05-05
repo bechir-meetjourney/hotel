@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Invoice;
 use App\Models\Plan;
 use App\Models\RenewalRequest;
 use App\Models\RequestTag;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Services\InvoiceService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -460,6 +462,15 @@ class TenantController extends Controller
             'processed_by' => request()->user()?->id,
         ]);
 
+        if ($plan) {
+            $alreadyInvoiced = Invoice::where('tenant_id', $tenant->id)
+                ->where('notes_en', 'like', "%Renewal #{$renewal->id}%")
+                ->exists();
+            if (!$alreadyInvoiced) {
+                app(InvoiceService::class)->createRenewalInvoice($tenant, $renewal->fresh(), $plan);
+            }
+        }
+
         return back()->with('success', 'تم قبول طلب التجديد');
     }
 
@@ -514,6 +525,11 @@ class TenantController extends Controller
             'approved_by' => request()->user()?->id,
             'approved_at' => now(),
         ]);
+
+        $plan = $tenant->plan_id ? Plan::find($tenant->plan_id) : null;
+        if ($plan && !Invoice::where('tenant_id', $tenant->id)->where('type', 'subscription')->exists()) {
+            app(InvoiceService::class)->createInitialInvoice($tenant, $plan);
+        }
 
         $admin = User::where('tenant_id', $tenant->id)->where('role', 'client_admin')->first();
         if ($admin) {
