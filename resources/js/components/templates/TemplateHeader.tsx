@@ -103,7 +103,7 @@ export default function TemplateHeader() {
               <img 
                 src={appearance === 'dark' ? darkLogoSrc : lightLogoSrc}
                 alt="Hotel Logo"
-                className="h-18 w-auto drop-shadow-sm"
+                className="h-18 w-auto max-w-[200px] object-contain drop-shadow-sm"
               />
             </div>
           </div>

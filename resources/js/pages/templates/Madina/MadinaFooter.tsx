@@ -31,7 +31,13 @@ function FooterLogo() {
   const tenantLogo = storageUrl(siteSettings?.identity?.site_logo)
 
   if (tenantLogo) {
-    return <img src={tenantLogo} alt="Logo" style={{ width: '150px', height: '150px', objectFit: 'contain' }} />
+    return (
+      <img
+        src={tenantLogo}
+        alt="Logo"
+        style={{ height: '80px', width: 'auto', maxWidth: '220px', objectFit: 'contain' }}
+      />
+    )
   }
 
   return <HeaderLogo scrolled={false} />

@@ -152,6 +152,9 @@ export default function GalleryIndex({ images, filters, categories }: Props) {
                                 </span>
                                 <input type="file" accept="image/*" multiple onChange={(e) => setData('images', Array.from(e.target.files || []))} className="hidden" />
                             </label>
+                            <p className="mt-2 text-xs text-muted-foreground">
+                                الأبعاد الموصى بها: 1200×800 (نسبة 3:2) — JPG/PNG, الحد الأقصى 5MB لكل صورة. تظهر الصور كمستطيلات في القالبين Madina وRiyadh.
+                            </p>
                         </div>
                         <div className="mt-4 flex justify-end gap-2">
                             <button type="button" onClick={() => setShowUpload(false)} className="rounded-lg border px-4 py-2 text-sm hover:bg-muted">{t('cancel')}</button>

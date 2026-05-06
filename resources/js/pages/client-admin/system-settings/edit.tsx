@@ -141,6 +141,12 @@ export default function SystemSettingsEdit({ settings }: { settings: Settings })
                             <FileSlot label="الشعار (داكن)" preview={logoDarkPreview} onChange={handleFile('site_logo_dark', setLogoDarkPreview)} />
                             <FileSlot label="Favicon" preview={faviconPreview} onChange={handleFile('site_favicon', setFaviconPreview)} small />
                         </div>
+                        <p className="mt-3 text-xs text-muted-foreground leading-relaxed">
+                            <strong>الأبعاد الموصى بها / Recommended:</strong>{' '}
+                            <span dir="ltr">Logo</span>: 400×120px (PNG/SVG, transparent, ≤ 200 KB).{' '}
+                            <span dir="ltr">Favicon</span>: 64×64px (PNG/ICO).{' '}
+                            القوالب تعرض الشعار بارتفاع ثابت — استخدم خلفية شفافة لتجنب البياض.
+                        </p>
                     </Section>
 
                     <Section title="الألوان / Colors">

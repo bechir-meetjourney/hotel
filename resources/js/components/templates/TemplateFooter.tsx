@@ -96,7 +96,7 @@ export default function TemplateFooter() {
               <img 
                 src={logo} 
                 alt={t('footer.hotel_name', 'فندق الرياض')} 
-                className="h-16 w-auto mb-4"
+                className="h-16 w-auto max-w-[220px] object-contain mb-4"
               />
               <p className="text-gray-300 text-sm leading-relaxed">
                 {t('footer.description', 'نحن لسنا مجرد فنادق، بل وجهة للراحة والفخامة. نحن نؤمن بأن كل رحلة تستحق نهاية مثالية، ولهذا نسعى جاهدين لتقديم أفضل الخدمات')}

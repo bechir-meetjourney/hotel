@@ -16,6 +16,18 @@ export interface LogoProps {
   scrolled?: boolean
 }
 
+// Logo sizing: cap height to fit the header bar, let width auto-scale so
+// any aspect ratio (square / horizontal / vertical) renders without
+// distorting or overflowing. max-width prevents very-wide logos from
+// pushing the navigation off-screen.
+const LOGO_BOX: React.CSSProperties = {
+  height: '64px',
+  width: 'auto',
+  maxWidth: '200px',
+  objectFit: 'contain',
+  transition: 'opacity 0.3s ease',
+}
+
 export const Logo = ({ scrolled = false }: LogoProps) => {
   const storageUrl = useStorageUrl()
   const { siteSettings } = usePage<{ siteSettings?: { identity?: { site_logo?: string | null } } }>().props
@@ -23,44 +35,22 @@ export const Logo = ({ scrolled = false }: LogoProps) => {
   const logoImage = tenantLogo || defaultLogoImage
   const isCustomLogo = !!tenantLogo
 
-  // Initially: show original image
+  // Initial / unscrolled: render the image plainly.
   if (!scrolled) {
-    return (
-      <img
-        src={logoImage}
-        alt="Logo"
-        style={{
-          width: '150px',
-          height: '150px',
-          objectFit: 'contain',
-          transition: 'opacity 0.3s ease'
-        }}
-      />
-    )
+    return <img src={logoImage} alt="Logo" style={LOGO_BOX} />
   }
 
-  // After scroll: a custom (uploaded) logo stays as-is — masking only works
-  // for the bundled SVG silhouette. Default logo gets the primary-color tint.
+  // After scroll: keep custom (uploaded) logos as-is — the CSS mask trick
+  // only works for the bundled SVG silhouette of the default Madina logo.
   if (isCustomLogo) {
-    return (
-      <img
-        src={logoImage}
-        alt="Logo"
-        style={{
-          width: '150px',
-          height: '150px',
-          objectFit: 'contain',
-          transition: 'opacity 0.3s ease'
-        }}
-      />
-    )
+    return <img src={logoImage} alt="Logo" style={LOGO_BOX} />
   }
 
   return (
     <div
       style={{
+        ...LOGO_BOX,
         width: '150px',
-        height: '150px',
         WebkitMaskImage: `url(${logoImage})`,
         maskImage: `url(${logoImage})`,
         WebkitMaskSize: 'contain',
@@ -70,7 +60,6 @@ export const Logo = ({ scrolled = false }: LogoProps) => {
         WebkitMaskPosition: 'center',
         maskPosition: 'center',
         backgroundColor: 'var(--madina-logo-color, var(--madina-primary))',
-        transition: 'background-color 0.3s ease, opacity 0.3s ease',
         display: 'inline-block',
       }}
       role="img"
