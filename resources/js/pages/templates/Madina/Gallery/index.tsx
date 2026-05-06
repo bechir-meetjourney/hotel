@@ -31,7 +31,11 @@ export default function Gallery({ gallery }: Props) {
   const t = useTemplateT()
   const { isArabic } = useTemplateLanguage()
   const storageUrl = useStorageUrl()
-  const [galleryStyle, setGalleryStyle] = useState<'riyadh' | 'madina'>('riyadh')
+  // Default to 'madina' (Swiper) when items come from the backend (R2/cross-origin):
+  // the 'riyadh' (WebGL) style requires CORS headers on the storage bucket which
+  // aren't configured by default. Local-asset galleries can still use 'riyadh'.
+  const hasBackendGallery = !!(gallery && gallery.length > 0)
+  const [galleryStyle, setGalleryStyle] = useState<'riyadh' | 'madina'>(hasBackendGallery ? 'madina' : 'riyadh')
 
   // Load gallery slider style from localStorage
   useEffect(() => {
