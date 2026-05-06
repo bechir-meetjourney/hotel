@@ -1,10 +1,20 @@
 import React, { useMemo } from "react";
-import { router } from "@inertiajs/react";
+import { router, usePage } from "@inertiajs/react";
 import PublicLayout from "@/layouts/public-layout";
 import SetupBanner from "@/components/public/setup/SetupBanner";
 import { plans as fallbackPlans } from "@/components/public/Pricing/plans";
 import AnimatedHeading from '@/components/motion/AnimatedHeading'
 import { useLang } from '@/hooks/useLang'
+
+interface DbPlan {
+  id: number
+  key: string
+  name_ar: string
+  name_en: string
+  price: number
+  period_ar: string
+  period_en: string
+}
 
 interface Props {
   setup: {
@@ -18,16 +28,27 @@ interface Props {
     username?: string
     email?: string
   }
+  plan: DbPlan | null
 }
 
-export default function Review({ setup }: Props) {
+export default function Review({ setup, plan: dbPlan }: Props) {
   const { __ } = useLang()
+  const { locale } = usePage<{ locale: 'ar' | 'en' }>().props
+  const isArabic = locale === 'ar'
 
   const plan = useMemo(() => {
+    if (dbPlan) {
+      return {
+        key: dbPlan.key,
+        name: isArabic ? dbPlan.name_ar : dbPlan.name_en,
+        price: String(dbPlan.price),
+        period: isArabic ? dbPlan.period_ar : dbPlan.period_en,
+      };
+    }
     return fallbackPlans.find((p) => p.key === setup.plan_key) ?? {
       key: "", name: setup.plan_name || "—", price: "0", period: "",
     };
-  }, [setup]);
+  }, [dbPlan, setup, isArabic]);
 
   const priceNumber = useMemo(
     () => Number(String((plan as any).price).replace(/,/g, "")) || 0,

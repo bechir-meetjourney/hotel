@@ -244,8 +244,19 @@ class SetupController extends Controller
             return redirect()->route('setup.verifyOtp');
         }
 
+        $plan = Plan::find($setup['plan_id'] ?? null);
+
         return Inertia::render('public/setup/Review', [
             'setup' => $setup,
+            'plan' => $plan ? [
+                'id' => $plan->id,
+                'key' => $plan->slug,
+                'name_ar' => $plan->name_ar,
+                'name_en' => $plan->name_en,
+                'price' => (float) $plan->price,
+                'period_ar' => 'سنوياً',
+                'period_en' => 'yearly',
+            ] : null,
         ]);
     }
 
