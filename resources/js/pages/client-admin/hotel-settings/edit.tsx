@@ -3,18 +3,13 @@ import { useT } from '@/hooks/use-translations';
 import { useStorageUrl } from '@/lib/storage';
 import { type BreadcrumbItem } from '@/types';
 import { Head, useForm, usePage } from '@inertiajs/react';
-import { Save, Upload } from 'lucide-react';
-import { useState } from 'react';
+import { Save } from 'lucide-react';
 
 interface HotelSettings {
     hotel_name_ar: string;
     hotel_name_en: string;
     description_ar: string | null;
     description_en: string | null;
-    logo: string | null;
-    logo_url: string | null;
-    favicon: string | null;
-    favicon_url: string | null;
     star_rating: number;
     currency: string;
     timezone: string;
@@ -26,7 +21,6 @@ interface HotelSettings {
 
 export default function HotelSettingsEdit({ settings }: { settings: HotelSettings }) {
     const { t } = useT();
-    const storageUrl = useStorageUrl();
     const flash = (usePage().props as any).flash as { success?: string } | undefined;
 
     const breadcrumbs: BreadcrumbItem[] = [
@@ -48,16 +42,11 @@ export default function HotelSettingsEdit({ settings }: { settings: HotelSetting
         check_out_time: settings.check_out_time || '12:00',
         primary_color: settings.primary_color || { light: '#A67D5F', dark: '#C9A882' },
         secondary_color: settings.secondary_color || { light: '#C9A882', dark: '#A67D5F' },
-        logo: null as File | null,
-        favicon: null as File | null,
     });
-
-    const [logoPreview, setLogoPreview] = useState<string | null>(settings.logo_url ?? storageUrl(settings.logo));
-    const [faviconPreview, setFaviconPreview] = useState<string | null>(settings.favicon_url ?? storageUrl(settings.favicon));
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        post('/client-admin/hotel-settings', { forceFormData: true });
+        post('/client-admin/hotel-settings');
     }
 
     return (
@@ -133,33 +122,6 @@ export default function HotelSettingsEdit({ settings }: { settings: HotelSetting
 
                     <Section title={t('branding')}>
                         <div className="grid gap-4 sm:grid-cols-2">
-                            <div>
-                                <label className="mb-2 block text-sm font-medium">{t('logo')}</label>
-                                <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 transition hover:bg-muted">
-                                    <Upload className="h-5 w-5 text-muted-foreground" />
-                                    <span className="text-sm text-muted-foreground">{t('upload_logo')}</span>
-                                    <input type="file" accept="image/*" onChange={(e) => {
-                                        const f = e.target.files?.[0];
-                                        if (f) { setData('logo', f); setLogoPreview(URL.createObjectURL(f)); }
-                                    }} className="hidden" />
-                                </label>
-                                {logoPreview && <img src={logoPreview} alt="Logo" className="mt-2 h-16 object-contain" />}
-                            </div>
-                            <div>
-                                <label className="mb-2 block text-sm font-medium">{t('favicon')}</label>
-                                <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 transition hover:bg-muted">
-                                    <Upload className="h-5 w-5 text-muted-foreground" />
-                                    <span className="text-sm text-muted-foreground">{t('upload_favicon')}</span>
-                                    <input type="file" accept="image/*,.ico" onChange={(e) => {
-                                        const f = e.target.files?.[0];
-                                        if (f) { setData('favicon', f); setFaviconPreview(URL.createObjectURL(f)); }
-                                    }} className="hidden" />
-                                </label>
-                                {faviconPreview && <img src={faviconPreview} alt="Favicon" className="mt-2 h-10 w-10 object-contain" />}
-                            </div>
-                        </div>
-
-                        <div className="mt-4 grid gap-4 sm:grid-cols-2">
                             <Field label={t('primary_light')} error={undefined}>
                                 <div className="flex items-center gap-2">
                                     <input type="color" value={data.primary_color.light} onChange={(e) => setData('primary_color', { ...data.primary_color, light: e.target.value })} className="h-10 w-10 cursor-pointer rounded border" />

@@ -7,6 +7,7 @@ use App\Models\Plan;
 use App\Models\Template;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Services\InvoiceService;
 use App\Services\MoyasarPaymentService;
 use App\Support\Mailer;
 use Illuminate\Http\RedirectResponse;
@@ -409,6 +410,11 @@ class SetupController extends Controller
                 ]);
 
                 $this->createTenantDefaults($tenant, $setup);
+
+                $plan = Plan::find($tenant->plan_id);
+                if ($plan) {
+                    app(InvoiceService::class)->createInitialInvoice($tenant, $plan, 'moyasar');
+                }
 
                 return $tenant;
             });

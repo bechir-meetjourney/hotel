@@ -5,7 +5,6 @@ namespace App\Http\Controllers\ClientAdmin;
 use App\Http\Controllers\Controller;
 use App\Models\HotelSetting;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class HotelSettingController extends Controller
@@ -38,30 +37,9 @@ class HotelSettingController extends Controller
             'secondary_color.light' => 'nullable|string|regex:/^#[0-9A-Fa-f]{3,8}$/',
             'secondary_color.dark' => 'nullable|string|regex:/^#[0-9A-Fa-f]{3,8}$/',
             'meta_tags' => 'nullable|array',
-            'logo' => 'nullable|file|image|mimes:jpg,jpeg,png,svg,webp|max:5120',
-            'favicon' => 'nullable|file|image|mimes:jpg,jpeg,png,ico,svg|max:1024',
         ]);
 
         $settings = HotelSetting::firstOrNew([]);
-
-        if ($request->hasFile('logo')) {
-            if ($settings->logo) {
-                Storage::disk('public')->delete($settings->logo);
-            }
-            $validated['logo'] = $request->file('logo')->store('hotel', 'public');
-        } else {
-            unset($validated['logo']);
-        }
-
-        if ($request->hasFile('favicon')) {
-            if ($settings->favicon) {
-                Storage::disk('public')->delete($settings->favicon);
-            }
-            $validated['favicon'] = $request->file('favicon')->store('hotel', 'public');
-        } else {
-            unset($validated['favicon']);
-        }
-
         $settings->fill($validated);
         if (!$settings->tenant_id) {
             $settings->tenant_id = app('current_tenant_id');
