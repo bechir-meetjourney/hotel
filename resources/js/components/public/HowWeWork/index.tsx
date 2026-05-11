@@ -11,6 +11,7 @@ import bgltr from "@/assets/images/how-work-icons/how-we-work-background-4.png";
 import mobilebg from "@/assets/images/how-work-icons/how-we-work-mobile-background.svg";
 import AnimatedHeading from '@/components/motion/AnimatedHeading'
 import { useLang } from '@/hooks/useLang'
+import { useSiteSettings } from '@/hooks/use-preview-overrides'
 import { usePage } from '@inertiajs/react'
 /**
  * HowWeWork component - Section explaining how the service works
@@ -20,6 +21,9 @@ export default function HowWeWork() {
   const { __ } = useLang()
   const page = usePage();
   const { locale } = (page.props as unknown) as { locale: string };
+  const siteSettings = useSiteSettings()
+  const isAr = locale === 'ar'
+  const howTitle = (isAr ? siteSettings?.how_we_work?.how_we_work_title_ar : siteSettings?.how_we_work?.how_we_work_title_en) || __('messages.how_we_work.title')
 
   const steps = {
     one: {
@@ -66,7 +70,7 @@ export default function HowWeWork() {
     <div className="bg-public-primary w-full py-8">
         <AnimatedHeading dir="up" delay={0.30}>
           <h2 className="text-center text-3xl  font-extrabold text-white">
-            {__("messages.how_we_work.title")}
+            {howTitle}
           </h2>
         </AnimatedHeading>
           <HowWeWorkPath

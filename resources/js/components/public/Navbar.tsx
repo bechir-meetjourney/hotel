@@ -1,5 +1,5 @@
 // resources/js/components/public/Navbar.tsx
-import { Link, router, usePage } from '@inertiajs/react'
+import { Link, router } from '@inertiajs/react'
 import { Menu, X, LogIn } from 'lucide-react'
 import { useState } from 'react'
 import LanguageSwitcher from './navbar/LanguageSwitcher'
@@ -8,6 +8,7 @@ import MobileDrawer from './navbar/MobileDrawer'
 import { useNavItems } from './navbar/NavItems'
 import { useLang } from '@/hooks/useLang'
 import { useStorageUrl } from '@/lib/storage'
+import { useSiteSettings } from '@/hooks/use-preview-overrides'
 
 /**
  * Navbar component - Main navigation header
@@ -39,9 +40,11 @@ export default function Navbar() {
   // Language translation function
   const { __ } = useLang()
   const storageUrl = useStorageUrl()
-  // Site settings from Inertia shared props
-  const { siteSettings } = usePage<{ siteSettings?: { identity?: { site_logo?: string | null } } }>().props
-  const siteLogo = storageUrl(siteSettings?.identity?.site_logo) ?? '/logo.png'
+  // Site settings (merged with live-preview overrides when in preview iframe)
+  const siteSettings = useSiteSettings()
+  const rawLogo = siteSettings?.identity?.site_logo ?? null
+  // Preview mode pushes blob: URLs through; pass them straight through, otherwise resolve via storage helper.
+  const siteLogo = rawLogo && rawLogo.startsWith('blob:') ? rawLogo : (storageUrl(rawLogo) ?? '/logo.png')
 
   // Toggle mobile menu
   const toggle = () => setOpen((v) => !v)

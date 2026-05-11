@@ -1,9 +1,10 @@
   // resources/js/components/landing/Contact.tsx
   import { useState } from 'react'
   import { MapPin, Mail, Phone, CheckCircle2, AlertCircle } from 'lucide-react'
-  import { router } from '@inertiajs/react'
+  import { router, usePage } from '@inertiajs/react'
   import { CONTACT_FORM_FIELDS } from '@/data/public-data'
   import { useLang } from '@/hooks/useLang'
+  import { useSiteSettings } from '@/hooks/use-preview-overrides'
   import { Button } from '@/components/public/common'
   import contact from '@/assets/images/icons/contact.svg'
   import line from '@/assets/images/icons/contact-line.svg'
@@ -18,6 +19,17 @@
    */
   export default function Contact() {
   const { __ } = useLang()
+  const siteSettings = useSiteSettings()
+  const { locale } = usePage<{ locale?: string }>().props
+  const isAr = locale === 'ar'
+
+  const cTitle = (isAr ? siteSettings?.contact_section?.contact_title_ar : siteSettings?.contact_section?.contact_title_en) || __('messages.section_titles.contact.title')
+  const cSubtitle = (isAr ? siteSettings?.contact_section?.contact_subtitle_ar : siteSettings?.contact_section?.contact_subtitle_en) || __('messages.section_titles.contact.subtitle')
+  const cMethodsTitle = (isAr ? siteSettings?.contact_section?.contact_methods_title_ar : siteSettings?.contact_section?.contact_methods_title_en) || __('messages.contact_ui.methods_title')
+  const cButtonText = (isAr ? siteSettings?.contact_section?.contact_button_text_ar : siteSettings?.contact_section?.contact_button_text_en) || __('messages.contact_ui.send_button')
+  const cAddress = (isAr ? siteSettings?.contact_info?.contact_address_ar : siteSettings?.contact_info?.contact_address_en) || __('messages.contact_info.address')
+  const cEmail = siteSettings?.contact_info?.contact_email || __('messages.contact_info.email')
+  const cPhone = siteSettings?.contact_info?.contact_phone || __('messages.contact_info.phone')
     // Types derived from CONTACT_FORM_FIELDS
     type FieldDef = typeof CONTACT_FORM_FIELDS[number]
     type FieldName = FieldDef['name']
@@ -101,9 +113,9 @@
 
     // Company contact information with icons
     const contactInfo = [
-      { icon: MapPin, text: __("messages.contact_info.address") },
-      { icon: Mail, text: __("messages.contact_info.email") },
-      { icon: Phone, text: __("messages.contact_info.phone") },
+      { icon: MapPin, text: cAddress },
+      { icon: Mail, text: cEmail },
+      { icon: Phone, text: cPhone },
     ]
 
     return (
@@ -112,8 +124,8 @@
           {/* Section title */}
           <AnimatedHeading dir="up" delay={0.30}>
             <h2 className="text-center text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">
-              <span className="text-public-active">{__("messages.section_titles.contact.title")}</span>
-              <span className="text-public-primary">{__("messages.section_titles.contact.subtitle")}</span>
+              <span className="text-public-active">{cTitle}</span>
+              <span className="text-public-primary">{cSubtitle}</span>
             </h2>
           </AnimatedHeading>
           {/* Main content grid */}
@@ -129,11 +141,11 @@
                 </div>
 
                 {/* Contact methods list */}
-                <h3 className="mb-4 text-xl text-center font-bold text-[#01004c]">{__("messages.contact_ui.methods_title")}</h3>
+                <h3 className="mb-4 text-xl text-center font-bold text-public-primary">{cMethodsTitle}</h3>
                 <ul className="space-y-4">
                   {contactInfo.map(({ icon: Icon, text }, i) => (
                     <li key={i} className="flex items-start justify-end gap-3">
-                      <Icon className="h-5 w-5 shrink-0 text-[#01004c]" />
+                      <Icon className="h-5 w-5 shrink-0 text-public-primary" />
                       <div className="flex-1 text-start text-gray-800">{text}</div>
                     </li>
                   ))}
@@ -209,7 +221,7 @@
                 >
                   {submitting
                     ? (__("messages.contact_ui.sending") || '...')
-                    : __("messages.contact_ui.send_button")}
+                    : cButtonText}
                 </Button>
               </div>
             </form>

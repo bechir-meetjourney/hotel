@@ -1,5 +1,6 @@
 import { useLang } from '@/hooks/useLang'
 import { usePage } from '@inertiajs/react'
+import { useSiteSettings } from '@/hooks/use-preview-overrides'
 import HeroLogo from './HeroLogo'
 import HeroCTA from './HeroCTA'
 import heroLogo from '@/assets/images/hero/hero-logo.png'
@@ -13,10 +14,12 @@ import AnimatedButton from '@/components/motion/AnimatedButton'
  */
 export default function HeroContent() {
   const { __ } = useLang()
-  const { siteSettings, locale } = usePage<{ siteSettings?: { hero?: Record<string, string | null> }; locale?: string }>().props
+  const siteSettings = useSiteSettings()
+  const { locale } = usePage<{ locale?: string }>().props
   const isAr = locale === 'ar'
   const heroTitle = (isAr ? siteSettings?.hero?.hero_title_ar : siteSettings?.hero?.hero_title_en) || ''
   const heroSubtitle = (isAr ? siteSettings?.hero?.hero_subtitle_ar : siteSettings?.hero?.hero_subtitle_en) || ''
+  const heroCta = (isAr ? siteSettings?.hero?.hero_cta_ar : siteSettings?.hero?.hero_cta_en) || __('messages.hero.cta')
 
   return (
     <div className="mx-auto max-w-3xl flex flex-col items-center text-center  ">
@@ -41,7 +44,7 @@ export default function HeroContent() {
               <HeroCTA href="/templates">
                <AnimatedButton dir="up" >
                   <p className='text-xl font-normal'>
-                  {__('messages.hero.cta')}
+                  {heroCta}
                   </p>
                 </AnimatedButton>
               </HeroCTA>

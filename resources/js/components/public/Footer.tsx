@@ -5,6 +5,7 @@ import { Instagram, Youtube, Facebook, Twitter } from "lucide-react";
 import { SOCIAL_LINKS, PAYMENT_METHODS } from "@/data/public-data";
 import { useLang } from '@/hooks/useLang'
 import { useStorageUrl } from '@/lib/storage'
+import { useSiteSettings } from '@/hooks/use-preview-overrides'
 import footerline from "@/assets/images/icons/footer-line.svg";
 import vision2030 from "@/assets/images/icons/footer-logo-1.svg";
 import khidmah from "@/assets/images/icons/footer-logo-2.svg";
@@ -29,16 +30,20 @@ export default function Footer() {
   const year = new Date().getFullYear();
   const { __ } = useLang()
   const storageUrl = useStorageUrl()
-  const { siteSettings, locale } = usePage<{ siteSettings?: { social?: Record<string, string>; footer?: Record<string, string>; identity?: { site_logo?: string | null } }; locale?: string }>().props
+  const siteSettings = useSiteSettings()
+  const { locale } = usePage<{ locale?: string }>().props
 
   // Override social links with DB settings if available
   const socialOverrides: Record<string, string> = {
-    instagram: siteSettings?.social?.social_instagram || '',
-    facebook: siteSettings?.social?.social_facebook || '',
-    x: siteSettings?.social?.social_twitter || '',
+    instagram: (siteSettings?.social?.social_instagram as string) || '',
+    facebook: (siteSettings?.social?.social_facebook as string) || '',
+    x: (siteSettings?.social?.social_twitter as string) || '',
   };
   const footerText = locale === 'ar' ? siteSettings?.footer?.footer_text_ar : siteSettings?.footer?.footer_text_en;
-  const footerLogo = storageUrl(siteSettings?.identity?.site_logo);
+  const isAr = locale === 'ar'
+  const businessNumber = (isAr ? siteSettings?.footer?.footer_business_number_ar : siteSettings?.footer?.footer_business_number_en) || __('messages.footer.business_number')
+  const rawFooterLogo = siteSettings?.identity?.site_logo ?? null;
+  const footerLogo = rawFooterLogo && rawFooterLogo.startsWith('blob:') ? rawFooterLogo : storageUrl(rawFooterLogo);
 
   // Social media icons mapping
   const socialIcons = {
@@ -84,7 +89,7 @@ export default function Footer() {
 
             {/* Business registration number and copyright */}
             <p className="text-sm md:text-lg">
-              {__("messages.footer.business_number")}
+              {businessNumber}
             </p>
           </div>
 

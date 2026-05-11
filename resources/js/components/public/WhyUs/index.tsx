@@ -5,6 +5,8 @@ import ReasonsGrid from './ReasonsGrid'
 import { WhyIcons } from './icons'        
 import { WHY_US_FEATURES, ADDITIONAL_REASONS } from '@/data/public-data'
 import { useLang } from '@/hooks/useLang'
+import { useSiteSettings } from '@/hooks/use-preview-overrides'
+import { usePage } from '@inertiajs/react'
 import decoLeft  from '@/assets/images/icons/line-left.svg'
 import decoRight from '@/assets/images/icons/line-right.svg'
 import Heading from './Heading'
@@ -79,6 +81,10 @@ export default function WhyUs() {
   }
 
   const { __ } = useLang()
+  const siteSettings = useSiteSettings()
+  const { locale } = usePage<{ locale?: string }>().props
+  const isAr = locale === 'ar'
+  const whyUsTitle = (isAr ? siteSettings?.why_us?.why_us_title_ar : siteSettings?.why_us?.why_us_title_en) || __('messages.why_us.title')
 
   // Transform features data to include icon components and actual images
   const transformFeatureData = (feature: WhyFeature) => {
@@ -118,7 +124,7 @@ export default function WhyUs() {
       <div className="mx-auto max-w-7xl px-4 pt-12">
         <Heading leftIcon={decoRight} rightIcon={decoLeft}>
           <AnimatedHeading dir="up">
-            {__("messages.why_us.title")}
+            {whyUsTitle}
           </AnimatedHeading>
         </Heading>
 

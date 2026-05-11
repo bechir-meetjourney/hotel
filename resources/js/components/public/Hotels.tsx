@@ -6,6 +6,8 @@ import { Autoplay, A11y } from 'swiper/modules'
 import { HOTEL_LOGOS } from '@/data/public-data'
 import { useLang } from '@/hooks/useLang'
 import { useStorageUrl } from '@/lib/storage'
+import { useSiteSettings } from '@/hooks/use-preview-overrides'
+import { usePage } from '@inertiajs/react'
 import 'swiper/css'
 
 // Import hotel logo images
@@ -78,6 +80,12 @@ export default function Hotels({ dbPartners }: { dbPartners?: DbPartner[] }) {
       }))
 
   const { __ } = useLang()
+  const siteSettings = useSiteSettings()
+  const { locale } = usePage<{ locale?: string }>().props
+  const isAr = locale === 'ar'
+  const hotelsTitle = (isAr ? siteSettings?.hotels_section?.hotels_title_ar : siteSettings?.hotels_section?.hotels_title_en) || __('messages.section_titles.hotels.title')
+  const hotelsSubtitle = (isAr ? siteSettings?.hotels_section?.hotels_subtitle_ar : siteSettings?.hotels_section?.hotels_subtitle_en) || __('messages.section_titles.hotels.subtitle')
+  const hotelsDescription = (isAr ? siteSettings?.hotels_section?.hotels_description_ar : siteSettings?.hotels_section?.hotels_description_en) || __('messages.section_titles.hotels.description')
 
   // Logos for the avatar section at the bottom (first 3 logos)
   const avatarLogos = transformedLogos.slice(0, 3)
@@ -89,14 +97,14 @@ export default function Hotels({ dbPartners }: { dbPartners?: DbPartner[] }) {
         {/* Section title */}
         <AnimatedHeading dir="up" delay={0.30}>
           <h2 className="text-3xl sm:text-5xl    font-extrabold tracking-tight">
-            <span className="text-public-primary">{__("messages.section_titles.hotels.title")}</span>
-            <span className="text-public-active">{__("messages.section_titles.hotels.subtitle")}</span>
+            <span className="text-public-primary">{hotelsTitle}</span>
+            <span className="text-public-active">{hotelsSubtitle}</span>
           </h2>
         </AnimatedHeading>
         {/* Section description */}
-        <AnimatedParagraph dir="none" delay={0.60}>  
+        <AnimatedParagraph dir="none" delay={0.60}>
           <p className="mx-auto mt-2 md:mt-4 max-w-4xl text-base sm:text-2xl  text-black/70">
-            {__("messages.section_titles.hotels.description")}
+            {hotelsDescription}
           </p>
         </AnimatedParagraph>
         {/* Mobile carousel view */}
@@ -161,9 +169,11 @@ export default function Hotels({ dbPartners }: { dbPartners?: DbPartner[] }) {
             ))}
           </div>
 
-          {/* Trust message */}
+          {/* Trust message — floors at 50 so the marketing line never regresses below the claim. */}
           <p className="">
-            {__("messages.section_titles.hotels.trust", { count: 50 })}
+            {__("messages.section_titles.hotels.trust", {
+              count: Math.max(50, dbPartners?.length ?? 0),
+            })}
           </p>
         </div>
       </div>

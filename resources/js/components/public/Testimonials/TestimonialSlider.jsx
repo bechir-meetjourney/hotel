@@ -6,9 +6,6 @@ import 'swiper/css'
 import 'swiper/css/effect-coverflow'
 import TestimonialCard from './TestimonialCard'
 
-// Import testimonial image
-import testimonialLogo from '@/assets/images/testimonlis/logo-1.svg'
-
 /**
  * TestimonialSlider component - Swiper-based testimonial carousel.
  * Prefers server-provided dbTestimonials (published reviews) and falls
@@ -23,9 +20,8 @@ const TestimonialSlider = ({ dbTestimonials } = {}) => {
         name: r.guest_name,
         position: '★'.repeat(Math.max(1, Math.min(5, r.rating))),
         text: r.comment ?? '',
-        image: testimonialLogo,
       }))
-    : TESTIMONIALS_DATA.map(t => ({ ...t, image: testimonialLogo }))
+    : TESTIMONIALS_DATA
 
   return (
     <Swiper

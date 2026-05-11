@@ -69,26 +69,38 @@ export default function Home({ plans, templates, testimonials, partners, siteSet
         />
                 {/* Background */}
           <div className="overflow-hidden bg-background dark:bg-neutral-950 text-foreground dark:text-white">
-            {/* Animated gradient orbs with subtle parallax + mouse drift */}
+            {/* Animated gradient orbs — colors driven by CSS brand vars so the Site Branding
+                panel can recolor the landing live. Hex fallbacks preserve the original palette. */}
             <motion.div
-              className="pointer-events-none fixed -right-1/4 -bottom-1/4 h-[70vh] w-[50vh] animate-[spin_14s_linear_infinite_reverse] rounded-full 
-                        bg-[conic-gradient(at_bottom_right,_#01004C,_#5A5ECD,_#8689E3,_#01004C)] opacity-20 blur-3xl"
-              aria-hidden
-            />
-            {/* Extra orbs for richness */}
-            <motion.div
-              className="pointer-events-none fixed -top-80 right-0 h-[45vh] w-[25vh] animate-[spin_30s_linear_infinite] rounded-full 
-                        bg-[conic-gradient(at_top_right,_#027F84,_#8689E3,_#5A5ECD,_#027F84)] opacity-15 blur-3xl"
-              aria-hidden
-            />
-            <motion.div
-              className="pointer-events-none fixed -left-2 top-1/2 h-[36vh] w-[56vh] animate-[spin_30s_linear_infinite_reverse] rounded-full 
-                        bg-[conic-gradient(at_left,_#454891,_#8689E3,_#5A5ECD,_#454891)] opacity-10 blur-3xl"
+              className="pointer-events-none fixed -right-1/4 -bottom-1/4 h-[70vh] w-[50vh] animate-[spin_14s_linear_infinite_reverse] rounded-full opacity-20 blur-3xl"
+              style={{
+                background:
+                  'conic-gradient(at bottom right, var(--public-primary, #01004C), var(--public-active, #5A5ECD), var(--public-secondary, #8689E3), var(--public-primary, #01004C))',
+              }}
               aria-hidden
             />
             <motion.div
-              className="pointer-events-none fixed top-1/4 left-1/2 h-[28vh] w-[48vh] animate-[spin_30s_linear_infinite] -translate-x-1/2 -translate-y-1/2 rounded-full 
-                        bg-[conic-gradient(at_center,_#027F84,_#5A5ECD,_#8689E3,_#01004C)] opacity-10 blur-3xl"
+              className="pointer-events-none fixed -top-80 right-0 h-[45vh] w-[25vh] animate-[spin_30s_linear_infinite] rounded-full opacity-15 blur-3xl"
+              style={{
+                background:
+                  'conic-gradient(at top right, var(--public-button, #027F84), var(--public-secondary, #8689E3), var(--public-active, #5A5ECD), var(--public-button, #027F84))',
+              }}
+              aria-hidden
+            />
+            <motion.div
+              className="pointer-events-none fixed -left-2 top-1/2 h-[36vh] w-[56vh] animate-[spin_30s_linear_infinite_reverse] rounded-full opacity-10 blur-3xl"
+              style={{
+                background:
+                  'conic-gradient(at left, var(--public-active, #454891), var(--public-secondary, #8689E3), var(--public-active, #5A5ECD), var(--public-active, #454891))',
+              }}
+              aria-hidden
+            />
+            <motion.div
+              className="pointer-events-none fixed top-1/4 left-1/2 h-[28vh] w-[48vh] animate-[spin_30s_linear_infinite] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-10 blur-3xl"
+              style={{
+                background:
+                  'conic-gradient(at center, var(--public-button, #027F84), var(--public-active, #5A5ECD), var(--public-secondary, #8689E3), var(--public-primary, #01004C))',
+              }}
               aria-hidden
             />
         <Hero />
