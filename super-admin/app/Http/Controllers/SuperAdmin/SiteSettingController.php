@@ -32,14 +32,53 @@ class SiteSettingController extends Controller
             'dark_secondary_color' => 'nullable|string|max:20',
             'dark_accent_color' => 'nullable|string|max:20',
             'font_family' => 'nullable|string|max:100',
+
             'hero_title_ar' => 'nullable|string|max:500',
             'hero_title_en' => 'nullable|string|max:500',
             'hero_subtitle_ar' => 'nullable|string|max:500',
             'hero_subtitle_en' => 'nullable|string|max:500',
+            'hero_cta_ar' => 'nullable|string|max:100',
+            'hero_cta_en' => 'nullable|string|max:100',
+
+            'why_us_title_ar' => 'nullable|string|max:255',
+            'why_us_title_en' => 'nullable|string|max:255',
+
+            'how_we_work_title_ar' => 'nullable|string|max:255',
+            'how_we_work_title_en' => 'nullable|string|max:255',
+
+            'hotels_title_ar' => 'nullable|string|max:255',
+            'hotels_title_en' => 'nullable|string|max:255',
+            'hotels_subtitle_ar' => 'nullable|string|max:255',
+            'hotels_subtitle_en' => 'nullable|string|max:255',
+            'hotels_description_ar' => 'nullable|string|max:1000',
+            'hotels_description_en' => 'nullable|string|max:1000',
+
+            'testimonials_title_ar' => 'nullable|string|max:255',
+            'testimonials_title_en' => 'nullable|string|max:255',
+            'testimonials_subtitle_ar' => 'nullable|string|max:255',
+            'testimonials_subtitle_en' => 'nullable|string|max:255',
+
+            'contact_title_ar' => 'nullable|string|max:255',
+            'contact_title_en' => 'nullable|string|max:255',
+            'contact_subtitle_ar' => 'nullable|string|max:255',
+            'contact_subtitle_en' => 'nullable|string|max:255',
+            'contact_methods_title_ar' => 'nullable|string|max:255',
+            'contact_methods_title_en' => 'nullable|string|max:255',
+            'contact_button_text_ar' => 'nullable|string|max:100',
+            'contact_button_text_en' => 'nullable|string|max:100',
+
+            'contact_address_ar' => 'nullable|string|max:500',
+            'contact_address_en' => 'nullable|string|max:500',
+            'contact_email' => 'nullable|string|max:255',
+            'contact_phone' => 'nullable|string|max:50',
+
             'site_text_ar' => 'nullable|string|max:2000',
             'site_text_en' => 'nullable|string|max:2000',
             'footer_text_ar' => 'nullable|string|max:500',
             'footer_text_en' => 'nullable|string|max:500',
+            'footer_business_number_ar' => 'nullable|string|max:255',
+            'footer_business_number_en' => 'nullable|string|max:255',
+
             'social_twitter' => 'nullable|string|max:255',
             'social_instagram' => 'nullable|string|max:255',
             'social_linkedin' => 'nullable|string|max:255',
