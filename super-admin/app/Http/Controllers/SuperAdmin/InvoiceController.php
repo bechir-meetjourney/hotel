@@ -224,7 +224,14 @@ class InvoiceController extends Controller
     {
         $invoice->load('tenant', 'items');
 
-        $template = $invoice->pdf_template ?: 'default';
+        // Resolve template: an explicit per-invoice override wins, but the
+        // literal value 'default' is treated as "no preference, follow the
+        // global setting" — that way picking a template as default on the
+        // templates page actually changes the PDFs of existing invoices.
+        $override = $invoice->pdf_template;
+        $globalDefault = SiteSetting::get('default_invoice_pdf_template', 'default');
+        $template = ($override && $override !== 'default') ? $override : $globalDefault;
+
         $view = view()->exists("invoices.{$template}") ? "invoices.{$template}" : 'invoices.default';
 
         $pdf = Pdf::loadView($view, ['invoice' => $invoice]);
