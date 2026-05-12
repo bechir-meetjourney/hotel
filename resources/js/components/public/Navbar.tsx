@@ -1,7 +1,7 @@
 // resources/js/components/public/Navbar.tsx
-import { Link, router } from '@inertiajs/react'
+import { Link, router, usePage } from '@inertiajs/react'
 import { Menu, X, LogIn } from 'lucide-react'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import LanguageSwitcher from './navbar/LanguageSwitcher'
 import SubscribeButton from './navbar/SubscribeButton'
 import MobileDrawer from './navbar/MobileDrawer'
@@ -9,6 +9,13 @@ import { useNavItems } from './navbar/NavItems'
 import { useLang } from '@/hooks/useLang'
 import { useStorageUrl } from '@/lib/storage'
 import { useSiteSettings } from '@/hooks/use-preview-overrides'
+
+interface ResolvedMenuItem {
+  label_ar: string
+  label_en: string
+  href: string
+  is_visible?: boolean
+}
 
 /**
  * Navbar component - Main navigation header
@@ -35,13 +42,28 @@ function goToSection(rawHref: string) {
 export default function Navbar() {
   // Mobile menu state
   const [open, setOpen] = useState(false)
-  // Navigation items from hook
-  const items = useNavItems()
+  // Fallback hardcoded navigation items
+  const defaultItems = useNavItems()
   // Language translation function
   const { __ } = useLang()
   const storageUrl = useStorageUrl()
   // Site settings (merged with live-preview overrides when in preview iframe)
   const siteSettings = useSiteSettings()
+  // Admin-configured menu items (location='header'). Comes pre-resolved
+  // from the controller — each item already has a `href`. When empty,
+  // fall back to the hardcoded marketing-site nav above.
+  const { headerMenu, locale } = usePage<{ headerMenu?: ResolvedMenuItem[]; locale: 'ar' | 'en' }>().props
+  const isArabic = locale === 'ar'
+  const items = useMemo(() => {
+    const configured = (headerMenu ?? [])
+      .filter((m) => m.is_visible !== false && m.href)
+      .map((m) => ({
+        href: m.href,
+        label: (isArabic ? m.label_ar : m.label_en) || m.label_en || m.label_ar,
+      }))
+      .filter((m) => !!m.label)
+    return configured.length > 0 ? configured : defaultItems
+  }, [headerMenu, isArabic, defaultItems])
   const rawLogo = siteSettings?.identity?.site_logo ?? null
   // Preview mode pushes blob: URLs through; pass them straight through, otherwise resolve via storage helper.
   const siteLogo = rawLogo && rawLogo.startsWith('blob:') ? rawLogo : (storageUrl(rawLogo) ?? '/logo.png')

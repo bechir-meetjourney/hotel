@@ -26,12 +26,8 @@ class PageController extends Controller
                 'layout', 'show_header', 'show_footer', 'header_config',
                 'form_fields', 'form_submit_label_ar', 'form_submit_label_en',
             ]),
-            'headerMenu' => $page->show_header
-                ? (optional(Menu::where('location', 'header')->first())->items ?? [])
-                : [],
-            'footerMenu' => $page->show_footer
-                ? (optional(Menu::where('location', 'footer')->first())->items ?? [])
-                : [],
+            'headerMenu' => $page->show_header ? Menu::resolvedItems('header') : [],
+            'footerMenu' => $page->show_footer ? Menu::resolvedItems('footer') : [],
         ]);
     }
 

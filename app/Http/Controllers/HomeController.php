@@ -41,8 +41,8 @@ class HomeController extends Controller
             'templates' => $templates,
             'testimonials' => $testimonials,
             'partners' => $partners,
-            'headerMenu' => optional(Menu::where('location', 'header')->first())->items ?? [],
-            'footerMenu' => optional(Menu::where('location', 'footer')->first())->items ?? [],
+            'headerMenu' => Menu::resolvedItems('header'),
+            'footerMenu' => Menu::resolvedItems('footer'),
         ]);
     }
 }
