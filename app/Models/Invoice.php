@@ -33,6 +33,7 @@ class Invoice extends Model
         'receipt_upload_path',
         'locked_at',
         'pdf_template',
+        'pdf_locale',
     ];
 
     public const PDF_TEMPLATES = [

@@ -42,6 +42,7 @@ class Invoice extends Model
         'notes_en',
         'pdf_path',
         'pdf_template',
+        'pdf_locale',
         'company_header',
         'tax_number',
         'billing_address',

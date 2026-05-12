@@ -66,6 +66,7 @@ export default function CreateInvoice({ tenants, plans, salesReps, nextNumber, d
         requires_receipt: boolean;
         has_receipt_toggle: boolean;
         pdf_template: string;
+        pdf_locale: string;
         items: Item[];
     }>({
         tenant_id: '',
@@ -92,6 +93,7 @@ export default function CreateInvoice({ tenants, plans, salesReps, nextNumber, d
         requires_receipt: false,
         has_receipt_toggle: false,
         pdf_template: defaultTemplate || 'default',
+        pdf_locale: 'en',
         items: [{ description_ar: '', description_en: '', quantity: 1, unit_price: 0 }],
     });
 
@@ -183,6 +185,15 @@ export default function CreateInvoice({ tenants, plans, salesReps, nextNumber, d
                                             <SelectItem value="default">Default</SelectItem>
                                             <SelectItem value="modern">Modern</SelectItem>
                                             <SelectItem value="classic">Classic</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </Field>
+                                <Field label={isArabic ? 'لغة PDF' : 'PDF language'} error={(errors as Record<string, string>).pdf_locale}>
+                                    <Select value={data.pdf_locale} onValueChange={(v) => setData('pdf_locale', v)}>
+                                        <SelectTrigger><SelectValue /></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="en">English (LTR)</SelectItem>
+                                            <SelectItem value="ar">العربية (RTL)</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </Field>

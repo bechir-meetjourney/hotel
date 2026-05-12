@@ -20,11 +20,19 @@ class SupportController extends Controller
             ->with(['tenant:id,name,logo', 'assignedTo:id,name', 'latestMessage'])
             ->withCount('messages');
 
+        // Broadcasts live in the same conversations table but should be
+        // hidden from the regular tabs — surfaced only via the dedicated tab.
+        $tab = $request->tab ?? 'all';
+        if ($tab === 'broadcasts') {
+            $query->where('source', Conversation::SOURCE_BROADCAST);
+        } else {
+            $query->where('source', '!=', Conversation::SOURCE_BROADCAST);
+        }
+
         if ($request->category && $request->category !== 'all') {
             $query->where('category', $request->category);
         }
 
-        $tab = $request->tab ?? 'all';
         if ($tab === 'new') {
             $query->where('status', Conversation::STATUS_NEW);
         } elseif ($tab === 'in_progress') {
@@ -160,8 +168,12 @@ class SupportController extends Controller
         $now = Carbon::now();
         $today = $now->copy()->startOfDay();
 
-        $open = Conversation::whereIn('status', [Conversation::STATUS_NEW, Conversation::STATUS_IN_PROGRESS])->count();
-        $resolvedToday = Conversation::where('status', Conversation::STATUS_CLOSED)
+        // All stats exclude broadcasts so the dashboard counters reflect real
+        // support volume. Broadcasts get their own counter.
+        $nonBroadcast = fn () => Conversation::where('source', '!=', Conversation::SOURCE_BROADCAST);
+
+        $open = $nonBroadcast()->whereIn('status', [Conversation::STATUS_NEW, Conversation::STATUS_IN_PROGRESS])->count();
+        $resolvedToday = $nonBroadcast()->where('status', Conversation::STATUS_CLOSED)
             ->where('closed_at', '>=', $today)->count();
 
         $avgResponseSeconds = $this->averageFirstResponseSeconds();
@@ -172,17 +184,18 @@ class SupportController extends Controller
             'avg_response_seconds' => $avgResponseSeconds,
             'satisfaction' => 4.8, // placeholder until ratings exist
             'by_category' => [
-                'all' => Conversation::count(),
-                'support' => Conversation::where('category', Conversation::CATEGORY_SUPPORT)->count(),
-                'complaint' => Conversation::where('category', Conversation::CATEGORY_COMPLAINT)->count(),
-                'inquiry' => Conversation::where('category', Conversation::CATEGORY_INQUIRY)->count(),
-                'technical' => Conversation::where('category', Conversation::CATEGORY_TECHNICAL)->count(),
+                'all' => $nonBroadcast()->count(),
+                'support' => $nonBroadcast()->where('category', Conversation::CATEGORY_SUPPORT)->count(),
+                'complaint' => $nonBroadcast()->where('category', Conversation::CATEGORY_COMPLAINT)->count(),
+                'inquiry' => $nonBroadcast()->where('category', Conversation::CATEGORY_INQUIRY)->count(),
+                'technical' => $nonBroadcast()->where('category', Conversation::CATEGORY_TECHNICAL)->count(),
             ],
             'tabs' => [
-                'all' => Conversation::count(),
-                'new' => Conversation::where('status', Conversation::STATUS_NEW)->count(),
-                'in_progress' => Conversation::where('status', Conversation::STATUS_IN_PROGRESS)->count(),
-                'closed' => Conversation::where('status', Conversation::STATUS_CLOSED)->count(),
+                'all' => $nonBroadcast()->count(),
+                'new' => $nonBroadcast()->where('status', Conversation::STATUS_NEW)->count(),
+                'in_progress' => $nonBroadcast()->where('status', Conversation::STATUS_IN_PROGRESS)->count(),
+                'closed' => $nonBroadcast()->where('status', Conversation::STATUS_CLOSED)->count(),
+                'broadcasts' => Conversation::where('source', Conversation::SOURCE_BROADCAST)->count(),
             ],
         ];
     }

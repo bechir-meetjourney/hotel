@@ -35,6 +35,8 @@ interface Invoice {
     payment_method: string | null;
     notes_ar: string | null;
     notes_en: string | null;
+    pdf_template: string | null;
+    pdf_locale: string | null;
     items: InvoiceItem[];
     tenant?: { id: number; name: string; email: string; phone?: string; org_name_ar?: string; org_name_en?: string };
     created_at: string;
@@ -70,6 +72,8 @@ export default function EditInvoice({ invoice, tenants }: Props) {
         discount: number;
         notes_ar: string;
         notes_en: string;
+        pdf_template: string;
+        pdf_locale: string;
         items: InvoiceItem[];
     }>({
         tenant_id: invoice.tenant_id,
@@ -80,6 +84,8 @@ export default function EditInvoice({ invoice, tenants }: Props) {
         discount: Number(invoice.discount),
         notes_ar: invoice.notes_ar || '',
         notes_en: invoice.notes_en || '',
+        pdf_template: invoice.pdf_template || 'default',
+        pdf_locale: invoice.pdf_locale || 'en',
         items: invoice.items.map((item) => ({
             id: item.id,
             description_ar: item.description_ar,
@@ -203,6 +209,25 @@ export default function EditInvoice({ invoice, tenants }: Props) {
                                         onChange={(e) => setData('discount', Number(e.target.value))}
                                         className="vuexy-input"
                                     />
+                                </Field>
+                                <Field label={t('pdf_template', 'PDF template')} error={(errors as Record<string, string>).pdf_template}>
+                                    <Select value={data.pdf_template} onValueChange={(v) => setData('pdf_template', v)}>
+                                        <SelectTrigger><SelectValue /></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="default">Default</SelectItem>
+                                            <SelectItem value="modern">Modern</SelectItem>
+                                            <SelectItem value="classic">Classic</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </Field>
+                                <Field label={t('pdf_locale', 'PDF language')} error={(errors as Record<string, string>).pdf_locale}>
+                                    <Select value={data.pdf_locale} onValueChange={(v) => setData('pdf_locale', v)}>
+                                        <SelectTrigger><SelectValue /></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="en">English (LTR)</SelectItem>
+                                            <SelectItem value="ar">العربية (RTL)</SelectItem>
+                                        </SelectContent>
+                                    </Select>
                                 </Field>
                             </div>
                         </CardContent>

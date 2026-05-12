@@ -303,6 +303,7 @@ class InvoiceController extends Controller
             'requires_receipt' => 'boolean',
             'has_receipt_toggle' => 'boolean',
             'pdf_template' => 'nullable|in:default,modern,classic',
+            'pdf_locale' => 'nullable|in:en,ar',
             'items' => 'required|array|min:1',
             'items.*.description_ar' => 'required|string|max:500',
             'items.*.description_en' => 'required|string|max:500',
@@ -343,6 +344,7 @@ class InvoiceController extends Controller
             'requires_receipt' => $v['requires_receipt'] ?? false,
             'has_receipt_toggle' => $v['has_receipt_toggle'] ?? false,
             'pdf_template' => $v['pdf_template'] ?? 'default',
+            'pdf_locale' => $v['pdf_locale'] ?? 'en',
         ];
     }
 }
