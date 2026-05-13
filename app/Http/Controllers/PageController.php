@@ -10,6 +10,8 @@ use App\Models\User;
 use App\Support\Mailer;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Session;
 use Inertia\Inertia;
 
 class PageController extends Controller
@@ -17,6 +19,13 @@ class PageController extends Controller
     public function show(string $slug)
     {
         $page = Page::published()->where('slug', $slug)->firstOrFail();
+
+        // Custom pages default to Arabic on entry. If the visitor just used
+        // the language switcher (locale.switch flashes 'locale_switched'),
+        // respect their choice for this one request instead of overriding.
+        if (!Session::has('locale_switched')) {
+            App::setLocale('ar');
+        }
 
         return Inertia::render('public/Page', [
             'page' => $page->only([

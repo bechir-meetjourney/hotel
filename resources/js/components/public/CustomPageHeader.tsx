@@ -1,5 +1,5 @@
 import { Link, router, usePage } from '@inertiajs/react'
-import { Menu, X, LogIn, Home } from 'lucide-react'
+import { Menu, X, Home } from 'lucide-react'
 import { useState } from 'react'
 import LanguageSwitcher from './navbar/LanguageSwitcher'
 import { useLang } from '@/hooks/useLang'
@@ -123,13 +123,6 @@ export default function CustomPageHeader({ config }: Props) {
             <Home className="h-4 w-4" />
             {backToHomeLabel}
           </Link>
-          <Link
-            href="/login"
-            className="inline-flex items-center gap-2 rounded-lg border border-public-primary px-4 py-2 text-sm font-semibold text-public-primary transition-colors hover:bg-public-primary hover:text-white"
-          >
-            <LogIn className="h-4 w-4" />
-            {__('messages.nav.login')}
-          </Link>
           <LanguageSwitcher />
         </div>
 
@@ -162,14 +155,6 @@ export default function CustomPageHeader({ config }: Props) {
             >
               <Home className="h-4 w-4" />
               {backToHomeLabel}
-            </Link>
-            <Link
-              href="/login"
-              className="mt-2 inline-flex items-center gap-2 rounded-lg border border-public-primary px-4 py-2 text-sm font-semibold text-public-primary"
-              onClick={() => setOpen(false)}
-            >
-              <LogIn className="h-4 w-4" />
-              {__('messages.nav.login')}
             </Link>
             <div className="mt-2"><LanguageSwitcher /></div>
           </nav>

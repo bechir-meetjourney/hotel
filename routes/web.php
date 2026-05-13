@@ -108,9 +108,13 @@ Route::prefix('template')->name('template.')->group(function () {
 });
 
 // ─── Locale Switcher ────────────────────────────────────────
+// Flashes `locale_switched` so PageController::show knows the user
+// explicitly chose this locale and skips its default-AR override
+// for the redirected request.
 Route::get('/locale/{locale}', function ($locale) {
     if (in_array($locale, ['ar', 'en'])) {
         session()->put('locale', $locale);
+        session()->flash('locale_switched', true);
     }
     return back(status: 303);
 })->name('locale.switch');
