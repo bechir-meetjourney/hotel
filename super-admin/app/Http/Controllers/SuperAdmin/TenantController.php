@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Conversation;
+use App\Models\ConversationMessage;
 use App\Models\Invoice;
 use App\Models\Plan;
 use App\Models\RenewalRequest;
@@ -378,20 +380,28 @@ class TenantController extends Controller
             'message' => 'required|string|max:5000',
         ]);
 
-        \DB::table('support_messages')->insert([
-            'tenant_id' => $tenant->id,
-            'client_name' => $request->user()->name,
-            'client_email' => $request->user()->email,
-            'type' => 'support',
-            'subject' => $validated['subject'],
-            'message' => $validated['message'],
-            'status' => 'open',
-            'source' => 'support',
-            'is_read' => false,
-            'is_urgent' => false,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        DB::transaction(function () use ($validated, $tenant, $request) {
+            $conversation = Conversation::create([
+                'tenant_id' => $tenant->id,
+                'category' => Conversation::CATEGORY_SUPPORT,
+                'status' => Conversation::STATUS_NEW,
+                'subject' => $validated['subject'],
+                'source' => Conversation::SOURCE_SUPPORT,
+                'created_by_user_id' => $request->user()->id,
+                'client_name' => $request->user()->name,
+                'client_email' => $request->user()->email,
+                'last_message_at' => now(),
+                'tenant_unread_count' => 1,
+            ]);
+
+            ConversationMessage::create([
+                'conversation_id' => $conversation->id,
+                'sender_type' => ConversationMessage::SENDER_ADMIN,
+                'sender_user_id' => $request->user()->id,
+                'sender_name' => $request->user()->name,
+                'body' => $validated['message'],
+            ]);
+        });
 
         return back()->with('success', 'تم إرسال الرسالة');
     }

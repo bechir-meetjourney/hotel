@@ -28,7 +28,7 @@ class DashboardController extends Controller
         $invoicesInRange = Invoice::whereBetween('issue_date', [$from->toDateString(), $to->toDateString()]);
 
         // ─── KPI cards (resilient against partial migrations) ────
-        // Tables added in later sprints (reviews, support_messages, etc.) may
+        // Tables added in later sprints (reviews, conversation_messages, etc.) may
         // not exist on environments that haven't run the main-app migrations
         // yet. Guard each metric so the dashboard still renders.
         $stats = [
@@ -37,8 +37,8 @@ class DashboardController extends Controller
             'total_revenue' => Schema::hasTable('invoices')
                 ? (float) Invoice::where('status', 'paid')->sum('total')
                 : 0.0,
-            'total_messages' => Schema::hasTable('support_messages')
-                ? DB::table('support_messages')->count()
+            'total_messages' => Schema::hasTable('conversation_messages')
+                ? DB::table('conversation_messages')->count()
                 : 0,
             'satisfaction' => Schema::hasTable('reviews')
                 ? round((float) (Review::avg('rating') ?? 0), 2)

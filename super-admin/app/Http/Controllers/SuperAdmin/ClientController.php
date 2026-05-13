@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Conversation;
+use App\Models\ConversationMessage;
 use App\Models\Invoice;
 use App\Models\Plan;
 use App\Models\RenewalRequest;
@@ -140,10 +142,24 @@ class ClientController extends Controller
             ->latest('created_at')
             ->get(['id', 'plan_id', 'status', 'payment_method', 'created_at', 'processed_at']);
 
-        $messages = DB::table('support_messages')
-            ->where('tenant_id', $tenant->id)
+        // support_messages was replaced by conversations + conversation_messages
+        // (migration 2026_05_04_000002). Flatten conversations into the legacy
+        // shape the frontend (super-admin/clients/show.tsx) still expects.
+        $messages = Conversation::where('tenant_id', $tenant->id)
+            ->with('latestMessage')
             ->orderByDesc('created_at')
-            ->get();
+            ->get()
+            ->map(fn (Conversation $c) => [
+                'id' => $c->id,
+                'client_name' => $c->client_name ?? '',
+                'subject' => $c->subject,
+                'message' => $c->latestMessage?->body ?? '',
+                'status' => $c->status,
+                'is_urgent' => false,
+                'source' => $c->source,
+                'created_at' => $c->created_at?->toIso8601String(),
+            ])
+            ->values();
 
         $reviews = \App\Models\Review::where('tenant_id', $tenant->id)
             ->orderByDesc('created_at')
@@ -283,20 +299,28 @@ class ClientController extends Controller
             'is_urgent' => 'boolean',
         ]);
 
-        DB::table('support_messages')->insert([
-            'tenant_id' => $tenant->id,
-            'client_name' => $request->user()->name,
-            'client_email' => $request->user()->email,
-            'type' => 'support',
-            'subject' => $validated['subject'],
-            'message' => $validated['message'],
-            'status' => 'open',
-            'is_urgent' => $validated['is_urgent'] ?? false,
-            'source' => 'support',
-            'is_read' => false,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        DB::transaction(function () use ($validated, $tenant, $request) {
+            $conversation = Conversation::create([
+                'tenant_id' => $tenant->id,
+                'category' => Conversation::CATEGORY_SUPPORT,
+                'status' => Conversation::STATUS_NEW,
+                'subject' => $validated['subject'],
+                'source' => Conversation::SOURCE_SUPPORT,
+                'created_by_user_id' => $request->user()->id,
+                'client_name' => $request->user()->name,
+                'client_email' => $request->user()->email,
+                'last_message_at' => now(),
+                'tenant_unread_count' => 1,
+            ]);
+
+            ConversationMessage::create([
+                'conversation_id' => $conversation->id,
+                'sender_type' => ConversationMessage::SENDER_ADMIN,
+                'sender_user_id' => $request->user()->id,
+                'sender_name' => $request->user()->name,
+                'body' => $validated['message'],
+            ]);
+        });
 
         return back()->with('success', 'تم إرسال الرسالة');
     }
