@@ -91,6 +91,12 @@ export default function SiteBranding() {
         additional_service_2_image: null as File | null,
         additional_service_3_image: null as File | null,
         additional_service_4_image: null as File | null,
+        services_item_1_image: null as File | null,
+        services_item_2_image: null as File | null,
+        services_item_3_image: null as File | null,
+        services_item_4_image: null as File | null,
+        services_item_5_image: null as File | null,
+        services_item_6_image: null as File | null,
         social_twitter: settings.social.social_twitter ?? '',
         social_instagram: settings.social.social_instagram ?? '',
         social_linkedin: settings.social.social_linkedin ?? '',
@@ -135,6 +141,10 @@ export default function SiteBranding() {
     const [additionalServicePreviewUrls, setAdditionalServicePreviewUrls] = useState<Record<number, string | null>>({
         1: null, 2: null, 3: null, 4: null,
     })
+    // Same pattern for the 6 mock Services items.
+    const [servicesItemPreviewUrls, setServicesItemPreviewUrls] = useState<Record<number, string | null>>({
+        1: null, 2: null, 3: null, 4: null, 5: null, 6: null,
+    })
 
     // Convenience accessors/setters for the dedicated Hero slide blocks. Each
     // slide's title and subtitle are stored as site_texts entries so the live
@@ -160,6 +170,8 @@ export default function SiteBranding() {
     const setFooterText = (key: string, field: 'value_ar' | 'value_en', value: string) => setText('footer', key, field, value)
     const getAddSvcText = (key: string, field: 'value_ar' | 'value_en') => getText('additional_services', key, field)
     const setAddSvcText = (key: string, field: 'value_ar' | 'value_en', value: string) => setText('additional_services', key, field, value)
+    const getSvcText = (key: string, field: 'value_ar' | 'value_en') => getText('services', key, field)
+    const setSvcText = (key: string, field: 'value_ar' | 'value_en', value: string) => setText('services', key, field, value)
 
     // Preview iframe
     const iframeRef = useRef<HTMLIFrameElement | null>(null)
@@ -204,6 +216,12 @@ export default function SiteBranding() {
                 additional_service_2_image: additionalServicePreviewUrls[2] ?? (settings.media as Record<string, string | null>).additional_service_2_image ?? null,
                 additional_service_3_image: additionalServicePreviewUrls[3] ?? (settings.media as Record<string, string | null>).additional_service_3_image ?? null,
                 additional_service_4_image: additionalServicePreviewUrls[4] ?? (settings.media as Record<string, string | null>).additional_service_4_image ?? null,
+                services_item_1_image: servicesItemPreviewUrls[1] ?? (settings.media as Record<string, string | null>).services_item_1_image ?? null,
+                services_item_2_image: servicesItemPreviewUrls[2] ?? (settings.media as Record<string, string | null>).services_item_2_image ?? null,
+                services_item_3_image: servicesItemPreviewUrls[3] ?? (settings.media as Record<string, string | null>).services_item_3_image ?? null,
+                services_item_4_image: servicesItemPreviewUrls[4] ?? (settings.media as Record<string, string | null>).services_item_4_image ?? null,
+                services_item_5_image: servicesItemPreviewUrls[5] ?? (settings.media as Record<string, string | null>).services_item_5_image ?? null,
+                services_item_6_image: servicesItemPreviewUrls[6] ?? (settings.media as Record<string, string | null>).services_item_6_image ?? null,
             },
             social: {
                 social_twitter: data.social_twitter,
@@ -213,7 +231,7 @@ export default function SiteBranding() {
             },
             siteTexts: siteTextsMap,
         }
-    }, [data, logoPreviewUrl, heroImagePreviewUrl, heroImage2PreviewUrl, additionalServicePreviewUrls, settings.identity.site_logo, settings.media])
+    }, [data, logoPreviewUrl, heroImagePreviewUrl, heroImage2PreviewUrl, additionalServicePreviewUrls, servicesItemPreviewUrls, settings.identity.site_logo, settings.media])
 
     useEffect(() => { setIframeOrigin(null) }, [iframeNonce])
 
@@ -263,6 +281,14 @@ export default function SiteBranding() {
         setAdditionalServicePreviewUrls((prev) => ({ ...prev, [slot]: preview }))
     }
 
+    const onServicesItemImageChange = async (slot: 1 | 2 | 3 | 4 | 5 | 6, e: ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0] ?? null
+        const fieldKey = `services_item_${slot}_image` as 'services_item_1_image'
+        setData(fieldKey, file)
+        const preview = file ? await fileToDataUrl(file) : null
+        setServicesItemPreviewUrls((prev) => ({ ...prev, [slot]: preview }))
+    }
+
     const submit = (e: FormEvent) => {
         e.preventDefault()
         post(route('client-admin.site-branding.update'), {
@@ -273,6 +299,7 @@ export default function SiteBranding() {
                 setHeroImagePreviewUrl(null)
                 setHeroImage2PreviewUrl(null)
                 setAdditionalServicePreviewUrls({ 1: null, 2: null, 3: null, 4: null })
+                setServicesItemPreviewUrls({ 1: null, 2: null, 3: null, 4: null, 5: null, 6: null })
                 setIframeNonce((n) => n + 1) // reload iframe to pick up new file URLs
             },
         })
@@ -351,6 +378,35 @@ export default function SiteBranding() {
                                     <TextField label="Title (EN)" value={getAddSvcText(`service_${n}_title`, 'value_en')} onChange={(v) => setAddSvcText(`service_${n}_title`, 'value_en', v)} />
                                     <TextField label="الوصف (عربي)" value={getAddSvcText(`service_${n}_description`, 'value_ar')} onChange={(v) => setAddSvcText(`service_${n}_description`, 'value_ar', v)} dir="rtl" />
                                     <TextField label="Description (EN)" value={getAddSvcText(`service_${n}_description`, 'value_en')} onChange={(v) => setAddSvcText(`service_${n}_description`, 'value_en', v)} />
+                                </div>
+                            ))}
+                        </Section>
+
+                        <Section title="المساج · Services">
+                            <TextField label="عنوان القسم (عربي)" value={getSvcText('title', 'value_ar')} onChange={(v) => setSvcText('title', 'value_ar', v)} dir="rtl" />
+                            <TextField label="Section title (EN)" value={getSvcText('title', 'value_en')} onChange={(v) => setSvcText('title', 'value_en', v)} />
+                            <TextField label="العنوان الفرعي (عربي)" value={getSvcText('subtitle', 'value_ar')} onChange={(v) => setSvcText('subtitle', 'value_ar', v)} dir="rtl" />
+                            <TextField label="Subtitle (EN)" value={getSvcText('subtitle', 'value_en')} onChange={(v) => setSvcText('subtitle', 'value_en', v)} />
+                            <TextField label="نص الخلفية (عربي)" value={getSvcText('background_title', 'value_ar')} onChange={(v) => setSvcText('background_title', 'value_ar', v)} dir="rtl" />
+                            <TextField label="Background title (EN)" value={getSvcText('background_title', 'value_en')} onChange={(v) => setSvcText('background_title', 'value_en', v)} />
+
+                            <p className="text-[11px] text-muted-foreground">
+                                ⓘ هذه العناصر تظهر فقط إذا لم تنشئ خدمات حقيقية من صفحة الخدمات. أنشئ خدمات من <code>/client-admin/services</code> لاستبدالها.
+                            </p>
+
+                            {([1, 2, 3, 4, 5, 6] as const).map((n) => (
+                                <div key={n} className="rounded-md border p-2 space-y-2">
+                                    <div className="text-xs font-bold uppercase text-muted-foreground">Item {n}</div>
+                                    <FileField
+                                        label={`صورة ${n}`}
+                                        accept="image/*"
+                                        onChange={(e) => onServicesItemImageChange(n, e)}
+                                        preview={servicesItemPreviewUrls[n] ?? storageUrl((settings.media as Record<string, string | null>)[`services_item_${n}_image`]) ?? null}
+                                    />
+                                    <TextField label="الاسم (عربي)" value={getSvcText(`item_${n}_title`, 'value_ar')} onChange={(v) => setSvcText(`item_${n}_title`, 'value_ar', v)} dir="rtl" />
+                                    <TextField label="Name (EN)" value={getSvcText(`item_${n}_title`, 'value_en')} onChange={(v) => setSvcText(`item_${n}_title`, 'value_en', v)} />
+                                    <TextField label="الوصف (عربي)" value={getSvcText(`item_${n}_description`, 'value_ar')} onChange={(v) => setSvcText(`item_${n}_description`, 'value_ar', v)} dir="rtl" />
+                                    <TextField label="Description (EN)" value={getSvcText(`item_${n}_description`, 'value_en')} onChange={(v) => setSvcText(`item_${n}_description`, 'value_en', v)} />
                                 </div>
                             ))}
                         </Section>

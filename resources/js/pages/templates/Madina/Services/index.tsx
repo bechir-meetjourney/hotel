@@ -18,6 +18,11 @@ import BookingModal, { BookingData, BookingType } from '@/components/templates/B
 import BackgroundTitle from '@/components/templates/BackgroundTitle'
 import { useTemplateT, useTemplateLanguage } from '@/hooks/useTemplateTranslations'
 import { useStorageUrl } from '@/lib/storage'
+import {
+  useMergedSiteTexts,
+  useTenantSiteSettings,
+} from '@/hooks/use-tenant-preview-overrides'
+import { pickSiteText } from '@/lib/site-texts'
 
 // Import Swiper styles
 import 'swiper/css'
@@ -72,6 +77,17 @@ export default function ServicesSection({ services: backendServices }: ServicesS
   const t = useTemplateT()
   const { isArabic } = useTemplateLanguage()
   const storageUrl = useStorageUrl()
+  // Tenant-editable mock-item overrides: image + title + description per slot.
+  // Real backend services (when configured) win over these mocks.
+  const liveSettings = useTenantSiteSettings()
+  const siteTexts = useMergedSiteTexts()
+  const resolveOverride = (raw: string | null | undefined): string | null =>
+    raw && typeof raw === 'string' && raw.startsWith('data:') ? raw : storageUrl(raw) ?? null
+  const mockImageFor = (slot: number): string | null => {
+    const key = `services_item_${slot}_image`
+    const raw = (liveSettings?.media as Record<string, string | null | undefined> | undefined)?.[key]
+    return resolveOverride(raw)
+  }
   const [modalOpen, setModalOpen] = useState(false)
   const [defaultType, setDefaultType] = useState<BookingType>('مساج صيني')
   const swiperRef = useRef<SwiperType | null>(null)
@@ -239,7 +255,29 @@ export default function ServicesSection({ services: backendServices }: ServicesS
     }
   ]
   
-  // If the tenant has real services configured, use those; otherwise fall back to mock data so the design preview still renders.
+  // Apply tenant-editable overrides (image + title + description) to each mock
+  // service item before it's consumed downstream. Falls back to the bundled
+  // mock value when nothing is set in site_texts / media.
+  const tenantOverriddenMock = useMemo<BilingualService[]>(() => {
+    return bilingualServicesData.map((service, idx) => {
+      const slot = idx + 1
+      const titleAr = pickSiteText(siteTexts, 'services', `item_${slot}_title`, service.name, true)
+      const titleEn = pickSiteText(siteTexts, 'services', `item_${slot}_title`, service.nameEn, false)
+      const descAr = pickSiteText(siteTexts, 'services', `item_${slot}_description`, service.description, true)
+      const descEn = pickSiteText(siteTexts, 'services', `item_${slot}_description`, service.descriptionEn, false)
+      const imageOverride = mockImageFor(slot)
+      return {
+        ...service,
+        name: titleAr,
+        nameEn: titleEn,
+        description: descAr,
+        descriptionEn: descEn,
+        image: imageOverride ?? service.image,
+      }
+    })
+  }, [siteTexts, liveSettings])
+
+  // If the tenant has real services configured, use those; otherwise fall back to (overridden) mock data so the design preview still renders.
   const sourceData = useMemo<BilingualService[]>(() => {
     if (Array.isArray(backendServices) && backendServices.length > 0) {
       return backendServices.map((s) => {
@@ -264,8 +302,8 @@ export default function ServicesSection({ services: backendServices }: ServicesS
         }
       })
     }
-    return bilingualServicesData
-  }, [backendServices, storageUrl])
+    return tenantOverriddenMock
+  }, [backendServices, storageUrl, tenantOverriddenMock])
 
   // Convert to current language
   const services = useMemo(() => {
@@ -358,7 +396,7 @@ export default function ServicesSection({ services: backendServices }: ServicesS
               }}
             />
             <h2 className="madina-font-heading text-white relative z-10 text-4xl font-bold mb-4">
-              {t('sections.services.title', 'مساج فاخر يعيد لجسدك حيويته ويمنحك استرخاءً تاماً')}
+              {pickSiteText(siteTexts, 'services', 'title', t('sections.services.title', 'مساج فاخر يعيد لجسدك حيويته ويمنحك استرخاءً تاماً'), isArabic)}
           </h2>
             <div 
               className="h-6 w-6 hidden md:block"
@@ -376,15 +414,18 @@ export default function ServicesSection({ services: backendServices }: ServicesS
               }}
             />
           </div>
-          <BackgroundTitle 
-            text={t('sections.services.background_title', 'المساج')} 
+          <BackgroundTitle
+            text={pickSiteText(siteTexts, 'services', 'background_title', t('sections.services.background_title', 'المساج'), isArabic)}
             colorClass=""
             colorStyle={{ color: 'white', opacity: 0.4 }}
           />
           <p className="relative z-10 text-xl text-white/90 max-w-4xl mx-auto leading-relaxed">
-            {t(
-              'sections.services.subtitle',
-              'نمنحك ما هو أبعد من الإقامة، نقدم تجربة استثنائية حيث يلتقي الترف بالضيافة الراقية. من الغرف الواسعة إلى المرافق الحديثة، صُمّم كل تفصيل ليمنحك الراحة والرفاهية التي تستحقها.'
+            {pickSiteText(
+              siteTexts,
+              'services',
+              'subtitle',
+              t('sections.services.subtitle', 'نمنحك ما هو أبعد من الإقامة، نقدم تجربة استثنائية حيث يلتقي الترف بالضيافة الراقية. من الغرف الواسعة إلى المرافق الحديثة، صُمّم كل تفصيل ليمنحك الراحة والرفاهية التي تستحقها.'),
+              isArabic,
             )}
           </p>
         </div>
@@ -581,7 +622,7 @@ export default function ServicesSection({ services: backendServices }: ServicesS
                           }}
                         >
                           <img
-                            src={roomImage}
+                            src={service.image ?? roomImage}
                             alt={service.name}
                             className="w-full h-full object-cover"
                           />
@@ -589,7 +630,7 @@ export default function ServicesSection({ services: backendServices }: ServicesS
                       </div>
 
                       {/* Card content */}
-                      <div 
+                      <div
                         className="p-6 rounded-b-2xl -mt-1 flex flex-col flex-1 min-h-0"
                         style={{
                           backgroundColor: 'rgba(255, 255, 255, 0.6)',

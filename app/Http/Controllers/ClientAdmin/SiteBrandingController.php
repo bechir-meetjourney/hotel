@@ -32,7 +32,19 @@ class SiteBrandingController extends Controller
         'hero' => ['title', 'subtitle', 'cta', 'title_2', 'subtitle_2'],
         'about' => ['title', 'subtitle', 'description'],
         'rooms' => ['title', 'subtitle'],
-        'services' => ['title', 'subtitle'],
+        // Services section header + 6 mock items (each with title/description).
+        // The mock items only render in the Madina template when the tenant has
+        // no real services in DB; once they create real ones via /client-admin/services,
+        // the dedicated CRUD wins.
+        'services' => [
+            'title', 'subtitle', 'background_title',
+            'item_1_title', 'item_1_description',
+            'item_2_title', 'item_2_description',
+            'item_3_title', 'item_3_description',
+            'item_4_title', 'item_4_description',
+            'item_5_title', 'item_5_description',
+            'item_6_title', 'item_6_description',
+        ],
         // Additional Services has its own dedicated editor block (Madina template):
         // section title/description + 4 items each with title/description and a
         // separate image upload (tenant_site_settings.additional_service_N_image).
@@ -125,6 +137,12 @@ class SiteBrandingController extends Controller
             'additional_service_2_image' => 'nullable|file|image|max:10240',
             'additional_service_3_image' => 'nullable|file|image|max:10240',
             'additional_service_4_image' => 'nullable|file|image|max:10240',
+            'services_item_1_image' => 'nullable|file|image|max:10240',
+            'services_item_2_image' => 'nullable|file|image|max:10240',
+            'services_item_3_image' => 'nullable|file|image|max:10240',
+            'services_item_4_image' => 'nullable|file|image|max:10240',
+            'services_item_5_image' => 'nullable|file|image|max:10240',
+            'services_item_6_image' => 'nullable|file|image|max:10240',
 
             // Social
             'social_twitter' => 'nullable|string|max:255',
@@ -161,6 +179,9 @@ class SiteBrandingController extends Controller
                 'hero_image', 'hero_image_2',
                 'additional_service_1_image', 'additional_service_2_image',
                 'additional_service_3_image', 'additional_service_4_image',
+                'services_item_1_image', 'services_item_2_image',
+                'services_item_3_image', 'services_item_4_image',
+                'services_item_5_image', 'services_item_6_image',
             ];
             foreach ($fileFields as $fileField) {
                 if ($request->hasFile($fileField)) {

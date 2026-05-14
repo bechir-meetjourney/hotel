@@ -61,6 +61,12 @@ class TenantSiteSetting extends Model
                 'additional_service_2_image' => $settings['additional_service_2_image'] ?? null,
                 'additional_service_3_image' => $settings['additional_service_3_image'] ?? null,
                 'additional_service_4_image' => $settings['additional_service_4_image'] ?? null,
+                'services_item_1_image' => $settings['services_item_1_image'] ?? null,
+                'services_item_2_image' => $settings['services_item_2_image'] ?? null,
+                'services_item_3_image' => $settings['services_item_3_image'] ?? null,
+                'services_item_4_image' => $settings['services_item_4_image'] ?? null,
+                'services_item_5_image' => $settings['services_item_5_image'] ?? null,
+                'services_item_6_image' => $settings['services_item_6_image'] ?? null,
             ],
             'texts' => [
                 'site_text_ar' => $settings['site_text_ar'] ?? '',

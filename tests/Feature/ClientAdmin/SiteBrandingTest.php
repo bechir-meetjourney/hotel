@@ -415,6 +415,74 @@ test('client admin can save additional_services section title/description and pe
     expect($svc4->value_en)->toBe('Fourth');
 });
 
+// ─── Services (mock items) ────────────────────────────────
+
+test('services canonical skeleton exposes header + 6 mock items', function () {
+    [$user] = brandingAdmin();
+
+    // 3 header keys (title, subtitle, background_title) + 6 items × 2 keys = 15
+    $this->actingAs($user)
+        ->get('/client-admin/site-branding')
+        ->assertInertia(fn ($page) => $page
+            ->has('siteTexts.services', 15)
+            ->where('siteTexts.services.0.key', 'title')
+            ->where('siteTexts.services.1.key', 'subtitle')
+            ->where('siteTexts.services.2.key', 'background_title')
+            ->where('siteTexts.services.3.key', 'item_1_title')
+        );
+});
+
+test('services media slots are exposed in settings.media', function () {
+    [$user] = brandingAdmin();
+
+    $this->actingAs($user)
+        ->get('/client-admin/site-branding')
+        ->assertInertia(fn ($page) => $page
+            ->has('settings.media.services_item_1_image')
+            ->has('settings.media.services_item_6_image')
+        );
+});
+
+test('client admin can upload a services mock item image', function () {
+    Storage::fake('public');
+    [$user, $tenant] = brandingAdmin();
+
+    $this->actingAs($user)
+        ->post('/client-admin/site-branding', [
+            'services_item_3_image' => UploadedFile::fake()->image('svc3.jpg', 1200, 800),
+        ])
+        ->assertRedirect();
+
+    $stored = TenantSiteSetting::where('tenant_id', $tenant->id)
+        ->where('key', 'services_item_3_image')
+        ->value('value');
+    expect($stored)->not->toBeNull();
+    Storage::disk('public')->assertExists($stored);
+});
+
+test('client admin can save services header and per-item texts', function () {
+    [$user, $tenant] = brandingAdmin();
+
+    $this->actingAs($user)
+        ->post('/client-admin/site-branding', [
+            'texts' => [
+                ['section' => 'services', 'key' => 'title', 'value_ar' => 'العنوان', 'value_en' => 'Title'],
+                ['section' => 'services', 'key' => 'subtitle', 'value_ar' => 'العنوان الفرعي', 'value_en' => 'Subtitle'],
+                ['section' => 'services', 'key' => 'background_title', 'value_ar' => 'خلف', 'value_en' => 'BG'],
+                ['section' => 'services', 'key' => 'item_1_title', 'value_ar' => 'بند ١', 'value_en' => 'Item 1'],
+                ['section' => 'services', 'key' => 'item_6_description', 'value_ar' => 'وصف ٦', 'value_en' => 'Desc 6'],
+            ],
+        ])
+        ->assertRedirect();
+
+    expect(SiteText::where('tenant_id', $tenant->id)
+        ->where('section', 'services')->where('key', 'background_title')->value('value_ar'))->toBe('خلف');
+    expect(SiteText::where('tenant_id', $tenant->id)
+        ->where('section', 'services')->where('key', 'item_1_title')->value('value_en'))->toBe('Item 1');
+    expect(SiteText::where('tenant_id', $tenant->id)
+        ->where('section', 'services')->where('key', 'item_6_description')->value('value_ar'))->toBe('وصف ٦');
+});
+
 // ─── Auth gate ─────────────────────────────────────────────
 
 test('guests are redirected to login', function () {
