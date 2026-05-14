@@ -1,10 +1,11 @@
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
-import { Sidebar, SidebarContent, SidebarFooter } from '@/components/ui/sidebar';
+import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { useT } from '@/hooks/use-translations';
 import { useLocale } from '@/hooks/use-locale';
 import { usePermission } from '@/hooks/usePermission';
 import { type NavItem } from '@/types';
+import { Link } from '@inertiajs/react';
 import {
     LayoutGrid,
     BedDouble,
@@ -22,6 +23,8 @@ import {
     Building2,
     RefreshCw,
 } from 'lucide-react';
+import AppLogo from './app-logo';
+
 type SidebarLink = { item: NavItem; permission?: string };
 
 function buildGroup(links: SidebarLink[], can: (key: string) => boolean): NavItem[] {
@@ -79,6 +82,18 @@ export function AppSidebar() {
 
     return (
         <Sidebar collapsible="icon" variant="sidebar" side={isArabic ? 'right' : 'left'}>
+            <SidebarHeader>
+                <SidebarMenu>
+                    <SidebarMenuItem>
+                        <SidebarMenuButton size="lg" asChild>
+                            <Link href="/client-admin" prefetch>
+                                <AppLogo />
+                            </Link>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                </SidebarMenu>
+            </SidebarHeader>
+
             <SidebarContent>
                 <NavMain items={dashboardGroup} label={t('main')} />
                 {managementGroup.length > 0 && (
