@@ -57,6 +57,10 @@ class TenantSiteSetting extends Model
             'media' => [
                 'hero_image' => $settings['hero_image'] ?? null,
                 'hero_image_2' => $settings['hero_image_2'] ?? null,
+                'additional_service_1_image' => $settings['additional_service_1_image'] ?? null,
+                'additional_service_2_image' => $settings['additional_service_2_image'] ?? null,
+                'additional_service_3_image' => $settings['additional_service_3_image'] ?? null,
+                'additional_service_4_image' => $settings['additional_service_4_image'] ?? null,
             ],
             'texts' => [
                 'site_text_ar' => $settings['site_text_ar'] ?? '',

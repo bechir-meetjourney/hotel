@@ -33,6 +33,16 @@ class SiteBrandingController extends Controller
         'about' => ['title', 'subtitle', 'description'],
         'rooms' => ['title', 'subtitle'],
         'services' => ['title', 'subtitle'],
+        // Additional Services has its own dedicated editor block (Madina template):
+        // section title/description + 4 items each with title/description and a
+        // separate image upload (tenant_site_settings.additional_service_N_image).
+        'additional_services' => [
+            'title', 'description',
+            'service_1_title', 'service_1_description',
+            'service_2_title', 'service_2_description',
+            'service_3_title', 'service_3_description',
+            'service_4_title', 'service_4_description',
+        ],
         'gallery' => ['title', 'subtitle'],
         'testimonials' => ['title', 'subtitle'],
         'contact' => ['title', 'subtitle'],
@@ -111,22 +121,12 @@ class SiteBrandingController extends Controller
             'site_favicon' => 'nullable|file|image|max:1024',
             'hero_image' => 'nullable|file|image|max:10240',
             'hero_image_2' => 'nullable|file|image|max:10240',
+            'additional_service_1_image' => 'nullable|file|image|max:10240',
+            'additional_service_2_image' => 'nullable|file|image|max:10240',
+            'additional_service_3_image' => 'nullable|file|image|max:10240',
+            'additional_service_4_image' => 'nullable|file|image|max:10240',
 
-            // Hero text
-            'hero_title_ar' => 'nullable|string|max:500',
-            'hero_title_en' => 'nullable|string|max:500',
-            'hero_subtitle_ar' => 'nullable|string|max:500',
-            'hero_subtitle_en' => 'nullable|string|max:500',
-
-            // Colors + typography
-            'primary_color' => 'nullable|string|max:20',
-            'secondary_color' => 'nullable|string|max:20',
-            'accent_color' => 'nullable|string|max:20',
-            'font_family' => 'nullable|string|max:100',
-
-            // Footer + social
-            'footer_text_ar' => 'nullable|string|max:500',
-            'footer_text_en' => 'nullable|string|max:500',
+            // Social
             'social_twitter' => 'nullable|string|max:255',
             'social_instagram' => 'nullable|string|max:255',
             'social_linkedin' => 'nullable|string|max:255',
@@ -156,7 +156,13 @@ class SiteBrandingController extends Controller
 
         DB::transaction(function () use ($request, $validated) {
             // Replace any previous upload on the same key before storing the new path.
-            foreach (['site_logo', 'site_logo_dark', 'site_favicon', 'hero_image', 'hero_image_2'] as $fileField) {
+            $fileFields = [
+                'site_logo', 'site_logo_dark', 'site_favicon',
+                'hero_image', 'hero_image_2',
+                'additional_service_1_image', 'additional_service_2_image',
+                'additional_service_3_image', 'additional_service_4_image',
+            ];
+            foreach ($fileFields as $fileField) {
                 if ($request->hasFile($fileField)) {
                     $old = TenantSiteSetting::get($fileField);
                     if ($old) Storage::disk('public')->delete($old);

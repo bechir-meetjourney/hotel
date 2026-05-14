@@ -18,6 +18,12 @@ import { Navigation, Autoplay } from 'swiper/modules'
 import type { Swiper as SwiperType } from 'swiper'
 import BackgroundTitle from '@/components/templates/BackgroundTitle'
 import { useTemplateT, useTemplateLanguage } from '@/hooks/useTemplateTranslations'
+import {
+  useMergedSiteTexts,
+  useTenantSiteSettings,
+} from '@/hooks/use-tenant-preview-overrides'
+import { pickSiteText } from '@/lib/site-texts'
+import { useStorageUrl } from '@/lib/storage'
 
 // Import Swiper styles
 import 'swiper/css'
@@ -45,6 +51,19 @@ interface BilingualService {
 export default function AdditionalServicesSection() {
   const t = useTemplateT()
   const { isArabic } = useTemplateLanguage()
+  const storageUrl = useStorageUrl()
+  // Live-preview hooks: pull both the tenant-uploaded images (media.*) and the
+  // editable site_texts (additional_services.* section) so the editor can drive
+  // titles, descriptions and per-item images in real time.
+  const liveSettings = useTenantSiteSettings()
+  const siteTexts = useMergedSiteTexts()
+  const resolveOverride = (raw: string | null | undefined): string | null =>
+    raw && typeof raw === 'string' && raw.startsWith('data:') ? raw : storageUrl(raw) ?? null
+  const overrideImageFor = (slot: 1 | 2 | 3 | 4): string | null => {
+    const key = `additional_service_${slot}_image` as const
+    const raw = (liveSettings?.media as Record<string, string | null | undefined> | undefined)?.[key]
+    return resolveOverride(raw)
+  }
   const swiperRef = useRef<SwiperType | null>(null)
   const [servicesStyle, setServicesStyle] = useState<'slider' | 'grid'>('slider')
 
@@ -110,13 +129,20 @@ export default function AdditionalServicesSection() {
     }
   ]
 
-  // Convert bilingual services to current language
-  const services = bilingualServicesData.map(service => ({
-    id: service.id,
-    title: isArabic ? service.titleAr : service.titleEn,
-    description: isArabic ? service.descriptionAr : service.descriptionEn,
-    image: service.image
-  }))
+  // Map each hardcoded service to its tenant-editable overrides. Title and
+  // description fall back to the bundled defaults; image falls back to the
+  // bundled asset only when no tenant upload exists.
+  const services = bilingualServicesData.map((service) => {
+    const slot = service.id as 1 | 2 | 3 | 4
+    const baseTitle = isArabic ? service.titleAr : service.titleEn
+    const baseDescription = isArabic ? service.descriptionAr : service.descriptionEn
+    return {
+      id: service.id,
+      title: pickSiteText(siteTexts, 'additional_services', `service_${slot}_title`, baseTitle, isArabic),
+      description: pickSiteText(siteTexts, 'additional_services', `service_${slot}_description`, baseDescription, isArabic),
+      image: overrideImageFor(slot) || service.image,
+    }
+  })
 
   return (
     <section 
@@ -147,7 +173,7 @@ export default function AdditionalServicesSection() {
               }}
             />
             <h2 className="madina-font-heading madina-text-primary relative z-10 text-4xl font-bold mb-4">
-              {t('sections.additional_services.title', 'الخدمات الأخرى')}
+              {pickSiteText(siteTexts, 'additional_services', 'title', t('sections.additional_services.title', 'الخدمات الأخرى'), isArabic)}
             </h2>
             <div 
               className="h-6 w-6 hidden md:block"
@@ -171,9 +197,12 @@ export default function AdditionalServicesSection() {
             colorStyle={{ color: 'var(--madina-primary)', opacity: 0.1 }}
           />
           <p className="relative z-10 text-lg max-w-3xl mx-auto leading-relaxed madina-text-body">
-            {t(
-              'sections.additional_services.description',
-              'نقدم لكم مجموعة متنوعة من الخدمات الإضافية التي تجعل إقامتكم أكثر راحة وتميزاً'
+            {pickSiteText(
+              siteTexts,
+              'additional_services',
+              'description',
+              t('sections.additional_services.description', 'نقدم لكم مجموعة متنوعة من الخدمات الإضافية التي تجعل إقامتكم أكثر راحة وتميزاً'),
+              isArabic,
             )}
           </p>
         </div>

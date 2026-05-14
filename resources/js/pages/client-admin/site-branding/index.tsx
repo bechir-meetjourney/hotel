@@ -87,6 +87,10 @@ export default function SiteBranding() {
         site_logo: null as File | null,
         hero_image: null as File | null,
         hero_image_2: null as File | null,
+        additional_service_1_image: null as File | null,
+        additional_service_2_image: null as File | null,
+        additional_service_3_image: null as File | null,
+        additional_service_4_image: null as File | null,
         social_twitter: settings.social.social_twitter ?? '',
         social_instagram: settings.social.social_instagram ?? '',
         social_linkedin: settings.social.social_linkedin ?? '',
@@ -126,6 +130,11 @@ export default function SiteBranding() {
     const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null)
     const [heroImagePreviewUrl, setHeroImagePreviewUrl] = useState<string | null>(null)
     const [heroImage2PreviewUrl, setHeroImage2PreviewUrl] = useState<string | null>(null)
+    // Per-item preview URLs for the 4 Additional Services slots. Keyed 1..4 to
+    // mirror the controller's additional_service_N_image keys.
+    const [additionalServicePreviewUrls, setAdditionalServicePreviewUrls] = useState<Record<number, string | null>>({
+        1: null, 2: null, 3: null, 4: null,
+    })
 
     // Convenience accessors/setters for the dedicated Hero slide blocks. Each
     // slide's title and subtitle are stored as site_texts entries so the live
@@ -149,6 +158,8 @@ export default function SiteBranding() {
     const setSlideText = (key: string, field: 'value_ar' | 'value_en', value: string) => setText('hero', key, field, value)
     const getFooterText = (key: string, field: 'value_ar' | 'value_en') => getText('footer', key, field)
     const setFooterText = (key: string, field: 'value_ar' | 'value_en', value: string) => setText('footer', key, field, value)
+    const getAddSvcText = (key: string, field: 'value_ar' | 'value_en') => getText('additional_services', key, field)
+    const setAddSvcText = (key: string, field: 'value_ar' | 'value_en', value: string) => setText('additional_services', key, field, value)
 
     // Preview iframe
     const iframeRef = useRef<HTMLIFrameElement | null>(null)
@@ -189,6 +200,10 @@ export default function SiteBranding() {
             media: {
                 hero_image: heroImagePreviewUrl ?? settings.media.hero_image ?? null,
                 hero_image_2: heroImage2PreviewUrl ?? (settings.media as { hero_image_2?: string | null }).hero_image_2 ?? null,
+                additional_service_1_image: additionalServicePreviewUrls[1] ?? (settings.media as Record<string, string | null>).additional_service_1_image ?? null,
+                additional_service_2_image: additionalServicePreviewUrls[2] ?? (settings.media as Record<string, string | null>).additional_service_2_image ?? null,
+                additional_service_3_image: additionalServicePreviewUrls[3] ?? (settings.media as Record<string, string | null>).additional_service_3_image ?? null,
+                additional_service_4_image: additionalServicePreviewUrls[4] ?? (settings.media as Record<string, string | null>).additional_service_4_image ?? null,
             },
             social: {
                 social_twitter: data.social_twitter,
@@ -198,7 +213,7 @@ export default function SiteBranding() {
             },
             siteTexts: siteTextsMap,
         }
-    }, [data, logoPreviewUrl, heroImagePreviewUrl, heroImage2PreviewUrl, settings.identity.site_logo, settings.media])
+    }, [data, logoPreviewUrl, heroImagePreviewUrl, heroImage2PreviewUrl, additionalServicePreviewUrls, settings.identity.site_logo, settings.media])
 
     useEffect(() => { setIframeOrigin(null) }, [iframeNonce])
 
@@ -240,6 +255,14 @@ export default function SiteBranding() {
         setHeroImage2PreviewUrl(file ? await fileToDataUrl(file) : null)
     }
 
+    const onAdditionalServiceImageChange = async (slot: 1 | 2 | 3 | 4, e: ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0] ?? null
+        const fieldKey = `additional_service_${slot}_image` as 'additional_service_1_image'
+        setData(fieldKey, file)
+        const preview = file ? await fileToDataUrl(file) : null
+        setAdditionalServicePreviewUrls((prev) => ({ ...prev, [slot]: preview }))
+    }
+
     const submit = (e: FormEvent) => {
         e.preventDefault()
         post(route('client-admin.site-branding.update'), {
@@ -249,6 +272,7 @@ export default function SiteBranding() {
                 setLogoPreviewUrl(null)
                 setHeroImagePreviewUrl(null)
                 setHeroImage2PreviewUrl(null)
+                setAdditionalServicePreviewUrls({ 1: null, 2: null, 3: null, 4: null })
                 setIframeNonce((n) => n + 1) // reload iframe to pick up new file URLs
             },
         })
@@ -306,6 +330,29 @@ export default function SiteBranding() {
                             <TextField label="Title (EN)" value={getSlideText('title_2', 'value_en')} onChange={(v) => setSlideText('title_2', 'value_en', v)} />
                             <TextField label="العنوان الفرعي (عربي)" value={getSlideText('subtitle_2', 'value_ar')} onChange={(v) => setSlideText('subtitle_2', 'value_ar', v)} dir="rtl" />
                             <TextField label="Subtitle (EN)" value={getSlideText('subtitle_2', 'value_en')} onChange={(v) => setSlideText('subtitle_2', 'value_en', v)} />
+                        </Section>
+
+                        <Section title="الخدمات الأخرى · Additional Services">
+                            <TextField label="عنوان القسم (عربي)" value={getAddSvcText('title', 'value_ar')} onChange={(v) => setAddSvcText('title', 'value_ar', v)} dir="rtl" />
+                            <TextField label="Section title (EN)" value={getAddSvcText('title', 'value_en')} onChange={(v) => setAddSvcText('title', 'value_en', v)} />
+                            <TextField label="وصف القسم (عربي)" value={getAddSvcText('description', 'value_ar')} onChange={(v) => setAddSvcText('description', 'value_ar', v)} dir="rtl" />
+                            <TextField label="Section description (EN)" value={getAddSvcText('description', 'value_en')} onChange={(v) => setAddSvcText('description', 'value_en', v)} />
+
+                            {([1, 2, 3, 4] as const).map((n) => (
+                                <div key={n} className="rounded-md border p-2 space-y-2">
+                                    <div className="text-xs font-bold uppercase text-muted-foreground">Service {n}</div>
+                                    <FileField
+                                        label={`صورة الخدمة ${n}`}
+                                        accept="image/*"
+                                        onChange={(e) => onAdditionalServiceImageChange(n, e)}
+                                        preview={additionalServicePreviewUrls[n] ?? storageUrl((settings.media as Record<string, string | null>)[`additional_service_${n}_image`]) ?? null}
+                                    />
+                                    <TextField label="العنوان (عربي)" value={getAddSvcText(`service_${n}_title`, 'value_ar')} onChange={(v) => setAddSvcText(`service_${n}_title`, 'value_ar', v)} dir="rtl" />
+                                    <TextField label="Title (EN)" value={getAddSvcText(`service_${n}_title`, 'value_en')} onChange={(v) => setAddSvcText(`service_${n}_title`, 'value_en', v)} />
+                                    <TextField label="الوصف (عربي)" value={getAddSvcText(`service_${n}_description`, 'value_ar')} onChange={(v) => setAddSvcText(`service_${n}_description`, 'value_ar', v)} dir="rtl" />
+                                    <TextField label="Description (EN)" value={getAddSvcText(`service_${n}_description`, 'value_en')} onChange={(v) => setAddSvcText(`service_${n}_description`, 'value_en', v)} />
+                                </div>
+                            ))}
                         </Section>
 
                         <Section title="التذييل · Footer">
