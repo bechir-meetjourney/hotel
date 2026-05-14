@@ -59,7 +59,7 @@ const PREVIEW_READY_TYPE = 'tenant-site-branding-preview-ready'
 
 const TenantPreviewContext = createContext<TenantPreviewOverrides | null>(null)
 
-function isPreviewMode(): boolean {
+export function isPreviewMode(): boolean {
   if (typeof window === 'undefined') return false
   if (window.parent === window) return false
   try {

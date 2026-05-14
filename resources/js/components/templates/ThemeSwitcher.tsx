@@ -7,6 +7,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { Edit3 } from 'lucide-react'
 import { useTemplateLanguage } from '@/hooks/useTemplateTranslations'
 import FloatingSettingsPanel from '@/components/FloatingSettingsPanel'
+import { isPreviewMode } from '@/hooks/use-tenant-preview-overrides'
 
 interface ColorTheme {
   id: string
@@ -608,6 +609,10 @@ const darkenColor = (color: string, percent: number): string => {
 export default function ThemeSwitcher() {
   const { isArabic } = useTemplateLanguage()
   const [isOpen, setIsOpen] = useState(false)
+  // Visible only inside the client-admin Site Branding preview iframe.
+  // Public visitors of the tenant landing page must not see this panel.
+  const [visible, setVisible] = useState(false)
+  useEffect(() => { setVisible(isPreviewMode()) }, [])
   const [selectedPrimaryTheme, setSelectedPrimaryTheme] = useState<ColorTheme>(colorThemes[0])
   const [selectedTextTheme, setSelectedTextTheme] = useState<TextColorTheme>(textColorThemes[0])
   const [headerRadius, setHeaderRadius] = useState(16) // Default: 16px (rounded-2xl)
@@ -1517,6 +1522,8 @@ export default function ThemeSwitcher() {
     
     return () => observer.disconnect()
   }, [selectedBackground, selectedDarkBackground, applyBackground, updatePatternColors])
+
+  if (!visible) return null
 
   return (
     <FloatingSettingsPanel
