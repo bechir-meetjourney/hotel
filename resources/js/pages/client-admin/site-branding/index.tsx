@@ -54,8 +54,6 @@ const PREVIEW_READY_TYPE = 'tenant-site-branding-preview-ready'
 type Viewport = 'desktop' | 'tablet' | 'mobile'
 const VIEWPORT_WIDTHS: Record<Viewport, string> = { desktop: '100%', tablet: '768px', mobile: '375px' }
 
-const FONT_OPTIONS = ['Cairo', 'Almarai', 'Tajawal', 'Amiri', 'Public Sans']
-
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'تخصيص الموقع', href: '/client-admin/site-branding' },
 ]
@@ -88,14 +86,7 @@ export default function SiteBranding() {
     const { data, setData, post, processing } = useForm({
         site_logo: null as File | null,
         hero_image: null as File | null,
-        hero_title_ar: settings.hero.hero_title_ar ?? '',
-        hero_title_en: settings.hero.hero_title_en ?? '',
-        hero_subtitle_ar: settings.hero.hero_subtitle_ar ?? '',
-        hero_subtitle_en: settings.hero.hero_subtitle_en ?? '',
-        primary_color: settings.colors.primary_color || '#0E1738',
-        secondary_color: settings.colors.secondary_color || '#B48A4A',
-        accent_color: settings.colors.accent_color || '',
-        font_family: settings.typography.font_family || 'Cairo',
+        hero_image_2: null as File | null,
         footer_text_ar: settings.footer.footer_text_ar ?? '',
         footer_text_en: settings.footer.footer_text_en ?? '',
         social_twitter: settings.social.social_twitter ?? '',
@@ -136,6 +127,23 @@ export default function SiteBranding() {
     // preview shows the new image before it's actually persisted.
     const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null)
     const [heroImagePreviewUrl, setHeroImagePreviewUrl] = useState<string | null>(null)
+    const [heroImage2PreviewUrl, setHeroImage2PreviewUrl] = useState<string | null>(null)
+
+    // Convenience accessors/setters for the dedicated Hero slide blocks. Each
+    // slide's title and subtitle are stored as site_texts entries so the live
+    // preview and the templates both pick them up via the existing channel.
+    const getSlideText = (key: string, field: 'value_ar' | 'value_en'): string => {
+        const row = data.texts.find((t) => t.section === 'hero' && t.key === key)
+        return (row?.[field] as string | null) ?? ''
+    }
+    const setSlideText = (key: string, field: 'value_ar' | 'value_en', value: string) => {
+        const idx = data.texts.findIndex((t) => t.section === 'hero' && t.key === key)
+        if (idx >= 0) {
+            setData('texts', data.texts.map((t, i) => (i === idx ? { ...t, [field]: value } : t)))
+        } else {
+            setData('texts', [...data.texts, { section: 'hero', key, value_ar: '', value_en: '', [field]: value }])
+        }
+    }
 
     // Preview iframe
     const iframeRef = useRef<HTMLIFrameElement | null>(null)
@@ -175,18 +183,7 @@ export default function SiteBranding() {
             },
             media: {
                 hero_image: heroImagePreviewUrl ?? settings.media.hero_image ?? null,
-            },
-            colors: {
-                primary_color: data.primary_color,
-                secondary_color: data.secondary_color,
-                accent_color: data.accent_color,
-            },
-            typography: { font_family: data.font_family },
-            hero: {
-                hero_title_ar: data.hero_title_ar,
-                hero_title_en: data.hero_title_en,
-                hero_subtitle_ar: data.hero_subtitle_ar,
-                hero_subtitle_en: data.hero_subtitle_en,
+                hero_image_2: heroImage2PreviewUrl ?? (settings.media as { hero_image_2?: string | null }).hero_image_2 ?? null,
             },
             footer: {
                 footer_text_ar: data.footer_text_ar,
@@ -200,7 +197,7 @@ export default function SiteBranding() {
             },
             siteTexts: siteTextsMap,
         }
-    }, [data, logoPreviewUrl, heroImagePreviewUrl, settings.identity.site_logo, settings.media.hero_image])
+    }, [data, logoPreviewUrl, heroImagePreviewUrl, heroImage2PreviewUrl, settings.identity.site_logo, settings.media])
 
     useEffect(() => { setIframeOrigin(null) }, [iframeNonce])
 
@@ -236,6 +233,12 @@ export default function SiteBranding() {
         setHeroImagePreviewUrl(file ? await fileToDataUrl(file) : null)
     }
 
+    const onHeroImage2Change = async (e: ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0] ?? null
+        setData('hero_image_2', file)
+        setHeroImage2PreviewUrl(file ? await fileToDataUrl(file) : null)
+    }
+
     const submit = (e: FormEvent) => {
         e.preventDefault()
         post(route('client-admin.site-branding.update'), {
@@ -244,6 +247,7 @@ export default function SiteBranding() {
             onSuccess: () => {
                 setLogoPreviewUrl(null)
                 setHeroImagePreviewUrl(null)
+                setHeroImage2PreviewUrl(null)
                 setIframeNonce((n) => n + 1) // reload iframe to pick up new file URLs
             },
         })
@@ -277,36 +281,30 @@ export default function SiteBranding() {
                             />
                         </Section>
 
-                        <Section title="صورة الـ Hero">
+                        <Section title="الـ Hero — الشريحة الأولى">
                             <FileField
-                                label="ارفع صورة الخلفية"
+                                label="صورة الشريحة 1"
                                 accept="image/*"
                                 onChange={onHeroImageChange}
                                 preview={heroImagePreviewUrl ?? storageUrl(settings.media.hero_image) ?? null}
                             />
+                            <TextField label="العنوان (عربي)" value={getSlideText('title', 'value_ar')} onChange={(v) => setSlideText('title', 'value_ar', v)} dir="rtl" />
+                            <TextField label="Title (EN)" value={getSlideText('title', 'value_en')} onChange={(v) => setSlideText('title', 'value_en', v)} />
+                            <TextField label="العنوان الفرعي (عربي)" value={getSlideText('subtitle', 'value_ar')} onChange={(v) => setSlideText('subtitle', 'value_ar', v)} dir="rtl" />
+                            <TextField label="Subtitle (EN)" value={getSlideText('subtitle', 'value_en')} onChange={(v) => setSlideText('subtitle', 'value_en', v)} />
                         </Section>
 
-                        <Section title="نص الـ Hero">
-                            <TextField label="العنوان (عربي)" value={data.hero_title_ar} onChange={(v) => setData('hero_title_ar', v)} dir="rtl" />
-                            <TextField label="Title (EN)" value={data.hero_title_en} onChange={(v) => setData('hero_title_en', v)} />
-                            <TextField label="العنوان الفرعي (عربي)" value={data.hero_subtitle_ar} onChange={(v) => setData('hero_subtitle_ar', v)} dir="rtl" />
-                            <TextField label="Subtitle (EN)" value={data.hero_subtitle_en} onChange={(v) => setData('hero_subtitle_en', v)} />
-                        </Section>
-
-                        <Section title="الألوان والخط">
-                            <ColorField label="اللون الرئيسي" value={data.primary_color} onChange={(v) => setData('primary_color', v)} />
-                            <ColorField label="اللون الفرعي" value={data.secondary_color} onChange={(v) => setData('secondary_color', v)} />
-                            <ColorField label="لون التمييز" value={data.accent_color} onChange={(v) => setData('accent_color', v)} />
-                            <div className="space-y-1">
-                                <label className="text-xs text-muted-foreground">الخط</label>
-                                <select
-                                    value={data.font_family}
-                                    onChange={(e) => setData('font_family', e.target.value)}
-                                    className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
-                                >
-                                    {FONT_OPTIONS.map((f) => <option key={f} value={f}>{f}</option>)}
-                                </select>
-                            </div>
+                        <Section title="الـ Hero — الشريحة الثانية">
+                            <FileField
+                                label="صورة الشريحة 2"
+                                accept="image/*"
+                                onChange={onHeroImage2Change}
+                                preview={heroImage2PreviewUrl ?? storageUrl((settings.media as { hero_image_2?: string | null }).hero_image_2) ?? null}
+                            />
+                            <TextField label="العنوان (عربي)" value={getSlideText('title_2', 'value_ar')} onChange={(v) => setSlideText('title_2', 'value_ar', v)} dir="rtl" />
+                            <TextField label="Title (EN)" value={getSlideText('title_2', 'value_en')} onChange={(v) => setSlideText('title_2', 'value_en', v)} />
+                            <TextField label="العنوان الفرعي (عربي)" value={getSlideText('subtitle_2', 'value_ar')} onChange={(v) => setSlideText('subtitle_2', 'value_ar', v)} dir="rtl" />
+                            <TextField label="Subtitle (EN)" value={getSlideText('subtitle_2', 'value_en')} onChange={(v) => setSlideText('subtitle_2', 'value_en', v)} />
                         </Section>
 
                         <Section title="التذييل">
@@ -441,28 +439,6 @@ function TextField({ label, value, onChange, dir, type }: { label: string; value
     )
 }
 
-function ColorField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
-    return (
-        <div className="space-y-1">
-            <label className="text-xs text-muted-foreground">{label}</label>
-            <div className="flex items-center gap-2">
-                <input
-                    type="color"
-                    value={value || '#000000'}
-                    onChange={(e) => onChange(e.target.value)}
-                    className="h-8 w-10 cursor-pointer rounded border"
-                />
-                <input
-                    type="text"
-                    value={value}
-                    onChange={(e) => onChange(e.target.value)}
-                    dir="ltr"
-                    className="flex-1 rounded-md border bg-background px-2 py-1.5 font-mono text-xs"
-                />
-            </div>
-        </div>
-    )
-}
 
 function FileField({ label, accept, onChange, preview }: { label: string; accept: string; onChange: (e: ChangeEvent<HTMLInputElement>) => void; preview: string | null }) {
     return (

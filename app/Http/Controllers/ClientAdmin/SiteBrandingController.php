@@ -27,7 +27,9 @@ class SiteBrandingController extends Controller
      * pre-filled skeleton instead of an empty page.
      */
     private const TEXT_SECTIONS = [
-        'hero' => ['title', 'subtitle', 'cta'],
+        // Hero has 2 slides — title/subtitle for slide 1 and title_2/subtitle_2 for slide 2.
+        // The dedicated Hero block in the editor binds to these keys directly.
+        'hero' => ['title', 'subtitle', 'cta', 'title_2', 'subtitle_2'],
         'about' => ['title', 'subtitle', 'description'],
         'rooms' => ['title', 'subtitle'],
         'services' => ['title', 'subtitle'],
@@ -108,6 +110,7 @@ class SiteBrandingController extends Controller
             'site_logo_dark' => 'nullable|file|image|max:5120',
             'site_favicon' => 'nullable|file|image|max:1024',
             'hero_image' => 'nullable|file|image|max:10240',
+            'hero_image_2' => 'nullable|file|image|max:10240',
 
             // Hero text
             'hero_title_ar' => 'nullable|string|max:500',
@@ -153,7 +156,7 @@ class SiteBrandingController extends Controller
 
         DB::transaction(function () use ($request, $validated) {
             // Replace any previous upload on the same key before storing the new path.
-            foreach (['site_logo', 'site_logo_dark', 'site_favicon', 'hero_image'] as $fileField) {
+            foreach (['site_logo', 'site_logo_dark', 'site_favicon', 'hero_image', 'hero_image_2'] as $fileField) {
                 if ($request->hasFile($fileField)) {
                     $old = TenantSiteSetting::get($fileField);
                     if ($old) Storage::disk('public')->delete($old);

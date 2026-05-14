@@ -58,13 +58,13 @@ test('index returns existing site_texts merged into the canonical skeleton', fun
     SiteText::create(['tenant_id' => $tenant->id, 'section' => 'contact', 'key' => 'phone', 'value_ar' => '123', 'value_en' => '123']);
     SiteText::reguard();
 
-    // hero exposes the canonical keys (title, subtitle, cta) with the seeded
-    // title value merged in; contact exposes the canonical keys plus an extra
-    // for the tenant-added 'phone' row, so the editor can edit either.
+    // hero exposes the canonical keys (title, subtitle, cta, title_2, subtitle_2)
+    // with the seeded title value merged in; contact exposes the canonical keys
+    // plus an extra for the tenant-added 'phone' row, so the editor can edit either.
     $this->actingAs($user)
         ->get('/client-admin/site-branding')
         ->assertInertia(fn ($page) => $page
-            ->has('siteTexts.hero', 3)
+            ->has('siteTexts.hero', 5)
             ->where('siteTexts.hero.0.key', 'title')
             ->where('siteTexts.hero.0.value_en', 'Hi')
             ->has('siteTexts.contact', 3)
@@ -208,7 +208,7 @@ test('index returns a pre-filled canonical skeleton for fresh tenants', function
     $this->actingAs($user)
         ->get('/client-admin/site-branding')
         ->assertInertia(fn ($page) => $page
-            ->has('siteTexts.hero', 3)        // title, subtitle, cta
+            ->has('siteTexts.hero', 5)        // title, subtitle, cta, title_2, subtitle_2
             ->has('siteTexts.about', 3)        // title, subtitle, description
             ->has('siteTexts.contact', 2)      // title, subtitle
             ->has('siteTexts.footer', 2)

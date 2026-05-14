@@ -56,6 +56,7 @@ class TenantSiteSetting extends Model
             ],
             'media' => [
                 'hero_image' => $settings['hero_image'] ?? null,
+                'hero_image_2' => $settings['hero_image_2'] ?? null,
             ],
             'texts' => [
                 'site_text_ar' => $settings['site_text_ar'] ?? '',

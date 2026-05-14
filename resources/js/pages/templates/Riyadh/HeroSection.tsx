@@ -30,13 +30,12 @@ export default function HeroSection({ hotelSettings, siteTexts }: HeroSectionPro
   const t = useTemplateT()
   const { isArabic } = useTemplateLanguage()
   const storageUrl = useStorageUrl()
-  // Tenant-configurable hero image overrides the bundled slider1 asset.
+  // Both slides are tenant-configurable: slide 1 → media.hero_image, slide 2 → media.hero_image_2.
   const liveSettings = useTenantSiteSettings()
-  const rawHero = liveSettings?.media?.hero_image as string | null | undefined
-  const heroImageOverride = rawHero && typeof rawHero === 'string' && rawHero.startsWith('data:')
-    ? rawHero
-    : storageUrl(rawHero) ?? null
-  const heroSrc = heroImageOverride || slider1
+  const resolveOverride = (raw: string | null | undefined): string | null =>
+    raw && typeof raw === 'string' && raw.startsWith('data:') ? raw : storageUrl(raw) ?? null
+  const heroSrc = resolveOverride(liveSettings?.media?.hero_image as string | null | undefined) || slider1
+  const hero2Src = resolveOverride((liveSettings?.media as { hero_image_2?: string | null })?.hero_image_2) || slider1
 
   // Helper to get site text with fallback, locale-aware (AR/EN with the other as fallback).
   const getText = (section: string, key: string, fallback: string) => {
@@ -92,7 +91,7 @@ export default function HeroSection({ hotelSettings, siteTexts }: HeroSectionPro
       ctaHref: '#rooms',
     },
     {
-      src: heroSrc,
+      src: hero2Src,
       title: getText('hero', 'title_2', '') || t('sections.hero.title', 'تجربة فندقية لا تُنسى'),
       description: getText('hero', 'subtitle_2', '') || t(
         'sections.hero.subtitle',

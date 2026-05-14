@@ -53,13 +53,13 @@ export default function HeroSection({ siteTexts }: HeroSectionProps = {}) {
   const t = useTemplateT()
   const { isArabic } = useTemplateLanguage()
   const storageUrl = useStorageUrl()
-  // First-slide hero image can be overridden by the tenant. data: URLs come
+  // Both slides accept a tenant-uploaded image override. data: URLs come
   // through unchanged (live editor uploads); persisted paths go via storageUrl.
   const liveSettings = useTenantSiteSettings()
-  const rawHero = liveSettings?.media?.hero_image as string | null | undefined
-  const heroImageOverride = rawHero && typeof rawHero === 'string' && rawHero.startsWith('data:')
-    ? rawHero
-    : storageUrl(rawHero) ?? null
+  const resolveOverride = (raw: string | null | undefined): string | null =>
+    raw && typeof raw === 'string' && raw.startsWith('data:') ? raw : storageUrl(raw) ?? null
+  const heroImageOverride = resolveOverride(liveSettings?.media?.hero_image as string | null | undefined)
+  const heroImage2Override = resolveOverride((liveSettings?.media as { hero_image_2?: string | null })?.hero_image_2)
   const [windowWidth, setWindowWidth] = useState(0)
   const [sliderStyle, setSliderStyle] = useState<'arrows' | 'dots'>('arrows')
   const [sliderEffect, setSliderEffect] = useState<'slide' | 'fade'>('slide')
@@ -145,7 +145,9 @@ export default function HeroSection({ siteTexts }: HeroSectionProps = {}) {
     },
   ]
   
-  // Convert bilingual slides to current language; the first slide is overridable via SiteText (section=hero).
+  // Both slides are overridable via SiteText (section=hero) and tenant uploads.
+  // Slide 1 → keys: title / subtitle / cta and media.hero_image.
+  // Slide 2 → keys: title_2 / subtitle_2 and media.hero_image_2 (forces image type).
   const slides = slidesData.map((slide, index) => {
     const baseTitle = isArabic ? slide.titleAr : slide.titleEn
     const baseDescription = isArabic ? slide.descriptionAr : slide.descriptionEn
@@ -164,11 +166,11 @@ export default function HeroSection({ siteTexts }: HeroSectionProps = {}) {
     }
 
     return {
-      src: slide.src,
+      src: heroImage2Override || slide.src,
       videoId: slide.videoId,
-      type: slide.type,
-      title: baseTitle,
-      description: baseDescription,
+      type: heroImage2Override ? 'image' as const : slide.type,
+      title: pickSiteText(siteTexts, 'hero', 'title_2', baseTitle, isArabic),
+      description: pickSiteText(siteTexts, 'hero', 'subtitle_2', baseDescription, isArabic),
       ctaLabel: baseCta,
       ctaHref: slide.ctaHref,
     }
