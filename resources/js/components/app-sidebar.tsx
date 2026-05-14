@@ -14,14 +14,11 @@ import {
     ToggleRight,
     Phone,
     Settings,
-    CreditCard,
     MessageSquare,
     Users,
     Shield,
     Layers,
     Sparkles,
-    Plug,
-    RefreshCw,
     Star,
     Building2,
 } from 'lucide-react';
@@ -60,30 +57,19 @@ export function AppSidebar() {
         { item: { title: isArabic ? 'أقسام الخدمات' : 'Service Categories', href: '/client-admin/service-categories', icon: Layers }, permission: 'services.view' },
     ], can);
 
-    // 💼 المالية
-    const financeGroup: NavItem[] = [
-        { title: isArabic ? 'الفواتير' : 'Invoices', href: '/client-admin/invoices', icon: FileText },
-        { title: isArabic ? 'تجديد الاشتراك' : 'Renewal', href: '/client-admin/renewal', icon: RefreshCw },
-        { title: isArabic ? 'التكاملات' : 'Integrations', href: '/client-admin/integrations', icon: Plug },
-    ];
-
     // 👥 المستخدمون — staff + roles
     const usersGroup = buildGroup([
         { item: { title: isArabic ? 'الموظفون' : 'Staff', href: '/client-admin/staff', icon: Users }, permission: 'staff.view' },
         { item: { title: isArabic ? 'الأدوار والصلاحيات' : 'Roles & Permissions', href: '/client-admin/roles', icon: Shield }, permission: 'staff.view' },
     ], can);
 
-    // 📊 التقارير — subscription reports + customer reviews
+    // 📊 التقارير — customer reviews
     const reportsGroup = buildGroup([
-        { item: { title: isArabic ? 'تقرير الاشتراك' : 'Subscription Report', href: '/client-admin/reports/subscriptions', icon: CreditCard }, permission: 'reports.subscriptions' },
         { item: { title: isArabic ? 'آراء العملاء' : 'Customer Reviews', href: '/client-admin/reviews', icon: Star }, permission: 'reviews.view' },
     ], can);
 
-    // 🏢 حساب المنشأة — regroups subscription, invoices, and establishment data.
-    // الفواتير/تجديد الاشتراك intentionally appear here in addition to المالية, mirroring the spec.
+    // 🏢 حساب المنشأة — establishment data
     const accountGroup = buildGroup([
-        { item: { title: isArabic ? 'إدارة الاشتراك' : 'Subscription', href: '/client-admin/renewal', icon: RefreshCw } },
-        { item: { title: isArabic ? 'الفواتير' : 'Invoices', href: '/client-admin/invoices', icon: FileText } },
         { item: { title: isArabic ? 'بيانات المنشأة' : 'Establishment Data', href: '/client-admin/hotel-settings', icon: Building2 }, permission: 'hotel_settings.view' },
     ], can);
 
@@ -114,7 +100,6 @@ export function AppSidebar() {
                 {systemGroup.length > 0 && (
                     <NavMain items={systemGroup} label={isArabic ? 'النظام' : 'System'} />
                 )}
-                <NavMain items={financeGroup} label={isArabic ? 'المالية' : 'Finance'} />
                 {usersGroup.length > 0 && (
                     <NavMain items={usersGroup} label={isArabic ? 'المستخدمون' : 'Users'} />
                 )}
