@@ -257,7 +257,9 @@ export default function HeroSection({ siteTexts }: HeroSectionProps = {}) {
                 </div>
               ) : (
                 <img
-                  src={isMobile ? slider1Mobile : (item.src || slider1)}
+                  // Tenant override (first slide) wins on both mobile and desktop; bundled
+                  // assets are only used as a fallback when no upload is set.
+                  src={item.src || (isMobile ? slider1Mobile : slider1)}
                   alt={`Hero slide ${idx + 1}`}
                   className="absolute inset-0 w-full h-full min-w-full object-cover"
                   style={{ objectFit: 'cover' }}

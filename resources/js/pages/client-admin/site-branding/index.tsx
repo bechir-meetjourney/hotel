@@ -1,7 +1,7 @@
 import AppLayout from '@/layouts/app-layout'
 import { type BreadcrumbItem } from '@/types'
 import { Head, useForm, usePage } from '@inertiajs/react'
-import { Save, Monitor, Tablet, Smartphone, RefreshCw, Upload } from 'lucide-react'
+import { Save, Monitor, Tablet, Smartphone, RefreshCw, Upload, Plus } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
 import { useStorageUrl } from '@/lib/storage'
 
@@ -25,10 +25,25 @@ interface Settings {
     media: { hero_image: string | null }
 }
 
+interface ContactData {
+    whatsapp: string | null
+    phone: string | null
+    email: string | null
+    address_ar: string | null
+    address_en: string | null
+    google_maps_url: string | null
+    facebook: string | null
+    instagram: string | null
+    twitter: string | null
+    tiktok: string | null
+    snapchat: string | null
+}
+
 interface Props {
     tenant: { id: number; slug: string; name: string }
     settings: Settings
     siteTexts: Record<string, SiteTextRow[]>
+    contact: ContactData
 }
 
 // ─── Constants ──────────────────────────────────────────────────────────────
@@ -65,7 +80,7 @@ function flattenSiteTexts(grouped: Record<string, SiteTextRow[]>): SiteTextRow[]
 // ─── Page ───────────────────────────────────────────────────────────────────
 
 export default function SiteBranding() {
-    const { tenant, settings, siteTexts } = usePage().props as unknown as Props
+    const { tenant, settings, siteTexts, contact } = usePage().props as unknown as Props
     const storageUrl = useStorageUrl()
 
     const flatTexts = useMemo(() => flattenSiteTexts(siteTexts), [siteTexts])
@@ -88,7 +103,34 @@ export default function SiteBranding() {
         social_linkedin: settings.social.social_linkedin ?? '',
         social_facebook: settings.social.social_facebook ?? '',
         texts: flatTexts as SiteTextRow[],
+        contact: {
+            whatsapp: contact?.whatsapp ?? '',
+            phone: contact?.phone ?? '',
+            email: contact?.email ?? '',
+            address_ar: contact?.address_ar ?? '',
+            address_en: contact?.address_en ?? '',
+            google_maps_url: contact?.google_maps_url ?? '',
+            facebook: contact?.facebook ?? '',
+            instagram: contact?.instagram ?? '',
+            twitter: contact?.twitter ?? '',
+            tiktok: contact?.tiktok ?? '',
+            snapchat: contact?.snapchat ?? '',
+        },
     })
+
+    const setContact = (patch: Partial<ContactData>) => {
+        setData('contact', { ...data.contact, ...patch } as typeof data.contact)
+    }
+
+    const addTextRow = (section: string) => {
+        const key = window.prompt(`نص جديد لقسم "${section}" — أدخل مفتاحاً (مثل: cta_label)`)
+        if (!key) return
+        if (data.texts.some((t) => t.section === section && t.key === key)) {
+            window.alert('هذا المفتاح موجود مسبقاً')
+            return
+        }
+        setData('texts', [...data.texts, { section, key, value_ar: '', value_en: '' }])
+    }
 
     // Data URLs for staged image uploads — sent to the iframe so the live
     // preview shows the new image before it's actually persisted.
@@ -279,38 +321,59 @@ export default function SiteBranding() {
                             <TextField label="Facebook" value={data.social_facebook} onChange={(v) => setData('social_facebook', v)} />
                         </Section>
 
-                        {Object.keys(textsByGroup).length > 0 && (
-                            <Section title="نصوص الصفحة (حسب القسم)">
-                                {Object.entries(textsByGroup).map(([section, rows]) => (
-                                    <div key={section} className="rounded-md border p-2">
-                                        <div className="mb-2 text-xs font-bold uppercase text-muted-foreground">{section}</div>
-                                        {rows.map((row) => {
-                                            const idx = data.texts.findIndex((t) => t.section === row.section && t.key === row.key)
-                                            return (
-                                                <div key={`${row.section}.${row.key}`} className="mb-2 space-y-1">
-                                                    <div className="text-[10px] text-muted-foreground">{row.key}</div>
-                                                    <input
-                                                        type="text"
-                                                        dir="rtl"
-                                                        placeholder="عربي"
-                                                        value={row.value_ar ?? ''}
-                                                        onChange={(e) => updateText(idx, { value_ar: e.target.value })}
-                                                        className="w-full rounded border bg-background px-2 py-1 text-xs"
-                                                    />
-                                                    <input
-                                                        type="text"
-                                                        placeholder="English"
-                                                        value={row.value_en ?? ''}
-                                                        onChange={(e) => updateText(idx, { value_en: e.target.value })}
-                                                        className="w-full rounded border bg-background px-2 py-1 text-xs"
-                                                    />
-                                                </div>
-                                            )
-                                        })}
+                        <Section title="معلومات الاتصال · Contact">
+                            <TextField label="WhatsApp" value={data.contact.whatsapp} onChange={(v) => setContact({ whatsapp: v })} />
+                            <TextField label="الهاتف · Phone" value={data.contact.phone} onChange={(v) => setContact({ phone: v })} />
+                            <TextField label="البريد · Email" type="email" value={data.contact.email} onChange={(v) => setContact({ email: v })} />
+                            <TextField label="العنوان (عربي)" value={data.contact.address_ar} onChange={(v) => setContact({ address_ar: v })} dir="rtl" />
+                            <TextField label="Address (EN)" value={data.contact.address_en} onChange={(v) => setContact({ address_en: v })} />
+                            <TextField label="رابط خرائط جوجل · Google Maps URL" value={data.contact.google_maps_url} onChange={(v) => setContact({ google_maps_url: v })} />
+                            <TextField label="Facebook" value={data.contact.facebook} onChange={(v) => setContact({ facebook: v })} />
+                            <TextField label="Instagram" value={data.contact.instagram} onChange={(v) => setContact({ instagram: v })} />
+                            <TextField label="Twitter" value={data.contact.twitter} onChange={(v) => setContact({ twitter: v })} />
+                            <TextField label="TikTok" value={data.contact.tiktok} onChange={(v) => setContact({ tiktok: v })} />
+                            <TextField label="Snapchat" value={data.contact.snapchat} onChange={(v) => setContact({ snapchat: v })} />
+                        </Section>
+
+                        <Section title="نصوص الصفحة (حسب القسم)">
+                            {Object.entries(textsByGroup).map(([section, rows]) => (
+                                <div key={section} className="rounded-md border p-2">
+                                    <div className="mb-2 flex items-center justify-between">
+                                        <div className="text-xs font-bold uppercase text-muted-foreground">{section}</div>
+                                        <button
+                                            type="button"
+                                            onClick={() => addTextRow(section)}
+                                            className="inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-[10px] hover:bg-accent"
+                                        >
+                                            <Plus className="h-3 w-3" /> مفتاح
+                                        </button>
                                     </div>
-                                ))}
-                            </Section>
-                        )}
+                                    {rows.map((row) => {
+                                        const idx = data.texts.findIndex((t) => t.section === row.section && t.key === row.key)
+                                        return (
+                                            <div key={`${row.section}.${row.key}`} className="mb-2 space-y-1">
+                                                <div className="text-[10px] text-muted-foreground">{row.key}</div>
+                                                <input
+                                                    type="text"
+                                                    dir="rtl"
+                                                    placeholder="عربي"
+                                                    value={row.value_ar ?? ''}
+                                                    onChange={(e) => updateText(idx, { value_ar: e.target.value })}
+                                                    className="w-full rounded border bg-background px-2 py-1 text-xs"
+                                                />
+                                                <input
+                                                    type="text"
+                                                    placeholder="English"
+                                                    value={row.value_en ?? ''}
+                                                    onChange={(e) => updateText(idx, { value_en: e.target.value })}
+                                                    className="w-full rounded border bg-background px-2 py-1 text-xs"
+                                                />
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+                            ))}
+                        </Section>
                     </div>
                 </div>
 
@@ -363,12 +426,12 @@ function Section({ title, children }: { title: string; children: React.ReactNode
     )
 }
 
-function TextField({ label, value, onChange, dir }: { label: string; value: string; onChange: (v: string) => void; dir?: 'rtl' | 'ltr' }) {
+function TextField({ label, value, onChange, dir, type }: { label: string; value: string; onChange: (v: string) => void; dir?: 'rtl' | 'ltr'; type?: string }) {
     return (
         <div className="space-y-1">
             <label className="text-xs text-muted-foreground">{label}</label>
             <input
-                type="text"
+                type={type ?? 'text'}
                 dir={dir}
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
