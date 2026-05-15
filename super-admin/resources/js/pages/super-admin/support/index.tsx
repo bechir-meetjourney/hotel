@@ -47,7 +47,7 @@ interface ConversationFull extends ConversationListItem {
 interface Stats {
     open: number; resolved_today: number; avg_response_seconds: number | null; satisfaction: number;
     by_category: Record<'all' | Category, number>;
-    tabs: Record<'all' | 'new' | 'in_progress' | 'closed' | 'broadcasts', number>;
+    tabs: Record<'all' | 'new' | 'in_progress' | 'closed' | 'contact' | 'broadcasts', number>;
 }
 
 interface Props {
@@ -253,7 +253,7 @@ export default function SupportIndex({ conversations, selected, stats, filters }
                         {/* Tabs */}
                         <div className="border-b px-3 pt-3 pb-2 space-y-2">
                             <div className="flex gap-1 flex-wrap">
-                                {(['all', 'new', 'in_progress', 'mine', 'closed', 'broadcasts'] as const).map((tab) => (
+                                {(['all', 'new', 'in_progress', 'mine', 'closed', 'contact', 'broadcasts'] as const).map((tab) => (
                                     <button key={tab} type="button"
                                         onClick={() => { setActiveTab(tab); applyFilter({ tab: tab === 'all' ? undefined : tab }); }}
                                         className={`text-xs rounded-md px-3 py-1.5 transition ${activeTab === tab ? 'bg-primary text-primary-foreground' : 'bg-muted hover:bg-muted/80'}`}>
@@ -446,6 +446,7 @@ function labelTab(tab: string, isArabic: boolean): string {
         in_progress: ['قيد المراجعة', 'In progress'],
         mine: ['محادثاتي', 'Mine'],
         closed: ['مغلق', 'Closed'],
+        contact: ['تواصل معنا', 'Contact us'],
         broadcasts: ['الرسائل الجماعية', 'Broadcasts'],
     };
     return labels[tab][isArabic ? 0 : 1];

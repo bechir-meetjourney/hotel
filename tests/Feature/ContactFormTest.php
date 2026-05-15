@@ -4,7 +4,7 @@ use App\Models\ContactMessage;
 use App\Models\Conversation;
 use App\Models\Tenant;
 
-it('accepts a contact submission without tenant and stores a ContactMessage only', function () {
+it('mirrors a tenantless contact submission into a conversation with null tenant_id', function () {
     $this->post('/contact', [
         'name' => 'Guest',
         'email' => 'guest@example.com',
@@ -12,7 +12,13 @@ it('accepts a contact submission without tenant and stores a ContactMessage only
     ])->assertRedirect();
 
     expect(ContactMessage::withoutGlobalScope('tenant')->count())->toBe(1);
-    expect(Conversation::withoutGlobalScope('tenant')->count())->toBe(0);
+
+    $conversation = Conversation::withoutGlobalScope('tenant')->with('messages')->first();
+    expect($conversation)->not->toBeNull();
+    expect($conversation->source)->toBe('contact');
+    expect($conversation->tenant_id)->toBeNull();
+    expect($conversation->messages)->toHaveCount(1);
+    expect($conversation->messages->first()->body)->toBe('Hello');
 });
 
 it('mirrors tenant-scoped contact submissions into conversations with source=contact', function () {

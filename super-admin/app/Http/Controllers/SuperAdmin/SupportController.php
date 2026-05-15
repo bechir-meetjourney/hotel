@@ -25,6 +25,8 @@ class SupportController extends Controller
         $tab = $request->tab ?? 'all';
         if ($tab === 'broadcasts') {
             $query->where('source', Conversation::SOURCE_BROADCAST);
+        } elseif ($tab === 'contact') {
+            $query->where('source', Conversation::SOURCE_CONTACT);
         } else {
             $query->where('source', '!=', Conversation::SOURCE_BROADCAST);
         }
@@ -195,6 +197,7 @@ class SupportController extends Controller
                 'new' => $nonBroadcast()->where('status', Conversation::STATUS_NEW)->count(),
                 'in_progress' => $nonBroadcast()->where('status', Conversation::STATUS_IN_PROGRESS)->count(),
                 'closed' => $nonBroadcast()->where('status', Conversation::STATUS_CLOSED)->count(),
+                'contact' => Conversation::where('source', Conversation::SOURCE_CONTACT)->count(),
                 'broadcasts' => Conversation::where('source', Conversation::SOURCE_BROADCAST)->count(),
             ],
         ];

@@ -36,26 +36,27 @@ class ContactController extends Controller
             'message' => $validated['message'],
         ]);
 
-        if ($tenantId) {
-            $conversation = Conversation::withoutGlobalScope('tenant')->create([
-                'tenant_id' => $tenantId,
-                'category' => Conversation::CATEGORY_INQUIRY,
-                'status' => Conversation::STATUS_NEW,
-                'subject' => $validated['subject'] ?? 'Contact form submission',
-                'source' => Conversation::SOURCE_CONTACT,
-                'client_name' => $validated['name'],
-                'client_email' => $validated['email'] ?? null,
-                'last_message_at' => Carbon::now(),
-                'admin_unread_count' => 1,
-            ]);
+        // Mirror every Contact-Us submission into the conversations table so
+        // super-admin Support center surfaces both tenant-site and main-site
+        // (tenant_id = null) inquiries under the same "تواصل معنا" tab.
+        $conversation = Conversation::withoutGlobalScope('tenant')->create([
+            'tenant_id' => $tenantId,
+            'category' => Conversation::CATEGORY_INQUIRY,
+            'status' => Conversation::STATUS_NEW,
+            'subject' => $validated['subject'] ?? 'Contact form submission',
+            'source' => Conversation::SOURCE_CONTACT,
+            'client_name' => $validated['name'],
+            'client_email' => $validated['email'] ?? null,
+            'last_message_at' => Carbon::now(),
+            'admin_unread_count' => 1,
+        ]);
 
-            ConversationMessage::create([
-                'conversation_id' => $conversation->id,
-                'sender_type' => ConversationMessage::SENDER_TENANT,
-                'sender_name' => $validated['name'],
-                'body' => $validated['message'],
-            ]);
-        }
+        ConversationMessage::create([
+            'conversation_id' => $conversation->id,
+            'sender_type' => ConversationMessage::SENDER_TENANT,
+            'sender_name' => $validated['name'],
+            'body' => $validated['message'],
+        ]);
 
         return back()->with('success', 'تم إرسال رسالتك بنجاح');
     }
