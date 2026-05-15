@@ -95,6 +95,10 @@ class InvoiceController extends Controller
     {
         return Inertia::render('super-admin/invoices/show', [
             'invoice' => $invoice->load('tenant:id,name,email,phone,org_name_ar,org_name_en', 'items'),
+            'settings' => \App\Models\InvoiceSetting::current(),
+            'defaultBank' => \App\Models\BankAccount::orderByDesc('is_default')->orderBy('id')->first(),
+            'defaultTerms' => \App\Models\TermsTemplate::where('is_default', true)->first(),
+            'logoUrl' => $this->absoluteLogoUrl(),
         ]);
     }
 

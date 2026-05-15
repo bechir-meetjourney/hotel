@@ -44,10 +44,27 @@ class InvoiceController extends Controller
         $template = ($override && $override !== 'default') ? $override : $globalDefault;
         $view = view()->exists("invoices.{$template}") ? "invoices.{$template}" : 'invoices.default';
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView($view, ['invoice' => $invoice]);
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView($view, [
+            'invoice' => $invoice,
+            'settings' => \App\Models\InvoiceSetting::current(),
+            'banks' => \App\Models\BankAccount::orderByDesc('is_default')->get(),
+            'defaultTerms' => \App\Models\TermsTemplate::where('is_default', true)->first(),
+            'logoUrl' => $this->absoluteLogoUrl(),
+        ]);
         $pdf->setPaper('A4');
 
         return $pdf->download("invoice-{$invoice->invoice_number}.pdf");
+    }
+
+    private function absoluteLogoUrl(): ?string
+    {
+        $path = \App\Models\SiteSetting::get('site_logo');
+        if (!$path) return null;
+        try {
+            return \Illuminate\Support\Facades\Storage::disk('public')->url($path);
+        } catch (\Throwable) {
+            return null;
+        }
     }
 
     public function updateTemplate(Request $request, Invoice $invoice)

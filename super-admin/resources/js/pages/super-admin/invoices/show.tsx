@@ -1,7 +1,7 @@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { Pencil, Send, CheckCircle, FileDown } from 'lucide-react';
+import { Pencil, Send, CheckCircle, FileDown, Building2, Landmark, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -38,11 +38,43 @@ interface Invoice {
     created_at: string;
 }
 
-interface Props {
-    invoice: Invoice;
+interface InvoiceSettings {
+    company_name_ar: string | null;
+    company_name_en: string | null;
+    cr: string | null;
+    vat: string | null;
+    address_ar: string | null;
+    address_en: string | null;
+    phone: string | null;
+    email: string | null;
+    website: string | null;
+    footer_line: string | null;
 }
 
-export default function ShowInvoice({ invoice }: Props) {
+interface BankAccountInfo {
+    bank_name_ar: string | null;
+    bank_name_en: string | null;
+    account_holder: string | null;
+    account_number: string | null;
+    iban: string | null;
+    swift: string | null;
+}
+
+interface TermsTemplateInfo {
+    name: string;
+    content_ar: string | null;
+    content_en: string | null;
+}
+
+interface Props {
+    invoice: Invoice;
+    settings: InvoiceSettings | null;
+    defaultBank: BankAccountInfo | null;
+    defaultTerms: TermsTemplateInfo | null;
+    logoUrl: string | null;
+}
+
+export default function ShowInvoice({ invoice, settings, defaultBank, defaultTerms, logoUrl }: Props) {
     const { t } = useT();
     const flash = usePage().props.flash as { success?: string; error?: string } | undefined;
 
@@ -108,6 +140,42 @@ export default function ShowInvoice({ invoice }: Props) {
                         </div>
                     </CardHeader>
                 </Card>
+
+                {/* Issuer info from invoice settings */}
+                {settings && (settings.company_name_ar || settings.company_name_en || settings.address_ar || settings.address_en || settings.phone || settings.email || settings.cr || settings.vat) && (
+                    <Card className="mb-6">
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2 text-base">
+                                <Building2 className="h-4 w-4" />
+                                {t('issuer_info', 'Issuer (From)')}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="flex items-start gap-4">
+                                {logoUrl && (
+                                    <img src={logoUrl} alt="Logo" className="h-12 w-auto max-w-[160px] object-contain" />
+                                )}
+                                <div className="space-y-1 text-sm">
+                                    {(settings.company_name_ar || settings.company_name_en) && (
+                                        <div className="font-semibold">{settings.company_name_en || settings.company_name_ar}</div>
+                                    )}
+                                    {(settings.address_ar || settings.address_en) && (
+                                        <div className="text-muted-foreground">{settings.address_en || settings.address_ar}</div>
+                                    )}
+                                    <div className="flex flex-wrap gap-x-3 gap-y-1 text-muted-foreground">
+                                        {settings.phone && <span>{t('phone', 'Tel')}: {settings.phone}</span>}
+                                        {settings.email && <span>{settings.email}</span>}
+                                        {settings.website && <span>{settings.website}</span>}
+                                    </div>
+                                    <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                                        {settings.cr && <span>{t('cr', 'CR')}: {settings.cr}</span>}
+                                        {settings.vat && <span>{t('vat', 'VAT')}: {settings.vat}</span>}
+                                    </div>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
 
                 {/* Tenant Info & Dates */}
                 <div className="mb-6 grid gap-6 sm:grid-cols-2">
@@ -242,6 +310,48 @@ export default function ShowInvoice({ invoice }: Props) {
                                     </div>
                                 )}
                             </div>
+                        </CardContent>
+                    </Card>
+                )}
+
+                {/* Bank details */}
+                {defaultBank && (
+                    <Card className="mb-6">
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2 text-base">
+                                <Landmark className="h-4 w-4" />
+                                {t('bank_details', 'Bank details')}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-1 text-sm">
+                                <div className="font-medium">{defaultBank.bank_name_en || defaultBank.bank_name_ar}</div>
+                                {defaultBank.account_holder && (
+                                    <div className="text-muted-foreground">{defaultBank.account_holder}</div>
+                                )}
+                                <div className="flex flex-wrap gap-x-4 gap-y-1 text-muted-foreground">
+                                    {defaultBank.iban && <span>{t('iban', 'IBAN')}: {defaultBank.iban}</span>}
+                                    {defaultBank.account_number && <span>{t('account', 'Acc')}: {defaultBank.account_number}</span>}
+                                    {defaultBank.swift && <span>SWIFT: {defaultBank.swift}</span>}
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
+
+                {/* Terms & conditions */}
+                {defaultTerms && (defaultTerms.content_ar || defaultTerms.content_en) && (
+                    <Card className="mb-6">
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2 text-base">
+                                <FileText className="h-4 w-4" />
+                                {t('terms_conditions', 'Terms & conditions')}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="whitespace-pre-wrap text-sm text-muted-foreground">
+                                {defaultTerms.content_en || defaultTerms.content_ar}
+                            </p>
                         </CardContent>
                     </Card>
                 )}
