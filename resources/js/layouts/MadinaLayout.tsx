@@ -1,9 +1,10 @@
 import { PropsWithChildren } from 'react'
-import { Head } from '@inertiajs/react'
+import { Head, usePage } from '@inertiajs/react'
 import { useTemplateLanguage } from '@/hooks/useTemplateTranslations'
 import MadinaHeader from '../pages/templates/Madina/MadinaHeader'
 import MadinaFooter from '../pages/templates/Madina/MadinaFooter'
 import ThemeSwitcher from '@/components/templates/ThemeSwitcher'
+import GoogleAnalytics from '@/components/GoogleAnalytics'
 
 interface MadinaLayoutProps extends PropsWithChildren {
   title?: string
@@ -14,12 +15,13 @@ interface MadinaLayoutProps extends PropsWithChildren {
  * Custom layout for Madina template.
  * Provides unified structure with custom Header and Footer.
  */
-export default function MadinaLayout({ 
-  children, 
+export default function MadinaLayout({
+  children,
   title = 'قالب المدينة - فندق المدينة المنورة',
   description = 'قالب موقع فندق مستوحى من المدينة المنورة'
 }: MadinaLayoutProps) {
   const { direction, isArabic } = useTemplateLanguage()
+  const { googleAnalyticsId } = usePage().props as { googleAnalyticsId?: string | null }
 
   return (
     <>
@@ -46,6 +48,8 @@ export default function MadinaLayout({
         {/* Theme switcher */}
         <ThemeSwitcher />
       </div>
+
+      <GoogleAnalytics measurementId={googleAnalyticsId} />
     </>
   )
 }

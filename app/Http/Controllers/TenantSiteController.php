@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\IntegrationSetting;
 use App\Models\Menu;
 use App\Models\Tenant;
 use App\Models\Room;
@@ -39,8 +40,16 @@ class TenantSiteController extends Controller
             default => 'templates/Madina/index',
         };
 
+        // Active Google Analytics measurement ID for this tenant (if enabled).
+        $analytics = IntegrationSetting::where('tenant_id', $tenant->id)
+            ->where('provider', 'google_analytics')
+            ->where('is_active', true)
+            ->first();
+        $googleAnalyticsId = $analytics?->settings['measurement_id'] ?? null;
+
         return Inertia::render($templatePage, [
             'tenant' => $tenant,
+            'googleAnalyticsId' => $googleAnalyticsId,
             'hotelSettings' => $hotelSettings,
             'contactSettings' => $contactSettings,
             'rooms' => $rooms->map(fn ($room) => [

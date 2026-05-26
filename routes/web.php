@@ -301,6 +301,7 @@ Route::middleware(['auth', 'verified', 'role:client_admin,staff', 'tenant'])
 
         // Integrations
         Route::get('integrations', [IntegrationController::class, 'index'])->name('integrations.index');
+        Route::post('integrations/google-analytics', [IntegrationController::class, 'saveGoogleAnalytics'])->name('integrations.google-analytics.save');
         Route::post('integrations/{provider}/toggle', [IntegrationController::class, 'toggle'])->name('integrations.toggle');
 
         // Staff Management
