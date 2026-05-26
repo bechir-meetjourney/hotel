@@ -1,0 +1,963 @@
+import { useT } from '@/hooks/use-translations';
+import { useStorageUrl } from '@/lib/storage';
+import { router, useForm } from '@inertiajs/react';
+import {
+    Bed,
+    Sparkles,
+    Building2,
+    UtensilsCrossed,
+    Wand2,
+    Upload,
+    X,
+    Star,
+    Plus,
+    GripVertical,
+    Trash2,
+    Image as ImageIcon,
+    ChevronRight,
+    ChevronLeft,
+} from 'lucide-react';
+import { useMemo, useState } from 'react';
+
+export interface CategoryOption {
+    id: number;
+    name_ar: string;
+    name_en: string;
+    type?: string | null;
+}
+
+export interface FeatureItem {
+    key: string;
+    label_ar: string;
+    label_en: string;
+    icon: string | null;
+}
+
+export interface ExistingImage {
+    id: number;
+    image_path: string;
+    sort_order: number;
+}
+
+export interface ServiceInitial {
+    id?: number;
+    name_ar?: string;
+    name_en?: string;
+    category_id?: number | string | null;
+    service_type?: string;
+    room_type?: string | null;
+    capacity?: number | string | null;
+    price?: string | number;
+    duration?: string | null;
+    video_url?: string | null;
+    booking_channel?: 'whatsapp' | 'email' | null;
+    whatsapp_number?: string | null;
+    booking_email?: string | null;
+    whatsapp_message_ar?: string | null;
+    whatsapp_message_en?: string | null;
+    is_featured?: boolean;
+    is_active?: boolean;
+    short_description_ar?: string | null;
+    short_description_en?: string | null;
+    description_ar?: string | null;
+    description_en?: string | null;
+    internal_notes?: string | null;
+    featured_image?: string | null;
+    features?: FeatureItem[];
+    images?: ExistingImage[];
+}
+
+interface Props {
+    mode: 'create' | 'edit';
+    initial?: ServiceInitial;
+    categories: CategoryOption[];
+    submitUrl: string;
+    cancelUrl: string;
+}
+
+const SERVICE_TYPES = [
+    { key: 'rooms', icon: Bed, labelKey: 'type_rooms' },
+    { key: 'spa', icon: Sparkles, labelKey: 'type_spa' },
+    { key: 'hall', icon: Building2, labelKey: 'type_hall' },
+    { key: 'restaurant', icon: UtensilsCrossed, labelKey: 'type_restaurant' },
+    { key: 'custom', icon: Wand2, labelKey: 'type_custom' },
+] as const;
+
+const PRESET_FEATURES: FeatureItem[] = [
+    { key: 'wifi', label_ar: 'واي فاي', label_en: 'WiFi', icon: '📶' },
+    { key: 'tv', label_ar: 'تلفاز', label_en: 'TV', icon: '📺' },
+    { key: 'ac', label_ar: 'تكييف', label_en: 'Air Conditioning', icon: '❄️' },
+    { key: 'minibar', label_ar: 'ميني بار', label_en: 'Mini Bar', icon: '🍷' },
+    { key: 'safe', label_ar: 'خزنة', label_en: 'Safe', icon: '🔐' },
+    { key: 'balcony', label_ar: 'شرفة', label_en: 'Balcony', icon: '🪟' },
+];
+
+type FormData = {
+    _method?: string;
+    name_ar: string;
+    name_en: string;
+    category_id: string;
+    service_type: string;
+    room_type: string;
+    capacity: string;
+    price: string;
+    duration: string;
+    video_url: string;
+    booking_channel: 'whatsapp' | 'email';
+    whatsapp_number: string;
+    booking_email: string;
+    whatsapp_message_ar: string;
+    whatsapp_message_en: string;
+    is_featured: boolean;
+    is_active: boolean;
+    short_description_ar: string;
+    short_description_en: string;
+    description_ar: string;
+    description_en: string;
+    internal_notes: string;
+    features: FeatureItem[];
+    featured_image: File | null;
+    images: File[];
+};
+
+export default function ServiceForm({ mode, initial = {}, categories, submitUrl, cancelUrl }: Props) {
+    const { t, isArabic } = useT();
+    const storageUrl = useStorageUrl();
+    const dir = isArabic ? 'rtl' : 'ltr';
+
+    const { data, setData, post, processing, errors } = useForm<FormData>({
+        ...(mode === 'edit' ? { _method: 'PUT' } : {}),
+        name_ar: initial.name_ar ?? '',
+        name_en: initial.name_en ?? '',
+        category_id: initial.category_id != null ? String(initial.category_id) : '',
+        service_type: initial.service_type ?? 'rooms',
+        room_type: initial.room_type ?? '',
+        capacity: initial.capacity != null ? String(initial.capacity) : '2',
+        price: initial.price != null ? String(initial.price) : '',
+        duration: initial.duration ?? '',
+        video_url: initial.video_url ?? '',
+        booking_channel: (initial.booking_channel ?? 'whatsapp') as 'whatsapp' | 'email',
+        whatsapp_number: initial.whatsapp_number ?? '',
+        booking_email: initial.booking_email ?? '',
+        whatsapp_message_ar: initial.whatsapp_message_ar ?? '',
+        whatsapp_message_en: initial.whatsapp_message_en ?? '',
+        is_featured: initial.is_featured ?? false,
+        is_active: initial.is_active ?? true,
+        short_description_ar: initial.short_description_ar ?? '',
+        short_description_en: initial.short_description_en ?? '',
+        description_ar: initial.description_ar ?? '',
+        description_en: initial.description_en ?? '',
+        internal_notes: initial.internal_notes ?? '',
+        features: initial.features ?? [],
+        featured_image: null,
+        images: [],
+    });
+
+    const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
+    const [featuredPreview, setFeaturedPreview] = useState<string | null>(storageUrl(initial.featured_image ?? null));
+    const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+    const [customFeature, setCustomFeature] = useState({ label_ar: '', label_en: '', icon: '✨' });
+
+    const steps = useMemo(
+        () => [
+            { num: 1, label: t('step_basic_info') },
+            { num: 2, label: t('step_description') },
+            { num: 3, label: t('step_features') },
+            { num: 4, label: t('step_images') },
+        ],
+        [t],
+    );
+
+    const isFeatureSelected = (key: string) => data.features.some((f) => f.key === key);
+
+    function togglePresetFeature(feat: FeatureItem) {
+        setData(
+            'features',
+            isFeatureSelected(feat.key) ? data.features.filter((f) => f.key !== feat.key) : [...data.features, feat],
+        );
+    }
+
+    function addCustomFeature() {
+        if (!customFeature.label_ar.trim() || !customFeature.label_en.trim()) return;
+        setData('features', [...data.features, { key: `custom_${Date.now()}`, ...customFeature }]);
+        setCustomFeature({ label_ar: '', label_en: '', icon: '✨' });
+    }
+
+    function removeFeature(key: string) {
+        setData('features', data.features.filter((f) => f.key !== key));
+    }
+
+    function moveFeature(from: number, to: number) {
+        if (to < 0 || to >= data.features.length) return;
+        const next = [...data.features];
+        const [item] = next.splice(from, 1);
+        next.splice(to, 0, item);
+        setData('features', next);
+    }
+
+    function handleFeaturedImage(e: React.ChangeEvent<HTMLInputElement>) {
+        const file = e.target.files?.[0];
+        if (file) {
+            setData('featured_image', file);
+            setFeaturedPreview(URL.createObjectURL(file));
+        }
+    }
+
+    function handleExtraImages(e: React.ChangeEvent<HTMLInputElement>) {
+        const files = Array.from(e.target.files || []).slice(0, 6 - data.images.length);
+        setData('images', [...data.images, ...files]);
+        setImagePreviews([...imagePreviews, ...files.map((f) => URL.createObjectURL(f))]);
+    }
+
+    function removeExtraImage(i: number) {
+        setData('images', data.images.filter((_, idx) => idx !== i));
+        setImagePreviews(imagePreviews.filter((_, idx) => idx !== i));
+    }
+
+    function deleteExistingImage(image: ExistingImage) {
+        if (!confirm(t('delete_image_confirm'))) return;
+        router.delete(`/client-admin/service-images/${image.id}`, { preserveScroll: true });
+    }
+
+    function submit(e: React.FormEvent) {
+        e.preventDefault();
+        post(submitUrl, { forceFormData: true });
+    }
+
+    const showRoomFields = data.service_type === 'rooms' || data.service_type === 'hall';
+    const existingImages = initial.images ?? [];
+
+    return (
+        <div className="mx-auto max-w-5xl p-4 sm:p-6" dir={dir}>
+            {/* Header */}
+            <div className="mb-6 flex items-start justify-between">
+                <div>
+                    <h1 className="text-2xl font-bold">
+                        {mode === 'create' ? t('add_new_service') : t('edit_service')}
+                    </h1>
+                    <p className="mt-1 text-sm text-muted-foreground">{t('service_wizard_intro')}</p>
+                </div>
+                <a
+                    href={cancelUrl}
+                    className="rounded-md p-2 text-muted-foreground transition hover:bg-muted hover:text-foreground"
+                    aria-label={t('cancel')}
+                >
+                    <X className="h-5 w-5" />
+                </a>
+            </div>
+
+            {/* Errors */}
+            {Object.keys(errors).length > 0 && (
+                <div className="mb-4 rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
+                    <ul className="list-inside list-disc">
+                        {Object.entries(errors).map(([field, msg]) => (
+                            <li key={field}>{msg as string}</li>
+                        ))}
+                    </ul>
+                </div>
+            )}
+
+            <Stepper steps={steps} current={step} onSelect={(n) => setStep(n as 1 | 2 | 3 | 4)} />
+
+            <form onSubmit={submit} className="mt-6 space-y-6">
+                {step === 1 && (
+                    <StepBasic
+                        data={data}
+                        setData={setData}
+                        errors={errors}
+                        categories={categories}
+                        showRoomFields={showRoomFields}
+                    />
+                )}
+                {step === 2 && <StepDescription data={data} setData={setData} errors={errors} />}
+                {step === 3 && (
+                    <StepFeatures
+                        data={data}
+                        isSelected={isFeatureSelected}
+                        onToggle={togglePresetFeature}
+                        customFeature={customFeature}
+                        setCustomFeature={setCustomFeature}
+                        onAddCustom={addCustomFeature}
+                        onRemove={removeFeature}
+                        onMove={moveFeature}
+                    />
+                )}
+                {step === 4 && (
+                    <StepImages
+                        existingImages={existingImages}
+                        storageUrl={storageUrl}
+                        onDeleteExisting={deleteExistingImage}
+                        featuredPreview={featuredPreview}
+                        imagePreviews={imagePreviews}
+                        onFeaturedChange={handleFeaturedImage}
+                        onExtraChange={handleExtraImages}
+                        onRemoveExtra={removeExtraImage}
+                        disabled={data.images.length + existingImages.length >= 6}
+                    />
+                )}
+
+                {/* Footer */}
+                <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-4">
+                    <a href={cancelUrl} className="text-sm text-muted-foreground hover:underline">
+                        {t('cancel')}
+                    </a>
+                    <div className="flex items-center gap-2">
+                        {step > 1 && (
+                            <button
+                                type="button"
+                                onClick={() => setStep((s) => (s - 1) as 1 | 2 | 3)}
+                                className="inline-flex items-center gap-1 rounded-md border px-4 py-2 text-sm transition hover:bg-muted"
+                            >
+                                {isArabic ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+                                {t('previous')}
+                            </button>
+                        )}
+                        {step < 4 && (
+                            <button
+                                type="button"
+                                onClick={() => setStep((s) => (s + 1) as 2 | 3 | 4)}
+                                className="inline-flex items-center gap-1 rounded-md border px-4 py-2 text-sm transition hover:bg-muted"
+                            >
+                                {t('next')}
+                                {isArabic ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                            </button>
+                        )}
+                        <button
+                            type="submit"
+                            disabled={processing}
+                            className="rounded-md bg-primary px-5 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary/90 disabled:opacity-50"
+                        >
+                            {processing ? t('saving') : t('save_service')}
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    );
+}
+
+// ============== Stepper =================
+function Stepper({
+    steps,
+    current,
+    onSelect,
+}: {
+    steps: { num: number; label: string }[];
+    current: number;
+    onSelect: (n: number) => void;
+}) {
+    return (
+        <div className="vuexy-card flex flex-wrap items-center justify-between gap-2 p-3 sm:p-4">
+            {steps.map((s) => {
+                const active = s.num === current;
+                const done = s.num < current;
+                return (
+                    <button
+                        key={s.num}
+                        type="button"
+                        onClick={() => onSelect(s.num)}
+                        className={`flex flex-1 items-center gap-2 rounded-md px-3 py-2 text-sm transition ${
+                            active
+                                ? 'bg-primary/10 font-medium text-primary'
+                                : done
+                                    ? 'text-foreground hover:bg-muted'
+                                    : 'text-muted-foreground hover:bg-muted'
+                        }`}
+                    >
+                        <span
+                            className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${
+                                active || done ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+                            }`}
+                        >
+                            {s.num}
+                        </span>
+                        <span className="truncate">{s.label}</span>
+                    </button>
+                );
+            })}
+        </div>
+    );
+}
+
+// ============== Step 1: Basic =================
+function StepBasic({
+    data,
+    setData,
+    errors,
+    categories,
+    showRoomFields,
+}: {
+    data: FormData;
+    setData: <K extends keyof FormData>(key: K, value: FormData[K]) => void;
+    errors: Partial<Record<keyof FormData, string>>;
+    categories: CategoryOption[];
+    showRoomFields: boolean;
+}) {
+    const { t, isArabic } = useT();
+
+    return (
+        <div className="space-y-6">
+            <div className="vuexy-card p-6">
+                <h2 className="mb-4 text-sm font-semibold text-muted-foreground">{t('service_type')}</h2>
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+                    {SERVICE_TYPES.map(({ key, icon: Icon, labelKey }) => {
+                        const active = data.service_type === key;
+                        return (
+                            <button
+                                key={key}
+                                type="button"
+                                onClick={() => setData('service_type', key)}
+                                className={`flex flex-col items-center justify-center gap-2 rounded-lg border p-4 text-sm transition ${
+                                    active
+                                        ? 'border-primary bg-primary/5 text-primary ring-2 ring-primary/20'
+                                        : 'hover:bg-muted'
+                                }`}
+                            >
+                                <Icon className="h-6 w-6" />
+                                <span>{t(labelKey)}</span>
+                            </button>
+                        );
+                    })}
+                </div>
+            </div>
+
+            <div className="vuexy-card p-6">
+                <div className="grid gap-4 sm:grid-cols-2">
+                    <Field label={t('name_ar')} error={errors.name_ar}>
+                        <input
+                            type="text"
+                            value={data.name_ar}
+                            onChange={(e) => setData('name_ar', e.target.value)}
+                            placeholder="مثال: غرفة ديلوكس"
+                            className="vuexy-input"
+                            required
+                            dir="rtl"
+                        />
+                    </Field>
+                    <Field label={t('name_en')} error={errors.name_en}>
+                        <input
+                            type="text"
+                            value={data.name_en}
+                            onChange={(e) => setData('name_en', e.target.value)}
+                            placeholder="e.g. Deluxe Room"
+                            className="vuexy-input"
+                            required
+                        />
+                    </Field>
+
+                    <Field label={t('category')} error={errors.category_id}>
+                        <select
+                            value={data.category_id}
+                            onChange={(e) => setData('category_id', e.target.value)}
+                            className="vuexy-input"
+                        >
+                            <option value="">{t('select_category')}</option>
+                            {categories.map((c) => (
+                                <option key={c.id} value={c.id}>
+                                    {isArabic ? c.name_ar : c.name_en}
+                                </option>
+                            ))}
+                        </select>
+                    </Field>
+
+                    {showRoomFields && (
+                        <Field label={t('room_type')} error={errors.room_type}>
+                            <select
+                                value={data.room_type}
+                                onChange={(e) => setData('room_type', e.target.value)}
+                                className="vuexy-input"
+                            >
+                                <option value="">{t('choose')}</option>
+                                <option value="standard">{t('standard')}</option>
+                                <option value="deluxe">{t('deluxe')}</option>
+                                <option value="suite">{t('suite')}</option>
+                                <option value="family">{t('family')}</option>
+                            </select>
+                        </Field>
+                    )}
+
+                    <Field label={t('capacity')} error={errors.capacity}>
+                        <input
+                            type="number"
+                            value={data.capacity}
+                            onChange={(e) => setData('capacity', e.target.value)}
+                            className="vuexy-input"
+                            min="1"
+                        />
+                    </Field>
+
+                    <Field label={data.service_type === 'rooms' ? t('price_per_night') : t('price_sar')} error={errors.price}>
+                        <div className="relative">
+                            <input
+                                type="number"
+                                value={data.price}
+                                onChange={(e) => setData('price', e.target.value)}
+                                className="vuexy-input pe-12"
+                                placeholder="350"
+                                min="0"
+                                step="0.01"
+                                required
+                            />
+                            <span className="pointer-events-none absolute inset-y-0 end-3 flex items-center text-sm text-muted-foreground">
+                                {isArabic ? 'ر.س' : 'SAR'}
+                            </span>
+                        </div>
+                    </Field>
+
+                    <Field label={t('duration')} error={errors.duration}>
+                        <input
+                            type="text"
+                            value={data.duration}
+                            onChange={(e) => setData('duration', e.target.value)}
+                            placeholder="30 min, 1 hour..."
+                            className="vuexy-input"
+                        />
+                    </Field>
+
+                    <Field label={t('video_url')} error={errors.video_url}>
+                        <input
+                            type="url"
+                            value={data.video_url}
+                            onChange={(e) => setData('video_url', e.target.value)}
+                            placeholder="https://"
+                            className="vuexy-input"
+                        />
+                    </Field>
+                </div>
+            </div>
+
+            <div className="vuexy-card p-6">
+                <h2 className="mb-4 text-base font-semibold">{t('booking_data')}</h2>
+                <div className="mb-4 inline-flex rounded-lg border p-1">
+                    {(['whatsapp', 'email'] as const).map((ch) => (
+                        <button
+                            key={ch}
+                            type="button"
+                            onClick={() => setData('booking_channel', ch)}
+                            className={`rounded-md px-4 py-1.5 text-sm transition ${
+                                data.booking_channel === ch
+                                    ? 'bg-primary text-primary-foreground'
+                                    : 'text-muted-foreground hover:bg-muted'
+                            }`}
+                        >
+                            {ch === 'whatsapp' ? t('whatsapp') : t('email_channel')}
+                        </button>
+                    ))}
+                </div>
+
+                {data.booking_channel === 'whatsapp' ? (
+                    <Field label={t('whatsapp_number')} error={errors.whatsapp_number}>
+                        <input
+                            type="tel"
+                            value={data.whatsapp_number}
+                            onChange={(e) => setData('whatsapp_number', e.target.value)}
+                            placeholder="+966 50 000 0000"
+                            className="vuexy-input"
+                            dir="ltr"
+                        />
+                    </Field>
+                ) : (
+                    <Field label={t('booking_email')} error={errors.booking_email}>
+                        <input
+                            type="email"
+                            value={data.booking_email}
+                            onChange={(e) => setData('booking_email', e.target.value)}
+                            placeholder="bookings@hotel.com"
+                            className="vuexy-input"
+                            dir="ltr"
+                        />
+                    </Field>
+                )}
+
+                <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                    <Field label={t('preset_message_ar')} error={errors.whatsapp_message_ar}>
+                        <textarea
+                            value={data.whatsapp_message_ar}
+                            onChange={(e) => setData('whatsapp_message_ar', e.target.value)}
+                            placeholder={t('whatsapp_placeholder_ar')}
+                            className="vuexy-input"
+                            rows={3}
+                            dir="rtl"
+                        />
+                    </Field>
+                    <Field label={t('preset_message_en')} error={errors.whatsapp_message_en}>
+                        <textarea
+                            value={data.whatsapp_message_en}
+                            onChange={(e) => setData('whatsapp_message_en', e.target.value)}
+                            placeholder={t('whatsapp_placeholder_en')}
+                            className="vuexy-input"
+                            rows={3}
+                        />
+                    </Field>
+                </div>
+            </div>
+
+            <div className="vuexy-card flex items-start justify-between gap-4 p-6">
+                <div className="flex items-start gap-3">
+                    <Star className={`mt-0.5 h-5 w-5 ${data.is_featured ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground'}`} />
+                    <div>
+                        <p className="text-sm font-medium">{t('mark_as_featured')}</p>
+                        <p className="text-xs text-muted-foreground">{t('featured_hint')}</p>
+                    </div>
+                </div>
+                <Toggle checked={data.is_featured} onChange={(v) => setData('is_featured', v)} />
+            </div>
+
+            <label className="flex items-center gap-2 text-sm">
+                <input
+                    type="checkbox"
+                    checked={data.is_active}
+                    onChange={(e) => setData('is_active', e.target.checked)}
+                    className="rounded border-gray-300"
+                />
+                {t('active_visible')}
+            </label>
+        </div>
+    );
+}
+
+// ============== Step 2: Description =================
+function StepDescription({
+    data,
+    setData,
+    errors,
+}: {
+    data: FormData;
+    setData: <K extends keyof FormData>(key: K, value: FormData[K]) => void;
+    errors: Partial<Record<keyof FormData, string>>;
+}) {
+    const { t } = useT();
+    return (
+        <div className="vuexy-card space-y-4 p-6">
+            <div className="grid gap-4 sm:grid-cols-2">
+                <Field label={t('short_desc_ar')} error={errors.short_description_ar}>
+                    <textarea
+                        value={data.short_description_ar}
+                        onChange={(e) => setData('short_description_ar', e.target.value)}
+                        className="vuexy-input"
+                        rows={2}
+                        dir="rtl"
+                        maxLength={500}
+                    />
+                </Field>
+                <Field label={t('short_desc_en')} error={errors.short_description_en}>
+                    <textarea
+                        value={data.short_description_en}
+                        onChange={(e) => setData('short_description_en', e.target.value)}
+                        className="vuexy-input"
+                        rows={2}
+                        maxLength={500}
+                    />
+                </Field>
+            </div>
+
+            <Field label={t('long_desc_ar')} error={errors.description_ar}>
+                <textarea
+                    value={data.description_ar}
+                    onChange={(e) => setData('description_ar', e.target.value)}
+                    placeholder={t('long_desc_hint_ar')}
+                    className="vuexy-input"
+                    rows={5}
+                    dir="rtl"
+                />
+            </Field>
+
+            <Field label={t('long_desc_en')} error={errors.description_en}>
+                <textarea
+                    value={data.description_en}
+                    onChange={(e) => setData('description_en', e.target.value)}
+                    placeholder={t('long_desc_hint_en')}
+                    className="vuexy-input"
+                    rows={5}
+                />
+            </Field>
+
+            <Field label={t('internal_notes')} error={errors.internal_notes}>
+                <textarea
+                    value={data.internal_notes}
+                    onChange={(e) => setData('internal_notes', e.target.value)}
+                    placeholder={t('internal_notes_hint')}
+                    className="vuexy-input"
+                    rows={2}
+                />
+            </Field>
+        </div>
+    );
+}
+
+// ============== Step 3: Features =================
+function StepFeatures({
+    data,
+    isSelected,
+    onToggle,
+    customFeature,
+    setCustomFeature,
+    onAddCustom,
+    onRemove,
+    onMove,
+}: {
+    data: FormData;
+    isSelected: (key: string) => boolean;
+    onToggle: (feat: FeatureItem) => void;
+    customFeature: { label_ar: string; label_en: string; icon: string };
+    setCustomFeature: (v: { label_ar: string; label_en: string; icon: string }) => void;
+    onAddCustom: () => void;
+    onRemove: (key: string) => void;
+    onMove: (from: number, to: number) => void;
+}) {
+    const { t, isArabic } = useT();
+    const emojis = ['✨', '⭐', '🛏️', '💆', '🍽️', '🏛️', '🌊', '🏊', '🚿', '🌴', '🎁', '☕', '🍷', '🚗', '🐾'];
+    const [showEmojis, setShowEmojis] = useState(false);
+
+    return (
+        <div className="space-y-6">
+            <div className="vuexy-card p-6">
+                <h2 className="mb-4 text-sm font-semibold text-muted-foreground">{t('available_features')}</h2>
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                    {PRESET_FEATURES.map((feat) => {
+                        const active = isSelected(feat.key);
+                        return (
+                            <button
+                                key={feat.key}
+                                type="button"
+                                onClick={() => onToggle(feat)}
+                                className={`flex items-center justify-between gap-2 rounded-lg border p-3 text-sm transition ${
+                                    active
+                                        ? 'border-primary bg-primary/5 text-primary ring-1 ring-primary/20'
+                                        : 'hover:bg-muted'
+                                }`}
+                            >
+                                <span>{isArabic ? feat.label_ar : feat.label_en}</span>
+                                <span className="text-lg">{feat.icon}</span>
+                            </button>
+                        );
+                    })}
+                </div>
+            </div>
+
+            <div className="vuexy-card p-6">
+                <h2 className="mb-4 text-sm font-semibold text-muted-foreground">{t('add_custom_feature')}</h2>
+                <div className="flex flex-wrap items-end gap-2">
+                    <div className="relative">
+                        <button
+                            type="button"
+                            onClick={() => setShowEmojis(!showEmojis)}
+                            className="vuexy-input flex h-10 w-14 items-center justify-center text-lg"
+                            aria-label="Choose icon"
+                        >
+                            {customFeature.icon}
+                        </button>
+                        {showEmojis && (
+                            <div className="absolute z-10 mt-1 grid w-56 grid-cols-5 gap-1 rounded-lg border bg-popover p-2 shadow-md">
+                                {emojis.map((e) => (
+                                    <button
+                                        key={e}
+                                        type="button"
+                                        onClick={() => {
+                                            setCustomFeature({ ...customFeature, icon: e });
+                                            setShowEmojis(false);
+                                        }}
+                                        className="rounded p-1 text-lg hover:bg-muted"
+                                    >
+                                        {e}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                    <input
+                        type="text"
+                        value={customFeature.label_ar}
+                        onChange={(e) => setCustomFeature({ ...customFeature, label_ar: e.target.value })}
+                        placeholder={t('name_in_arabic')}
+                        className="vuexy-input flex-1"
+                        dir="rtl"
+                    />
+                    <input
+                        type="text"
+                        value={customFeature.label_en}
+                        onChange={(e) => setCustomFeature({ ...customFeature, label_en: e.target.value })}
+                        placeholder={t('name_in_english')}
+                        className="vuexy-input flex-1"
+                    />
+                    <button
+                        type="button"
+                        onClick={onAddCustom}
+                        className="inline-flex items-center gap-1 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                    >
+                        <Plus className="h-4 w-4" />
+                        {t('add')}
+                    </button>
+                </div>
+            </div>
+
+            <div className="vuexy-card p-6">
+                <h2 className="mb-4 text-sm font-semibold text-muted-foreground">
+                    {t('selected_features')} ({data.features.length}) — {t('drag_to_reorder')}
+                </h2>
+                {data.features.length === 0 ? (
+                    <p className="py-6 text-center text-sm text-muted-foreground">{t('no_features_yet')}</p>
+                ) : (
+                    <div className="space-y-2">
+                        {data.features.map((feat, idx) => (
+                            <div key={feat.key} className="flex items-center gap-2 rounded-md border p-2">
+                                <div className="flex flex-col gap-0.5">
+                                    <button
+                                        type="button"
+                                        onClick={() => onMove(idx, idx - 1)}
+                                        disabled={idx === 0}
+                                        className="text-muted-foreground hover:text-foreground disabled:opacity-30"
+                                        aria-label="Move up"
+                                    >
+                                        <GripVertical className="h-3 w-3 rotate-90" />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => onMove(idx, idx + 1)}
+                                        disabled={idx === data.features.length - 1}
+                                        className="text-muted-foreground hover:text-foreground disabled:opacity-30"
+                                        aria-label="Move down"
+                                    >
+                                        <GripVertical className="h-3 w-3 -rotate-90" />
+                                    </button>
+                                </div>
+                                <span className="text-lg">{feat.icon}</span>
+                                <span className="flex-1 text-sm">{isArabic ? feat.label_ar : feat.label_en}</span>
+                                <button
+                                    type="button"
+                                    onClick={() => onRemove(feat.key)}
+                                    className="text-red-500 hover:text-red-700"
+                                    aria-label="Remove"
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}
+
+// ============== Step 4: Images =================
+function StepImages({
+    existingImages,
+    storageUrl,
+    onDeleteExisting,
+    featuredPreview,
+    imagePreviews,
+    onFeaturedChange,
+    onExtraChange,
+    onRemoveExtra,
+    disabled,
+}: {
+    existingImages: ExistingImage[];
+    storageUrl: (path: string | null | undefined) => string | null;
+    onDeleteExisting: (image: ExistingImage) => void;
+    featuredPreview: string | null;
+    imagePreviews: string[];
+    onFeaturedChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    onExtraChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    onRemoveExtra: (i: number) => void;
+    disabled: boolean;
+}) {
+    const { t } = useT();
+    const totalExtra = existingImages.length + imagePreviews.length;
+
+    return (
+        <div className="space-y-6">
+            <div className="vuexy-card p-6">
+                <div className="mb-3 flex items-baseline justify-between">
+                    <h2 className="text-base font-semibold">{t('main_image')}</h2>
+                    <span className="text-xs text-muted-foreground">{t('recommended_resolution')}: 1200×800 px</span>
+                </div>
+                <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-8 transition hover:bg-muted">
+                    {featuredPreview ? (
+                        <img src={featuredPreview} alt="" className="max-h-48 rounded-md object-cover" />
+                    ) : (
+                        <>
+                            <Upload className="h-6 w-6 text-muted-foreground" />
+                            <span className="text-sm text-foreground">{t('click_to_upload_main')}</span>
+                            <span className="text-xs text-muted-foreground">{t('recommended_formats')}</span>
+                        </>
+                    )}
+                    <input type="file" accept="image/*" onChange={onFeaturedChange} className="hidden" />
+                </label>
+            </div>
+
+            <div className="vuexy-card p-6">
+                <div className="mb-3 flex items-baseline justify-between">
+                    <h2 className="text-base font-semibold">{t('extra_images')}</h2>
+                    <span className="text-xs text-muted-foreground">{totalExtra} / 6</span>
+                </div>
+                <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
+                    {existingImages.map((img) => (
+                        <div key={img.id} className="group relative aspect-square overflow-hidden rounded-lg border">
+                            <img src={storageUrl(img.image_path) ?? ''} alt="" className="h-full w-full object-cover" />
+                            <button
+                                type="button"
+                                onClick={() => onDeleteExisting(img)}
+                                className="absolute end-1 top-1 rounded-full bg-red-500/90 p-1 text-white opacity-0 transition group-hover:opacity-100"
+                                aria-label="Delete"
+                            >
+                                <Trash2 className="h-3 w-3" />
+                            </button>
+                        </div>
+                    ))}
+                    {imagePreviews.map((src, i) => (
+                        <div key={`new-${i}`} className="group relative aspect-square overflow-hidden rounded-lg border">
+                            <img src={src} alt="" className="h-full w-full object-cover" />
+                            <button
+                                type="button"
+                                onClick={() => onRemoveExtra(i)}
+                                className="absolute end-1 top-1 rounded-full bg-red-500/90 p-1 text-white opacity-0 transition group-hover:opacity-100"
+                                aria-label="Remove"
+                            >
+                                <X className="h-3 w-3" />
+                            </button>
+                        </div>
+                    ))}
+                    {!disabled && (
+                        <label className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed text-muted-foreground transition hover:bg-muted">
+                            <ImageIcon className="h-5 w-5" />
+                            <span className="text-xs">{t('add')}</span>
+                            <input type="file" accept="image/*" multiple onChange={onExtraChange} className="hidden" />
+                        </label>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// ============== Bits =================
+function Field({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
+    return (
+        <div>
+            <label className="mb-1.5 block text-sm font-medium">{label}</label>
+            {children}
+            {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
+        </div>
+    );
+}
+
+function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
+    return (
+        <button
+            type="button"
+            onClick={() => onChange(!checked)}
+            className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition ${
+                checked ? 'bg-primary' : 'bg-muted'
+            }`}
+            role="switch"
+            aria-checked={checked}
+        >
+            <span
+                className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition ${
+                    checked ? 'translate-x-5 rtl:-translate-x-5' : 'translate-x-0.5 rtl:-translate-x-0.5'
+                }`}
+            />
+        </button>
+    );
+}

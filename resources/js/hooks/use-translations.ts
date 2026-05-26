@@ -231,6 +231,81 @@ const translations: Record<string, Record<string, string>> = {
     'cannot_delete_role_with_users': { ar: 'لا يمكن حذف دور مرتبط بموظفين', en: 'Cannot delete role with assigned users' },
     'select_role': { ar: 'اختر الدور', en: 'Select Role' },
     'role': { ar: 'الدور', en: 'Role' },
+
+    // === SERVICES (wizard) ===
+    'create_service': { ar: 'إنشاء خدمة', en: 'Create Service' },
+    'edit_service': { ar: 'تعديل الخدمة', en: 'Edit Service' },
+    'add_service': { ar: 'إضافة خدمة', en: 'Add Service' },
+    'add_new_service': { ar: 'إضافة خدمة جديدة', en: 'Add New Service' },
+    'service_details': { ar: 'تفاصيل الخدمة', en: 'Service Details' },
+    'service_wizard_intro': { ar: 'املأ بيانات الخدمة عبر الخطوات التالية', en: 'Fill in the service data through the following steps' },
+    'select_category': { ar: 'اختر التصنيف', en: 'Select category' },
+    'video_url': { ar: 'رابط الفيديو', en: 'Video URL' },
+    'duration': { ar: 'المدة', en: 'Duration' },
+
+    // Wizard steps
+    'step_basic_info': { ar: 'معلومات أساسية', en: 'Basic Info' },
+    'step_description': { ar: 'الوصف', en: 'Description' },
+    'step_features': { ar: 'المميزات', en: 'Features' },
+    'step_images': { ar: 'الصور', en: 'Images' },
+    'next': { ar: 'التالي', en: 'Next' },
+    'previous': { ar: 'السابق', en: 'Previous' },
+    'save_service': { ar: 'حفظ الخدمة', en: 'Save Service' },
+
+    // Service types (visual cards)
+    'service_type': { ar: 'نوع الخدمة', en: 'Service Type' },
+    'type_rooms': { ar: 'غرف', en: 'Rooms' },
+    'type_spa': { ar: 'مساج', en: 'Spa' },
+    'type_hall': { ar: 'قاعات', en: 'Halls' },
+    'type_restaurant': { ar: 'مطعم', en: 'Restaurant' },
+    'type_custom': { ar: 'مخصص', en: 'Custom' },
+
+    // Step 1 fields
+    'room_type': { ar: 'نوع الغرفة', en: 'Room Type' },
+    'choose': { ar: 'اختر...', en: 'Choose...' },
+    'price_per_night': { ar: 'السعر / الليلة', en: 'Price / night' },
+    'booking_data': { ar: 'بيانات الحجز', en: 'Booking Data' },
+    'whatsapp_number': { ar: 'رقم الواتساب', en: 'WhatsApp Number' },
+    'email_channel': { ar: 'بريد إلكتروني', en: 'Email' },
+    'booking_email': { ar: 'البريد الإلكتروني للحجز', en: 'Booking Email' },
+    'preset_message_ar': { ar: 'رسالة جاهزة (عربي)', en: 'Preset Message (Arabic)' },
+    'preset_message_en': { ar: 'رسالة جاهزة (إنجليزي)', en: 'Preset Message (English)' },
+    'whatsapp_placeholder_ar': { ar: 'مرحبًا، أرغب بحجز...', en: 'مرحبًا، أرغب بحجز...' },
+    'whatsapp_placeholder_en': { ar: "Hello, I'd like to book...", en: "Hello, I'd like to book..." },
+    'mark_as_featured': { ar: 'تمييز كخدمة مميزة', en: 'Mark as Featured Service' },
+    'featured_hint': { ar: 'ستظهر في أعلى صفحة الخدمات', en: 'Will appear at the top of the services page' },
+
+    // Step 2 fields
+    'short_desc_ar': { ar: 'وصف مختصر (عربي)', en: 'Short Description (Arabic)' },
+    'short_desc_en': { ar: 'وصف مختصر (إنجليزي)', en: 'Short Description (English)' },
+    'long_desc_ar': { ar: 'وصف تفصيلي (عربي)', en: 'Detailed Description (Arabic)' },
+    'long_desc_en': { ar: 'وصف تفصيلي (إنجليزي)', en: 'Detailed Description (English)' },
+    'long_desc_hint_ar': { ar: 'اكتب وصفاً تفصيلياً...', en: 'اكتب وصفاً تفصيلياً...' },
+    'long_desc_hint_en': { ar: 'Write a detailed description...', en: 'Write a detailed description...' },
+    'internal_notes': { ar: 'ملاحظات داخلية (اختياري)', en: 'Internal Notes (optional)' },
+    'internal_notes_hint': { ar: 'ملاحظات للفريق الداخلي فقط...', en: 'Notes for the internal team only...' },
+
+    // Step 3 fields
+    'available_features': { ar: 'المميزات المتاحة', en: 'Available Features' },
+    'add_custom_feature': { ar: 'إضافة ميزة مخصصة', en: 'Add Custom Feature' },
+    'name_in_arabic': { ar: 'الاسم بالعربي', en: 'Name in Arabic' },
+    'name_in_english': { ar: 'Name in English', en: 'Name in English' },
+    'selected_features': { ar: 'المختارة', en: 'Selected' },
+    'drag_to_reorder': { ar: 'اسحب للترتيب', en: 'Drag to reorder' },
+    'no_features_yet': { ar: 'لم تتم إضافة مميزات بعد', en: 'No features added yet' },
+    'feat_wifi': { ar: 'واي فاي', en: 'WiFi' },
+    'feat_tv': { ar: 'تلفاز', en: 'TV' },
+    'feat_ac': { ar: 'تكييف', en: 'Air Conditioning' },
+    'feat_minibar': { ar: 'ميني بار', en: 'Mini Bar' },
+    'feat_safe': { ar: 'خزنة', en: 'Safe' },
+    'feat_balcony': { ar: 'شرفة', en: 'Balcony' },
+
+    // Step 4 fields
+    'main_image': { ar: 'الصورة الرئيسية', en: 'Main Image' },
+    'click_to_upload_main': { ar: 'انقر لرفع الصورة الرئيسية', en: 'Click to upload main image' },
+    'recommended_resolution': { ar: 'الدقة الموصى بها', en: 'Recommended resolution' },
+    'recommended_formats': { ar: 'JPG, PNG · موصى به 1200×800', en: 'JPG, PNG · recommended 1200×800' },
+    'extra_images': { ar: 'صور إضافية', en: 'Extra Images' },
 };
 
 export function useT() {

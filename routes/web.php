@@ -268,6 +268,7 @@ Route::middleware(['auth', 'verified', 'role:client_admin,staff', 'tenant'])
         Route::delete('services/{service}', [ServiceController::class, 'destroy'])->name('services.destroy');
         Route::get('services/{service}/required-fields', [ServiceController::class, 'requiredFields'])->name('services.required-fields');
         Route::post('services/{service}/required-fields', [ServiceController::class, 'saveRequiredFields'])->name('services.required-fields.save');
+        Route::delete('service-images/{image}', [ServiceController::class, 'destroyImage'])->name('services.images.destroy');
 
         // Renewal
         Route::get('renewal', [RenewalController::class, 'index'])->name('renewal.index');
