@@ -14,7 +14,8 @@ import React, { useState, useMemo, useRef, useEffect } from 'react'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { Navigation, Autoplay } from 'swiper/modules'
 import type { Swiper as SwiperType } from 'swiper'
-import BookingModal, { BookingData, BookingType } from '@/components/templates/BookingModal'
+import { Wifi, Tv, Snowflake, Wine, Lock, Blinds, type LucideIcon } from 'lucide-react'
+import BookingModal, { BookingData, BookingType, BookingService } from '@/components/templates/BookingModal'
 import BackgroundTitle from '@/components/templates/BackgroundTitle'
 import { useTemplateT, useTemplateLanguage } from '@/hooks/useTemplateTranslations'
 import { useStorageUrl } from '@/lib/storage'
@@ -39,6 +40,27 @@ import rightLine from '../images/rooms/white-right-icon.svg'
 import leftArrow from '../images/left-arrow.png'
 import rightArrow from '../images/right-arrow.png'
 
+// Maps a wizard preset feature key to a themed lucide icon. Custom features
+// (key starts with `custom_`) fall back to the emoji the admin picked.
+const FEATURE_ICON_MAP: Record<string, LucideIcon> = {
+  wifi: Wifi,
+  tv: Tv,
+  ac: Snowflake,
+  minibar: Wine,
+  safe: Lock,
+  balcony: Blinds,
+}
+
+// A feature as rendered on a card: it may resolve to a lucide icon (via
+// lucideKey), an emoji, or a legacy masked SVG url (mock duration/category).
+interface CardFeature {
+  lucideKey?: string;
+  emoji?: string | null;
+  iconUrl?: string;
+  labelAr: string;
+  labelEn: string;
+}
+
 // Extend TemplateService with bilingual fields
 interface BilingualService {
   id: number;
@@ -50,11 +72,7 @@ interface BilingualService {
   currency: string;
   currencyEn: string;
   image?: string | null;
-  features: {
-    icon: string;
-    labelAr: string;
-    labelEn: string;
-  }[];
+  features: CardFeature[];
 }
 
 interface BackendService {
@@ -67,6 +85,41 @@ interface BackendService {
   duration?: string | null;
   featured_image?: string | null;
   category?: { name_ar: string; name_en: string } | null;
+  features?: { key: string; label_ar: string; label_en: string; icon?: string | null }[];
+}
+
+// Renders a card feature icon: themed lucide icon when the key is known,
+// otherwise the chosen emoji, otherwise a masked SVG (legacy mock icons).
+function CardFeatureIcon({ feature, className = 'w-4 h-4' }: { feature: CardFeature; className?: string }) {
+  const Lucide = feature.lucideKey ? FEATURE_ICON_MAP[feature.lucideKey] : undefined
+  const iconColor = 'var(--madina-identity-icon-color, var(--madina-primary))'
+
+  if (Lucide) {
+    return <Lucide className={className} style={{ color: iconColor }} aria-hidden="true" />
+  }
+  if (feature.emoji) {
+    return <span className={`${className} inline-flex items-center justify-center text-sm leading-none`} aria-hidden="true">{feature.emoji}</span>
+  }
+  if (feature.iconUrl) {
+    return (
+      <div
+        className={className}
+        aria-hidden="true"
+        style={{
+          maskImage: `url(${feature.iconUrl})`,
+          WebkitMaskImage: `url(${feature.iconUrl})`,
+          maskSize: 'contain',
+          WebkitMaskSize: 'contain',
+          maskRepeat: 'no-repeat',
+          WebkitMaskRepeat: 'no-repeat',
+          maskPosition: 'center',
+          WebkitMaskPosition: 'center',
+          backgroundColor: iconColor,
+        }}
+      />
+    )
+  }
+  return null
 }
 
 interface ServicesSectionProps {
@@ -90,6 +143,7 @@ export default function ServicesSection({ services: backendServices }: ServicesS
   }
   const [modalOpen, setModalOpen] = useState(false)
   const [defaultType, setDefaultType] = useState<BookingType>('مساج صيني')
+  const [selectedService, setSelectedService] = useState<BookingService | null>(null)
   const swiperRef = useRef<SwiperType | null>(null)
   const [cardStyle, setCardStyle] = useState<'default' | 'simple'>('default')
 
@@ -132,12 +186,12 @@ export default function ServicesSection({ services: backendServices }: ServicesS
       currencyEn: "SAR",
       features: [
         { 
-          icon: amenitiesIcon, 
+          iconUrl: amenitiesIcon,
           labelAr: "3 مرافق", 
           labelEn: "3 Amenities" 
         },
         { 
-          icon: clockIcon, 
+          iconUrl: clockIcon,
           labelAr: "4 ساعات", 
           labelEn: "4 Hours" 
         }
@@ -154,12 +208,12 @@ export default function ServicesSection({ services: backendServices }: ServicesS
       currencyEn: "SAR",
       features: [
         { 
-          icon: amenitiesIcon, 
+          iconUrl: amenitiesIcon,
           labelAr: "4 مرافق", 
           labelEn: "4 Amenities" 
         },
         { 
-          icon: clockIcon, 
+          iconUrl: clockIcon,
           labelAr: "ساعة ونصف", 
           labelEn: "1.5 Hours" 
         }
@@ -176,12 +230,12 @@ export default function ServicesSection({ services: backendServices }: ServicesS
       currencyEn: "SAR",
       features: [
         { 
-          icon: amenitiesIcon, 
+          iconUrl: amenitiesIcon,
           labelAr: "5 مرافق", 
           labelEn: "5 Amenities" 
         },
         { 
-          icon: clockIcon, 
+          iconUrl: clockIcon,
           labelAr: "ساعتين", 
           labelEn: "2 Hours" 
         }
@@ -198,12 +252,12 @@ export default function ServicesSection({ services: backendServices }: ServicesS
       currencyEn: "SAR",
       features: [
         { 
-          icon: amenitiesIcon, 
+          iconUrl: amenitiesIcon,
           labelAr: "4 مرافق", 
           labelEn: "4 Amenities" 
         },
         { 
-          icon: clockIcon, 
+          iconUrl: clockIcon,
           labelAr: "ساعتين ونصف", 
           labelEn: "2.5 Hours" 
         }
@@ -220,12 +274,12 @@ export default function ServicesSection({ services: backendServices }: ServicesS
       currencyEn: "SAR",
       features: [
         { 
-          icon: amenitiesIcon, 
+          iconUrl: amenitiesIcon,
           labelAr: "3 مرافق", 
           labelEn: "3 Amenities" 
         },
         { 
-          icon: clockIcon, 
+          iconUrl: clockIcon,
           labelAr: "ساعة ونصف", 
           labelEn: "1.5 Hours" 
         }
@@ -242,12 +296,12 @@ export default function ServicesSection({ services: backendServices }: ServicesS
       currencyEn: "SAR",
       features: [
         { 
-          icon: amenitiesIcon, 
+          iconUrl: amenitiesIcon,
           labelAr: "5 مرافق", 
           labelEn: "5 Amenities" 
         },
         { 
-          icon: clockIcon, 
+          iconUrl: clockIcon,
           labelAr: "ساعتين", 
           labelEn: "2 Hours" 
         }
@@ -281,12 +335,12 @@ export default function ServicesSection({ services: backendServices }: ServicesS
   const sourceData = useMemo<BilingualService[]>(() => {
     if (Array.isArray(backendServices) && backendServices.length > 0) {
       return backendServices.map((s) => {
-        const features: BilingualService['features'] = []
+        const features: CardFeature[] = []
         if (s.duration) {
-          features.push({ icon: clockIcon, labelAr: s.duration, labelEn: s.duration })
+          features.push({ iconUrl: clockIcon, labelAr: s.duration, labelEn: s.duration })
         }
-        if (s.category) {
-          features.push({ icon: amenitiesIcon, labelAr: s.category.name_ar, labelEn: s.category.name_en })
+        for (const f of s.features ?? []) {
+          features.push({ lucideKey: f.key, emoji: f.icon, labelAr: f.label_ar, labelEn: f.label_en })
         }
         return {
           id: s.id,
@@ -317,11 +371,7 @@ export default function ServicesSection({ services: backendServices }: ServicesS
       currency: isArabic ? service.currency : service.currencyEn,
       currencyEn: service.currencyEn,
       image: service.image ?? null,
-      features: service.features.map(feature => ({
-        icon: feature.icon,
-        labelAr: feature.labelAr,
-        labelEn: feature.labelEn,
-      })),
+      features: service.features,
     }));
   }, [isArabic, sourceData])
 
@@ -543,25 +593,11 @@ export default function ServicesSection({ services: backendServices }: ServicesS
                           {service.features.map((feature, index) => {
                             const label = isArabic ? feature.labelAr : feature.labelEn;
                             return (
-                              <div 
-                                key={index} 
+                              <div
+                                key={index}
                                 className="flex items-center gap-2"
                               >
-                                <div 
-                                  className="w-4 h-4"
-                                  aria-label={label}
-                                  style={{
-                                    maskImage: `url(${feature.icon})`,
-                                    WebkitMaskImage: `url(${feature.icon})`,
-                                    maskSize: 'contain',
-                                    WebkitMaskSize: 'contain',
-                                    maskRepeat: 'no-repeat',
-                                    WebkitMaskRepeat: 'no-repeat',
-                                    maskPosition: 'center',
-                                    WebkitMaskPosition: 'center',
-                                    backgroundColor: 'var(--madina-identity-icon-color, var(--madina-primary))'
-                                  }}
-                                />
+                                <CardFeatureIcon feature={feature} className="w-4 h-4" />
                                 <span className="text-sm madina-text-body">{label}</span>
                               </div>
                             );
@@ -596,6 +632,13 @@ export default function ServicesSection({ services: backendServices }: ServicesS
                             onClick={(e) => {
                               e.preventDefault()
                               setDefaultType(service.name as any)
+                              setSelectedService({
+                                name: service.name,
+                                description: service.description,
+                                image: service.image,
+                                price: String(service.price),
+                                currency: service.currency,
+                              })
                               setModalOpen(true)
                             }}
                           >
@@ -643,28 +686,14 @@ export default function ServicesSection({ services: backendServices }: ServicesS
                           {service.features.map((feature, index) => {
                             const label = isArabic ? feature.labelAr : feature.labelEn;
                             return (
-                              <div 
-                                key={index} 
+                              <div
+                                key={index}
                                 className="flex items-center gap-1 px-3 py-1 rounded-lg"
                                 style={{
                                   backgroundColor: 'rgba(255, 255, 255, 0.3)'
                                 }}
                               >
-                                <div 
-                                  className="w-4 h-4"
-                                  aria-label={label}
-                                  style={{
-                                    maskImage: `url(${feature.icon})`,
-                                    WebkitMaskImage: `url(${feature.icon})`,
-                                    maskSize: 'contain',
-                                    WebkitMaskSize: 'contain',
-                                    maskRepeat: 'no-repeat',
-                                    WebkitMaskRepeat: 'no-repeat',
-                                    maskPosition: 'center',
-                                    WebkitMaskPosition: 'center',
-                                    backgroundColor: 'var(--madina-identity-icon-color, var(--madina-primary))'
-                                  }}
-                                />
+                                <CardFeatureIcon feature={feature} className="w-4 h-4" />
                                 <span className="text-xs text-gray-800 font-medium">{label}</span>
                               </div>
                             );
@@ -711,6 +740,13 @@ export default function ServicesSection({ services: backendServices }: ServicesS
                             onClick={(e) => {
                               e.preventDefault()
                               setDefaultType(service.name as any)
+                              setSelectedService({
+                                name: service.name,
+                                description: service.description,
+                                image: service.image,
+                                price: String(service.price),
+                                currency: service.currency,
+                              })
                               setModalOpen(true)
                             }}
                           >
@@ -773,6 +809,7 @@ export default function ServicesSection({ services: backendServices }: ServicesS
           <BookingModal
             open={modalOpen}
             defaultType={defaultType}
+            service={selectedService}
             onClose={() => setModalOpen(false)}
             onConfirm={handleConfirm}
             variant="service"

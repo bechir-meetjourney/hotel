@@ -28,7 +28,7 @@ class TenantSiteController extends Controller
         $contactSettings = $tenant->contactSettings;
 
         $rooms = Room::where('is_active', true)->orderBy('sort_order')->get();
-        $services = Service::where('is_active', true)->with('category:id,name_ar,name_en', 'images')->orderBy('sort_order')->get();
+        $services = Service::where('is_active', true)->with('category:id,name_ar,name_en', 'images', 'features')->orderBy('sort_order')->get();
         $serviceCategories = ServiceCategory::where('is_active', true)->orderBy('sort_order')->get(['id', 'name_ar', 'name_en', 'type', 'icon']);
         $gallery = GalleryImage::where('is_active', true)->orderBy('sort_order')->get();
         $siteTexts = SiteText::all()->groupBy('section')->map(fn ($items) => $items->keyBy('key'));

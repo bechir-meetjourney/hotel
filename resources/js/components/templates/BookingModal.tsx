@@ -20,9 +20,20 @@ export interface BookingData {
   message: string
 }
 
+// Data of the actual service being booked, surfaced into the modal so it
+// reflects the clicked card instead of static placeholder content.
+export interface BookingService {
+  name: string
+  description?: string
+  image?: string | null
+  price?: string
+  currency?: string
+}
+
 interface BookingModalProps {
   open: boolean
   defaultType?: BookingType
+  service?: BookingService | null
   onClose: () => void
   onConfirm: (data: BookingData) => void
   variant?: 'room' | 'service'
@@ -54,7 +65,7 @@ function formatTime(t: string, arabic: boolean): string {
   return `${h12}:${mStr} ${period}`
 }
 
-export default function BookingModal({ open, defaultType = 'غرفة', onClose, onConfirm, variant = 'room' }: BookingModalProps) {
+export default function BookingModal({ open, defaultType = 'غرفة', service = null, onClose, onConfirm, variant = 'room' }: BookingModalProps) {
   const { isArabic } = useTemplateLanguage()
   const isDarkMode = typeof document !== 'undefined' && document.documentElement.classList.contains('dark')
   const [form, setForm] = useState<BookingData>({
@@ -263,49 +274,73 @@ export default function BookingModal({ open, defaultType = 'غرفة', onClose, 
         {/* Slider and Room Details */}
         <div className="px-5 pt-4">
           <div className="mb-3">
-            <Swiper
-              spaceBetween={10}
-              slidesPerView={1}
-              navigation
-              modules={[Navigation]}
-              className="rounded-xl overflow-hidden"
-            >
-              <SwiperSlide>
-                <img src={roomImage} alt="Room 1" className="w-full h-48 object-cover" />
-              </SwiperSlide>
-              <SwiperSlide>
-                <img src={roomImage} alt="Room 2" className="w-full h-48 object-cover" />
-              </SwiperSlide>
-              <SwiperSlide>
-                <img src={roomImage} alt="Room 3" className="w-full h-48 object-cover" />
-              </SwiperSlide>
-            </Swiper>
+            {service?.image ? (
+              <div className="rounded-xl overflow-hidden">
+                <img src={service.image} alt={service.name} className="w-full h-48 object-cover" />
+              </div>
+            ) : (
+              <Swiper
+                spaceBetween={10}
+                slidesPerView={1}
+                navigation
+                modules={[Navigation]}
+                className="rounded-xl overflow-hidden"
+              >
+                <SwiperSlide>
+                  <img src={roomImage} alt="Room 1" className="w-full h-48 object-cover" />
+                </SwiperSlide>
+                <SwiperSlide>
+                  <img src={roomImage} alt="Room 2" className="w-full h-48 object-cover" />
+                </SwiperSlide>
+                <SwiperSlide>
+                  <img src={roomImage} alt="Room 3" className="w-full h-48 object-cover" />
+                </SwiperSlide>
+              </Swiper>
+            )}
           </div>
           <div className="mb-4 text-gray-700 dark:text-gray-200 text-sm space-y-1">
-            <div>
-              {isArabic
-                ? 'غرفة نزلاء تضم سرير كوين بمساحة 35 مترا مربعا، وسرير متوسط الحجم، وإطلالة على المدينة، ونافذة من الأرضية إلى السقف، ومنطقة جلوس وشبكة واي فاي مجانية، وتلفزيون LED مقاس 49 بوصة'
-                : 'Guest room with queen bed, 35 sqm, medium-sized bed, city view, floor-to-ceiling window, seating area, free Wi-Fi, 49-inch LED TV'}
-            </div>
-            {!showRoomMore && (
-              <button
-                className="madina-text-primary dark:text-white font-semibold focus:outline-none text-xs mt-1"
-                onClick={() => setShowRoomMore(true)}
-              >
-                {isArabic ? 'اقرأ المزيد' : 'Read more'}
-              </button>
-            )}
-            {showRoomMore && (
-              <div>
-                {isArabic
-                  ? 'استرح في غرفة النزلاء الأنيقة هذه والتي تضم سرير كوين، ونافذة عازلة للصوت.'
-                  : 'Relax in this elegant guest room featuring a queen bed and extended soundproof window.'}
-              </div>
+            {service ? (
+              <>
+                <div className="flex items-center justify-between gap-2">
+                  <h4 className="madina-text-primary text-base font-bold">{service.name}</h4>
+                  {service.price && (
+                    <span className="madina-text-primary font-bold whitespace-nowrap">
+                      {service.price} {service.currency ?? (isArabic ? 'ريال' : 'SAR')}
+                    </span>
+                  )}
+                </div>
+                {service.description && <div>{service.description}</div>}
+              </>
+            ) : (
+              <>
+                <div>
+                  {isArabic
+                    ? 'غرفة نزلاء تضم سرير كوين بمساحة 35 مترا مربعا، وسرير متوسط الحجم، وإطلالة على المدينة، ونافذة من الأرضية إلى السقف، ومنطقة جلوس وشبكة واي فاي مجانية، وتلفزيون LED مقاس 49 بوصة'
+                    : 'Guest room with queen bed, 35 sqm, medium-sized bed, city view, floor-to-ceiling window, seating area, free Wi-Fi, 49-inch LED TV'}
+                </div>
+                {!showRoomMore && (
+                  <button
+                    className="madina-text-primary dark:text-white font-semibold focus:outline-none text-xs mt-1"
+                    onClick={() => setShowRoomMore(true)}
+                  >
+                    {isArabic ? 'اقرأ المزيد' : 'Read more'}
+                  </button>
+                )}
+                {showRoomMore && (
+                  <div>
+                    {isArabic
+                      ? 'استرح في غرفة النزلاء الأنيقة هذه والتي تضم سرير كوين، ونافذة عازلة للصوت.'
+                      : 'Relax in this elegant guest room featuring a queen bed and extended soundproof window.'}
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
 
-        {/* Hotel amenities accordion */}
+        {/* Hotel amenities accordion — room-specific placeholder content,
+            hidden when booking a concrete service */}
+        {!service && (
         <div className="px-5 pb-5 pt-2">
           <div className="rounded-xl bg-gray-50 dark:bg-gray-900/60 p-4 mt-2 text-sm">
             <h4 className="font-bold text-gray-800 dark:text-white mb-2">
@@ -372,6 +407,7 @@ export default function BookingModal({ open, defaultType = 'غرفة', onClose, 
             </ul>
           </div>
         </div>
+        )}
 
         {/* Booking Form */}
         <div className="px-5 py-4 grid grid-cols-1 md:grid-cols-2 gap-4">
