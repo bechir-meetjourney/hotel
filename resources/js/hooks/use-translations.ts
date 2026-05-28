@@ -306,6 +306,13 @@ const translations: Record<string, Record<string, string>> = {
     'recommended_resolution': { ar: 'الدقة الموصى بها', en: 'Recommended resolution' },
     'recommended_formats': { ar: 'JPG, PNG · موصى به 1200×800', en: 'JPG, PNG · recommended 1200×800' },
     'extra_images': { ar: 'صور إضافية', en: 'Extra Images' },
+
+    // === ROOMS (KPIs + wizard) ===
+    'featured_rooms': { ar: 'الغرف المميزة', en: 'Featured Rooms' },
+    'average_price': { ar: 'متوسط السعر', en: 'Average Price' },
+    'total_capacity': { ar: 'إجمالي السعة', en: 'Total Capacity' },
+    'featured': { ar: 'مميزة', en: 'Featured' },
+    'save_room': { ar: 'حفظ الغرفة', en: 'Save Room' },
 };
 
 export function useT() {

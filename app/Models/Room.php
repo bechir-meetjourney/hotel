@@ -18,11 +18,20 @@ class Room extends Model
         'type',
         'description_ar',
         'description_en',
+        'short_description_ar',
+        'short_description_en',
+        'internal_notes',
         'price',
         'capacity',
         'amenities',
         'featured_image',
         'is_active',
+        'is_featured',
+        'booking_channel',
+        'whatsapp_number',
+        'whatsapp_message_ar',
+        'whatsapp_message_en',
+        'booking_email',
         'sort_order',
     ];
 
@@ -32,6 +41,7 @@ class Room extends Model
             'amenities' => 'array',
             'price' => 'decimal:2',
             'is_active' => 'boolean',
+            'is_featured' => 'boolean',
         ];
     }
 

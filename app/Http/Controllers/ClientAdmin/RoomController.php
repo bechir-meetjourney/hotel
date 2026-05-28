@@ -26,6 +26,12 @@ class RoomController extends Controller
         return Inertia::render('client-admin/rooms/index', [
             'rooms' => $rooms,
             'filters' => $request->only(['type', 'search']),
+            'stats' => [
+                'total' => Room::count(),
+                'featured' => Room::where('is_featured', true)->count(),
+                'avg_price' => (int) round((float) Room::avg('price')),
+                'total_capacity' => (int) Room::sum('capacity'),
+            ],
         ]);
     }
 
@@ -42,11 +48,20 @@ class RoomController extends Controller
             'type' => 'required|in:standard,deluxe,suite,family',
             'description_ar' => 'nullable|string',
             'description_en' => 'nullable|string',
+            'short_description_ar' => 'nullable|string|max:500',
+            'short_description_en' => 'nullable|string|max:500',
+            'internal_notes' => 'nullable|string',
             'price' => 'required|numeric|min:0',
             'capacity' => 'required|integer|min:1',
             'amenities' => 'nullable|array',
             'amenities.*' => 'string',
             'is_active' => 'nullable',
+            'is_featured' => 'nullable',
+            'booking_channel' => 'nullable|in:whatsapp,email',
+            'whatsapp_number' => 'nullable|string|max:30',
+            'whatsapp_message_ar' => 'nullable|string|max:1000',
+            'whatsapp_message_en' => 'nullable|string|max:1000',
+            'booking_email' => 'nullable|email|max:150',
             'featured_image' => 'nullable|file|image|max:5120',
             'images' => 'nullable|array',
             'images.*' => 'file|image|max:5120',
@@ -54,6 +69,8 @@ class RoomController extends Controller
 
         $validated['amenities'] = $request->input('amenities', []);
         $validated['is_active'] = $request->boolean('is_active');
+        $validated['is_featured'] = $request->boolean('is_featured');
+        $validated['booking_channel'] = $validated['booking_channel'] ?? 'whatsapp';
 
         if ($request->hasFile('featured_image')) {
             $validated['featured_image'] = $request->file('featured_image')->store('rooms', 'public');
@@ -91,20 +108,31 @@ class RoomController extends Controller
             'type' => 'required|in:standard,deluxe,suite,family',
             'description_ar' => 'nullable|string',
             'description_en' => 'nullable|string',
+            'short_description_ar' => 'nullable|string|max:500',
+            'short_description_en' => 'nullable|string|max:500',
+            'internal_notes' => 'nullable|string',
             'price' => 'required|numeric|min:0',
             'capacity' => 'required|integer|min:1',
             'amenities' => 'nullable|array',
             'amenities.*' => 'string',
             'is_active' => 'nullable',
+            'is_featured' => 'nullable',
+            'booking_channel' => 'nullable|in:whatsapp,email',
+            'whatsapp_number' => 'nullable|string|max:30',
+            'whatsapp_message_ar' => 'nullable|string|max:1000',
+            'whatsapp_message_en' => 'nullable|string|max:1000',
+            'booking_email' => 'nullable|email|max:150',
             'featured_image' => 'nullable|file|image|max:5120',
-            'new_images' => 'nullable|array',
-            'new_images.*' => 'file|image|max:5120',
+            'images' => 'nullable|array',
+            'images.*' => 'file|image|max:5120',
             'delete_images' => 'nullable|array',
             'delete_images.*' => 'integer|exists:room_images,id',
         ]);
 
         $validated['amenities'] = $request->input('amenities', []);
         $validated['is_active'] = $request->boolean('is_active');
+        $validated['is_featured'] = $request->boolean('is_featured');
+        $validated['booking_channel'] = $validated['booking_channel'] ?? 'whatsapp';
 
         if ($request->hasFile('featured_image')) {
             // Delete old image
@@ -129,9 +157,9 @@ class RoomController extends Controller
         }
 
         // Add new images
-        if ($request->hasFile('new_images')) {
+        if ($request->hasFile('images')) {
             $maxSort = $room->images()->max('sort_order') ?? -1;
-            foreach ($request->file('new_images') as $index => $image) {
+            foreach ($request->file('images') as $index => $image) {
                 $path = $image->store('rooms', 'public');
                 $room->images()->create([
                     'path' => $path,

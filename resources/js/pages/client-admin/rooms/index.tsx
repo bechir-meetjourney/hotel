@@ -3,7 +3,7 @@ import { useT } from '@/hooks/use-translations';
 import { useStorageUrl } from '@/lib/storage';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Bed, Star, Coins, Users } from 'lucide-react';
 
 interface Room {
     id: number;
@@ -13,8 +13,16 @@ interface Room {
     price: string;
     capacity: number;
     is_active: boolean;
+    is_featured: boolean;
     featured_image: string | null;
     images: { id: number; path: string }[];
+}
+
+interface Stats {
+    total: number;
+    featured: number;
+    avg_price: number;
+    total_capacity: number;
 }
 
 interface Props {
@@ -24,12 +32,13 @@ interface Props {
         last_page: number;
     };
     filters: { type?: string; search?: string };
+    stats: Stats;
 }
 
 const roomTypes = ['standard', 'deluxe', 'suite', 'family'];
 
-export default function RoomsIndex({ rooms, filters }: Props) {
-    const { t } = useT();
+export default function RoomsIndex({ rooms, filters, stats }: Props) {
+    const { t, isArabic } = useT();
     const storageUrl = useStorageUrl();
 
     const breadcrumbs: BreadcrumbItem[] = [
@@ -65,6 +74,14 @@ export default function RoomsIndex({ rooms, filters }: Props) {
                     </Link>
                 </div>
 
+                {/* KPIs */}
+                <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+                    <StatCard icon={Bed} label={t('total_rooms')} value={stats.total} />
+                    <StatCard icon={Star} label={t('featured_rooms')} value={stats.featured} />
+                    <StatCard icon={Coins} label={t('average_price')} value={`${stats.avg_price} ${isArabic ? 'ر.س' : 'SAR'}`} />
+                    <StatCard icon={Users} label={t('total_capacity')} value={stats.total_capacity} />
+                </div>
+
                 {/* Filters */}
                 <div className="flex flex-col gap-3 sm:flex-row">
                     <form onSubmit={(e) => { e.preventDefault(); const fd = new FormData(e.currentTarget); router.get('/client-admin/rooms', { search: fd.get('search') as string, type: filters.type }, { preserveState: true }); }} className="flex-1">
@@ -84,11 +101,17 @@ export default function RoomsIndex({ rooms, filters }: Props) {
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {rooms.data.map((room) => (
                         <div key={room.id} className="overflow-hidden vuexy-card">
-                            <div className="aspect-video bg-muted">
+                            <div className="relative aspect-video bg-muted">
                                 {room.featured_image ? (
                                     <img src={storageUrl(room.featured_image) ?? ''} alt={room.name_en} className="h-full w-full object-cover" />
                                 ) : (
                                     <div className="flex h-full items-center justify-center text-muted-foreground">No Image</div>
+                                )}
+                                {room.is_featured && (
+                                    <span className="absolute start-2 top-2 inline-flex items-center gap-1 rounded-full bg-amber-400 px-2 py-0.5 text-xs font-medium text-amber-950 shadow">
+                                        <Star className="h-3 w-3 fill-current" />
+                                        {t('featured')}
+                                    </span>
                                 )}
                             </div>
                             <div className="p-4">
@@ -133,5 +156,19 @@ export default function RoomsIndex({ rooms, filters }: Props) {
                 )}
             </div>
         </AppLayout>
+    );
+}
+
+function StatCard({ icon: Icon, label, value }: { icon: typeof Bed; label: string; value: string | number }) {
+    return (
+        <div className="vuexy-card flex items-center gap-3 p-4">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <Icon className="h-5 w-5" />
+            </div>
+            <div className="min-w-0">
+                <p className="truncate text-xs text-muted-foreground">{label}</p>
+                <p className="truncate text-lg font-bold">{value}</p>
+            </div>
+        </div>
     );
 }
