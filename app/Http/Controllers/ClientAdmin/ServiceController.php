@@ -187,6 +187,8 @@ class ServiceController extends Controller
             'party_size' => 'nullable|integer|min:1|max:9999',
             'capacity' => 'nullable|integer|min:1|max:999',
             'room_type' => 'nullable|string|max:100',
+            'custom_subtype_ar' => 'nullable|string|max:100',
+            'custom_subtype_en' => 'nullable|string|max:100',
             'duration' => 'nullable|string|max:100',
             'video_url' => 'nullable|url|max:500',
             'featured_image' => 'nullable|file|image|max:4096',

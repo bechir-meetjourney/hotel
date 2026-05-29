@@ -30,6 +30,8 @@ class Service extends Model
         'party_size',
         'capacity',
         'room_type',
+        'custom_subtype_ar',
+        'custom_subtype_en',
         'duration',
         'featured_image',
         'text_color',

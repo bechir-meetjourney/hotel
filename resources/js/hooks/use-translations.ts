@@ -339,6 +339,26 @@ const translations: Record<string, Record<string, string>> = {
     'massage_type': { ar: 'نوع المساج', en: 'Massage type' },
     'hall_type': { ar: 'نوع القاعة', en: 'Hall type' },
     'restaurant_category_label': { ar: 'التصنيف', en: 'Category' },
+
+    // === SUBTYPE OPTIONS (per service type, with custom) ===
+    'custom_subtype_ar': { ar: 'تصنيف مخصص (عربي)', en: 'Custom subtype (Arabic)' },
+    'custom_subtype_en': { ar: 'تصنيف مخصص (إنجليزي)', en: 'Custom subtype (English)' },
+    // Massage types
+    'massage_traditional': { ar: 'تقليدي', en: 'Traditional' },
+    'massage_swedish': { ar: 'سويدي', en: 'Swedish' },
+    'massage_hot_stone': { ar: 'حجارة ساخنة', en: 'Hot stone' },
+    'massage_aromatherapy': { ar: 'عطري', en: 'Aromatherapy' },
+    'massage_thai': { ar: 'تايلندي', en: 'Thai' },
+    // Hall types
+    'hall_meeting': { ar: 'اجتماعات', en: 'Meeting' },
+    'hall_conference': { ar: 'مؤتمرات', en: 'Conference' },
+    'hall_wedding': { ar: 'أفراح', en: 'Wedding' },
+    'hall_private': { ar: 'خاصة', en: 'Private' },
+    // Restaurant categories
+    'restaurant_breakfast': { ar: 'فطور', en: 'Breakfast' },
+    'restaurant_lunch': { ar: 'غداء', en: 'Lunch' },
+    'restaurant_dinner': { ar: 'عشاء', en: 'Dinner' },
+    'restaurant_buffet': { ar: 'بوفيه', en: 'Buffet' },
 };
 
 export function useT() {

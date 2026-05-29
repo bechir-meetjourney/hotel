@@ -52,6 +52,8 @@ export interface ServiceInitial {
     category_id?: number | string | null;
     service_type?: string;
     room_type?: string | null;
+    custom_subtype_ar?: string | null;
+    custom_subtype_en?: string | null;
     capacity?: number | string | null;
     party_size?: number | string | null;
     price?: string | number;
@@ -106,6 +108,33 @@ const BILLING_METHODS: { key: string; labelKey: string; icon: LucideIcon }[] = [
     { key: 'per_minute', labelKey: 'bill_per_minute', icon: Timer },
 ];
 
+// Preset sub-type option keys per service type. Each list ends with the
+// special "custom" key that, when picked, lets the admin type a free
+// bilingual label into custom_subtype_ar / custom_subtype_en.
+const ROOM_SUBTYPES = ['standard', 'deluxe', 'suite', 'family', 'custom'] as const;
+const MASSAGE_SUBTYPES = [
+    { key: 'traditional', labelKey: 'massage_traditional' },
+    { key: 'swedish', labelKey: 'massage_swedish' },
+    { key: 'hot_stone', labelKey: 'massage_hot_stone' },
+    { key: 'aromatherapy', labelKey: 'massage_aromatherapy' },
+    { key: 'thai', labelKey: 'massage_thai' },
+    { key: 'custom', labelKey: 'custom' },
+] as const;
+const HALL_SUBTYPES = [
+    { key: 'meeting', labelKey: 'hall_meeting' },
+    { key: 'conference', labelKey: 'hall_conference' },
+    { key: 'wedding', labelKey: 'hall_wedding' },
+    { key: 'private', labelKey: 'hall_private' },
+    { key: 'custom', labelKey: 'custom' },
+] as const;
+const RESTAURANT_SUBTYPES = [
+    { key: 'breakfast', labelKey: 'restaurant_breakfast' },
+    { key: 'lunch', labelKey: 'restaurant_lunch' },
+    { key: 'dinner', labelKey: 'restaurant_dinner' },
+    { key: 'buffet', labelKey: 'restaurant_buffet' },
+    { key: 'custom', labelKey: 'custom' },
+] as const;
+
 const PRESET_FEATURES: FeatureItem[] = [
     { key: 'wifi', label_ar: 'واي فاي', label_en: 'WiFi', icon: '📶' },
     { key: 'tv', label_ar: 'تلفاز', label_en: 'TV', icon: '📺' },
@@ -122,6 +151,8 @@ type FormData = {
     category_id: string;
     service_type: string;
     room_type: string;
+    custom_subtype_ar: string;
+    custom_subtype_en: string;
     capacity: string;
     party_size: string;
     price: string;
@@ -162,6 +193,8 @@ export default function ServiceForm({ mode, initial = {}, categories, submitUrl,
         category_id: initial.category_id != null ? String(initial.category_id) : '',
         service_type: initial.service_type ?? 'rooms',
         room_type: initial.room_type ?? '',
+        custom_subtype_ar: initial.custom_subtype_ar ?? '',
+        custom_subtype_en: initial.custom_subtype_en ?? '',
         capacity: initial.capacity != null ? String(initial.capacity) : '2',
         party_size: initial.party_size != null ? String(initial.party_size) : '',
         price: initial.price != null ? String(initial.price) : '',
@@ -493,7 +526,9 @@ function StepBasic({
                         </select>
                     </Field>
 
-                    {/* Sub-type field: label and shape change with service_type. */}
+                    {/* Sub-type select: label and option list change with service_type.
+                        Every list ends with a "custom" option that reveals
+                        custom_subtype_ar / custom_subtype_en underneath. */}
                     {data.service_type === 'rooms' && (
                         <Field label={t('room_type')} error={errors.room_type}>
                             <select
@@ -502,45 +537,75 @@ function StepBasic({
                                 className="vuexy-input"
                             >
                                 <option value="">{t('choose')}</option>
-                                <option value="standard">{t('standard')}</option>
-                                <option value="deluxe">{t('deluxe')}</option>
-                                <option value="suite">{t('suite')}</option>
-                                <option value="family">{t('family')}</option>
+                                {ROOM_SUBTYPES.map((k) => (
+                                    <option key={k} value={k}>{t(k)}</option>
+                                ))}
                             </select>
                         </Field>
                     )}
                     {data.service_type === 'spa' && (
                         <Field label={t('massage_type')} error={errors.room_type}>
-                            <input
-                                type="text"
+                            <select
                                 value={data.room_type}
                                 onChange={(e) => setData('room_type', e.target.value)}
-                                placeholder={isArabic ? 'مثال: تايلندي' : 'e.g. Thai, Swedish'}
                                 className="vuexy-input"
-                            />
+                            >
+                                <option value="">{t('choose')}</option>
+                                {MASSAGE_SUBTYPES.map((o) => (
+                                    <option key={o.key} value={o.key}>{t(o.labelKey)}</option>
+                                ))}
+                            </select>
                         </Field>
                     )}
                     {data.service_type === 'hall' && (
                         <Field label={t('hall_type')} error={errors.room_type}>
-                            <input
-                                type="text"
+                            <select
                                 value={data.room_type}
                                 onChange={(e) => setData('room_type', e.target.value)}
-                                placeholder={isArabic ? 'مثال: اجتماعات' : 'e.g. Meeting, Conference'}
                                 className="vuexy-input"
-                            />
+                            >
+                                <option value="">{t('choose')}</option>
+                                {HALL_SUBTYPES.map((o) => (
+                                    <option key={o.key} value={o.key}>{t(o.labelKey)}</option>
+                                ))}
+                            </select>
                         </Field>
                     )}
                     {data.service_type === 'restaurant' && (
                         <Field label={t('restaurant_category_label')} error={errors.room_type}>
-                            <input
-                                type="text"
+                            <select
                                 value={data.room_type}
                                 onChange={(e) => setData('room_type', e.target.value)}
-                                placeholder={isArabic ? 'مثال: فطور' : 'e.g. Breakfast, Buffet'}
                                 className="vuexy-input"
-                            />
+                            >
+                                <option value="">{t('choose')}</option>
+                                {RESTAURANT_SUBTYPES.map((o) => (
+                                    <option key={o.key} value={o.key}>{t(o.labelKey)}</option>
+                                ))}
+                            </select>
                         </Field>
+                    )}
+
+                    {data.room_type === 'custom' && data.service_type !== 'custom' && (
+                        <>
+                            <Field label={t('custom_subtype_ar')} error={errors.custom_subtype_ar}>
+                                <input
+                                    type="text"
+                                    value={data.custom_subtype_ar}
+                                    onChange={(e) => setData('custom_subtype_ar', e.target.value)}
+                                    className="vuexy-input"
+                                    dir="rtl"
+                                />
+                            </Field>
+                            <Field label={t('custom_subtype_en')} error={errors.custom_subtype_en}>
+                                <input
+                                    type="text"
+                                    value={data.custom_subtype_en}
+                                    onChange={(e) => setData('custom_subtype_en', e.target.value)}
+                                    className="vuexy-input"
+                                />
+                            </Field>
+                        </>
                     )}
 
                     {(data.service_type === 'rooms' || data.service_type === 'hall') && (
